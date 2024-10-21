@@ -12,14 +12,14 @@ import Loader from "./Loader";
 const SingleEventsPage = observer(() => {
     const { id } = useParams();
     const [event, setEvent] = useState({});
-    const [loading, setLoading] = useState(true);  // Индикатор загрузки
-    const [error, setError] = useState(null);  // Обработка ошибок
+    const [loading, setLoading] = useState(true); // Индикатор загрузки
+    const [error, setError] = useState(null); // Обработка ошибок
 
     useEffect(() => {
         async function fetchEvent() {
             try {
-                await eventsStore.fetchData();  // Асинхронная загрузка данных
-                const fetchedEvent = eventsStore.getEventsById(id);
+                await eventsStore.fetchData(); // Асинхронная загрузка данных
+                const fetchedEvent = eventsStore.getEventById(id);
                 if (fetchedEvent) {
                     setEvent(fetchedEvent);
                 } else {
@@ -35,7 +35,7 @@ const SingleEventsPage = observer(() => {
         fetchEvent();
     }, [id]);
 
-    if (loading) return <div className="page-content single-news-page block-slide-loader"><Loader /></div>;  // Показ индикатора загрузки
+    if (loading) return <div className="page-content single-events-page block-slide-loader"><Loader /></div>;  // Показ индикатора загрузки
     if (error) return <NotFoundPage />;  // Показ сообщения об ошибке
 
     return (

@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { storage } from '../firebaseConfig';
-import { ref as storageRef, getDownloadURL } from "firebase/storage";
 
 import imgBackIcon from '../images/back.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
 import imgEyeIcon from '../images/folder.svg';
 import imgAttachIcon from '../images/attach.svg';
 
+import photo from '../images/photo-news.png';
 import imgDeviceM240T from '../images/М240Т.png';
 
 function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevice = false }) {
@@ -17,13 +18,13 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
 
     useEffect(() => {
         const fetchImageUrls = async () => {
-            if (data?.image) {
-                const urls = await Promise.all(data.image.map(async (image) => {
+            if (data?.images) {
+                const urls = await Promise.all(data.images.map(async (image) => {
                     const cachedImage = localStorage.getItem(image);
                     if (cachedImage) {
                         return cachedImage;
                     } else {
-                        const fileRef = storageRef(storage, `images/${image}`);
+                        const fileRef = storageRef(storage, image);
                         const url = await getDownloadURL(fileRef);
                         localStorage.setItem(image, url);
                         return url;
@@ -40,7 +41,7 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                     if (cachedFile) {
                         return cachedFile;
                     } else {
-                        const fileRef = storageRef(storage, `files/${file}`);
+                        const fileRef = storageRef(storage, file);
                         const url = await getDownloadURL(fileRef);
                         localStorage.setItem(file, url);
                         return url;
@@ -86,7 +87,7 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                     <div className="single-bid-content-column-1">
                         <div className="single-bid-content-image-container">
                             {!isDevice && (
-                                <img src={imageUrls[currentImage] || ''} alt="" />
+                                <img src={imageUrls[currentImage] || photo} alt="" />
                             )}
                             {isDevice && (
                                 <img src={imgDeviceM240T} alt="" />
