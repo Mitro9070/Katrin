@@ -1,0 +1,30 @@
+.custom-fileselect{
+    display: flex;
+    flex-direction: column;
+    width: 195px;
+}
+
+.custom-fileselect-container{
+    height: 80px;
+}
+
+.icons-fileselect-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bid-image-delete-container{
+    position: none;
+}
+
+.bid-file-delete-container{
+    background-color: transparent;
+}
+
+.custom-fileselect-filename{
+    width: 195px;
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    overflow: hidden; 
+}

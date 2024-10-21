@@ -1,0 +1,95 @@
+.calendar {
+    width: 533px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+header p{
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.calendar-head{
+    display: flex;
+    width: 533px;
+    line-height: 44px;
+}
+
+.days-of-week{
+    width: 77px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 533px;
+    border: 1px solid #A9A9A9; /* Основная граница календаря */
+    border-radius: 20px; /* Закругленные края */
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.calendar-days div {
+    height: 75px;
+    border-right: 1px solid #A9A9A9; /* Граница между ячейками по горизонтали */
+    border-bottom: 1px solid #A9A9A9; /* Граница между ячейками по вертикали */
+}
+
+.calendar-days div:nth-child(7n) {
+    border-right: none; /* Убираем правую границу у последней ячейки в ряду */
+}
+
+.calendar-days div:nth-last-child(-n+7) {
+    border-bottom: none; /* Убираем нижнюю границу у ячеек последней строки */
+}
+
+.day:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
+.day, .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.event-line {
+    min-width: 40px;
+    max-height: 10px;
+    border-radius: 10px;
+    border-right: none !important; 
+    pointer-events: none;
+}
+
+.external-event-line {
+    background-color: #9B61F9;
+}
+
+.internal-event-line {
+    background-color: #80EA77;
+}
+
+.empty {
+    background-color: #F2F3F4;
+    color: #A9A9A9;
+}
+
+.today {
+    color: #0C8CE9;
+    font-weight: 600;
+}
+
+.weekend {
+    color: #A9A9A9;
+}

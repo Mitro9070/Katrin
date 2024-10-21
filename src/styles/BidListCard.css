@@ -1,0 +1,81 @@
+.bid-list-card{
+    display: flex;
+    gap: 30px;
+    position: relative;
+}
+
+.bid-list-card-comment{
+    width: 307px;
+    height: 195px;
+    align-self: flex-end;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    box-sizing: border-box;
+    resize: none;
+    padding-top: 7px;
+    padding-left: 20px;
+    font-size: 16px;
+}
+
+.bid-list-card-comment::placeholder{
+    color: #2C2C2C;
+}
+
+.bid-list-card-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 195px;
+    border: 1px solid #0C8CE9;
+    border-radius: 20px;
+    color: #0C8CE9;
+    align-self: flex-end;
+    cursor: pointer;
+}
+
+.bid-list-card-btn:hover{
+    color: #FFFFFF;
+    background-color: #0C8CE9;
+}
+
+.bid-btn-allow, .bid-btn-decline{
+    display: flex;
+    align-items: center;
+    height: 40px;
+    border-radius: 20px;
+    margin-top: 25px;
+    cursor: pointer;
+
+}
+
+.bid-btn-allow{
+    border: 1px solid #419839;
+    color: #419839;
+    padding-left: 8px;
+    gap: 8px;
+    width: 145px;
+    justify-self: flex-end;
+}
+
+.bid-btn-allow img{
+    filter: invert(32%) sepia(96%) saturate(645%) hue-rotate(80deg) brightness(95%) contrast(90%);
+}
+
+.bid-btn-decline{
+    border: 1px solid #C73B3B;
+    color: #C73B3B;
+    width: 120px;
+    justify-self: flex-end;
+}
+
+.bid-btn-decline img{
+    filter: invert(25%) sepia(83%) saturate(628%) hue-rotate(327deg) brightness(85%) contrast(100%);
+}
+
+.icon-container-edit-bid{
+    border-radius: 20px;
+    margin: 25px 0 0 -17px;
+}

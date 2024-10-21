@@ -1,0 +1,54 @@
+.edit-main-menu-push{
+    min-height: 200px;
+    width: 255px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    background-color: #FFFFFF;
+    position: absolute;
+    right: 35px;
+    gap: 15px;
+    align-items: center;
+    z-index: 50;
+}
+
+.edit-main-menu-push-title{
+    font-size: 24px;
+}
+
+.edit-main-checkboxes{
+    display: grid;
+    gap: 10px;
+}
+
+.edit-main-menu-push-ask{
+    display: flex;
+    gap: 10px;
+}
+
+.edit-main-menu-push-ask .edit-main-menu-push-pencil{
+    width: 40px;
+    height: auto;
+    filter: invert(46%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(130%);
+    cursor: pointer;
+}
+
+.edit-main-btn-save{
+    width: 195px;
+    height: 40px;
+    border-radius: 20px;
+    border: 1px solid #0C8CE9;
+    color: #0C8CE9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.edit-main-btn-save:hover{
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+}

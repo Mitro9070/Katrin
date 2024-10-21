@@ -1,0 +1,21 @@
+.footer{
+    width: 1095px;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto auto;
+    font-size: 14px;
+    font-weight: 500;
+    /* position: absolute; */
+    left: 285px;
+    bottom: 30px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.center-column-footer{
+    text-align: center;
+}
+
+.last-column-footer{
+    text-align: end;
+}

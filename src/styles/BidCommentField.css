@@ -1,0 +1,76 @@
+.bid-comment-field{
+    width: 532px;
+    height: 150px;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    position: absolute;
+    left: 565px;
+    top: 72px;
+    background-color: white;
+}
+
+.bid-comments-container{
+    height: 100px;
+    overflow-y: scroll;
+    margin: 10px 10px 0 10px;
+}
+
+@-moz-document url-prefix() {
+    .bid-comments-container {
+        scrollbar-width: thin;
+        scrollbar-color: #A9A9A9 transparent;
+        scrollbar-arrow-color: transparent;
+    }
+}
+
+.bid-comments-container::-webkit-scrollbar {
+    width: 5px;
+}
+.bid-comments-container::-webkit-scrollbar-track {
+background: transparent;
+border: 1px solid #A9A9A9;
+border-radius: 20px;
+}
+.bid-comments-container::-webkit-scrollbar-thumb {
+background-color: #A9A9A9;
+border-radius: 20px;
+border: 3px solid #A9A9A9;
+}
+
+.bid-one-comment-row-1{
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.bid-one-comment-row-1:first-child{
+    font-weight: 500;
+}
+
+.comments-input-container{
+    display: flex;
+}
+
+.comments-input-container input{
+    all: unset;
+    height: 40px;
+    width: 412px !important;
+    margin-left: 10px;
+}
+
+.bid-send-comment-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 110px;
+    border-radius: 20px;
+    border: 1px solid #A9A9A9;
+    cursor: pointer;
+}
+
+.bid-send-comment-btn:hover{
+    border: 1px solid #0C8CE9;
+    color: #0C8CE9;
+}
+

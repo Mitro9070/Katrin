@@ -1,0 +1,37 @@
+.main-page-block-ads{
+    width: 100%;
+    max-height: 114px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.main-page-block-ads-loader{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-page-block-ad{
+    height: 34px;
+    line-height: 34px;
+    font-size: 20px;
+    background-color: rgba(12, 140, 233, 0.1);
+    border-radius: 15px;
+}
+
+.main-page-block-ad p{
+    margin-left: 10px;
+}
+
+.important-ad-string{
+    display: flex;
+    /* width: 1080px; */
+    height: 34px;
+}
+
+.important-ad-string .main-page-block-ad{
+    width: 100%;
+}

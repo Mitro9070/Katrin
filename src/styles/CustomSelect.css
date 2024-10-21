@@ -1,0 +1,19 @@
+.custom-select-container{
+    position: relative;
+}
+
+.custom-select::-ms-expand {
+    display: none;
+}
+
+.custom-select{
+	-moz-appearance: none;
+	-webkit-appearance: none;
+    font-weight: 400;
+    cursor: pointer;
+    background-color: #FFFFFF;
+}
+
+.custom-select-selected{
+    font-weight: 500;
+}

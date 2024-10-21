@@ -1,0 +1,9 @@
+.news-page-content{
+    display: grid;
+    grid-template-columns: auto auto; /* Две колонки одинаковой ширины */
+    gap: 30px;
+}
+
+.news-page-content div{
+    cursor: pointer;
+}

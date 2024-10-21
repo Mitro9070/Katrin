@@ -1,0 +1,32 @@
+.bid-tab-title{
+    font-size: 24px;
+    color: #2C2C2C;
+    margin: 30px 0 15px 0;
+}
+
+.comment-btn{
+    display: flex;
+    width: 152px;
+    height: 40px;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    margin-top: 25px;
+    justify-content: start;
+    align-items: center;
+}
+
+.comment-btn:hover{
+    border: 1px solid #0C8CE9;
+    color: #0C8CE9;
+    cursor: pointer;
+}
+
+.comment-btn:hover img {
+    filter: invert(30%) sepia(100%) saturate(5000%) hue-rotate(190deg) brightness(95%);
+}
+
+.bid-list-conatainer{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

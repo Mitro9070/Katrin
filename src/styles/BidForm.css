@@ -1,0 +1,193 @@
+.bid-form-head{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.bid-form-head{
+   font-size: 20px; 
+}
+
+.bid-form-btn-delete{
+    margin-left: auto;
+}
+
+.bid-form-body{
+    display: grid;
+    gap: 15px;
+}
+
+.bid-form-body-oneline{
+    display: flex;
+    gap: 30px;
+    font-size: 20px;
+    line-height: 40px;
+}
+
+.bid-form-body-oneline-2{
+    gap: 10px;
+}
+
+.bid-form-text-date{
+    margin-left: 20px;
+    margin-right: 5px;
+}
+
+.bid-form-body-oneline-photo{
+    line-height: 24px;
+    gap: 48px;
+    align-items: center;
+}
+
+.bid-form-cover, .bid-form-photoes{
+    display: grid;
+    gap: 5px;
+}
+
+.bid-form-photoes-carousel{
+    overflow: hidden;
+    width: 651px;
+}
+
+.bid-form-photoes-carousel-wrapper{
+    display: flex;
+    gap: 30px;
+    width: 3000px;
+    transition: 0.4s;
+}
+
+.wrapper-bid-form{
+    display: flex;
+    gap: 43px;
+    align-items: center;
+}
+
+.title-bid-form{
+    font-size: 20px;
+}
+
+.files-row, .links-row {
+    display: flex;
+    width: 1095px; /* Ширина контейнера */
+    height: 120px; /* Высота контейнера */
+    overflow-x: auto; /* Горизонтальный скроллинг */
+    overflow-y: hidden; /* Отключаем вертикальный скроллинг */
+    white-space: nowrap; /* Отключаем перенос строк */
+    align-items: center;
+}
+
+@-moz-document url-prefix() {
+    .files-row, .links-row {
+        scrollbar-width: thin;
+        scrollbar-color: #A9A9A9 transparent;
+        scrollbar-arrow-color: transparent;
+    }
+}
+
+.files-row::-webkit-scrollbar, .links-row::-webkit-scrollbar {
+    height: 5px;
+}
+.files-row::-webkit-scrollbar-track, .links-row::-webkit-scrollbar-track {
+background: transparent;
+border: 1px solid #A9A9A9;
+border-radius: 20px;
+}
+.files-row::-webkit-scrollbar-thumb, .links-row::-webkit-scrollbar-thumb {
+background-color: #A9A9A9;
+border-radius: 20px;
+border: 3px solid #A9A9A9;
+}
+
+.links-row{
+    height: 45px;
+}
+
+.files-row > *, .links-row > *, .bid-form-carousel-inner > * {
+    flex-shrink: 0; /* Запрещаем уменьшение элементов */
+    width: 100px; /* Фиксированная ширина для элементов (можно настроить) */
+    margin-right: 30px; /* Отступ между элементами */
+}
+
+.files-row > *, .bid-form-carousel-inner > * {
+    height: 100px; /*Фиксированная высота для элементов (можно настроить) */
+}
+
+.add-filefield, .add-linkfield {
+    cursor: pointer; /* Курсор при наведении */
+    width: 24px;
+    height: auto;
+}
+
+.add-filefield{
+    transform: translateY(-11px);
+}
+
+.bid-form-send-btn{
+    width: 307px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: #0C8CE9;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.bid-form-format-container{
+    display: flex;
+}
+
+.bid-form-format-element{
+    display: flex;
+    gap: 20px;
+    font-size: 16px;
+}
+
+.bid-form-format-element input{
+    height: 1px;
+    width: 1px;
+    opacity: 0;
+}
+
+.bid-form-format-element p{
+    position: relative;
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+.bid-form-format-element p::before{
+    position: absolute;
+    left: -30px;
+    top: 7px;
+    display: inline-block;
+    height: 22px;
+    width: 22px;
+    border: 2px black solid;
+    border-radius: 20px;
+    content: " ";
+}
+
+.bid-form-format-element img{
+    position: absolute;
+    left: -27px;
+    top: 11px;
+    height: 19px;
+    width: 19px;
+    display: none;
+}
+
+.bid-form-format-element input:checked + p img{
+    display: block;
+}
+
+.bid-form-carousel-inner{
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 930px;
+    white-space: nowrap; /* Отключаем перенос строк */
+    align-items: center;
+}

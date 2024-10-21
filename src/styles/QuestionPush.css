@@ -1,0 +1,42 @@
+.question-push{
+    gap: 15px;
+}
+
+.question-push-title{
+    font-size: 24px;
+}
+
+.question-push-question-number{
+    font-size: 20px;
+}
+
+.question-push-from{
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+.btn-question-push-send{
+    margin-top: 15px;
+    width: 420px;
+    height: 40px;
+    background-color: #0C8CE9;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.btn-question-ok{
+    margin-top: 15px;
+    width: 420px;
+    height: 40px;
+    border-radius: 20px;
+    border: 1px solid #0C8CE9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #0C8CE9;
+    cursor: pointer;
+}

@@ -1,0 +1,88 @@
+.menu, .menu-logo, .menu-tabs,
+.menu-tab, .menu-profile{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu {
+    height: 916px;
+    width: 195px;
+    /* border: 1px solid black; */
+    background-color: #F2F3F4;
+    border-radius: 20px;
+    position: absolute;
+    top: 30px;
+    left: 60px;
+}
+
+.menu-logo{
+    margin-top: 30px;
+    justify-content: center;
+    border-radius: 200px;
+    width: 117px;
+    height: 54px;
+    cursor: pointer;
+}
+
+.menu-tabs{
+    margin-top: 74px;
+    gap: 5px;
+}
+
+.menu-tab{
+    /* border: 1px solid black; */
+    border-radius: 20px;
+    height: 40px;
+    width: 165px;
+    /* justify-content: center; */
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    text-align: start;
+    gap: 5px;
+    padding-left: 20px;
+}
+
+.menu-tab:hover{
+    color: #0C8CE9;
+}
+
+.menu-tab img {
+    width: 24px;
+    height: auto;
+}
+
+.menu-tab:hover img, .header-notifications:hover img, .slide-btns img:hover{
+    filter: invert(30%) sepia(100%) saturate(5000%) hue-rotate(190deg) brightness(95%);
+}
+
+.menu-selected-tab, .menu-selected-tab:hover{
+    background-color: #0C8CE9;
+    height: 40px;
+    color: #FFFFFF;
+    font-weight: 500;
+    justify-content: center;
+    padding: 0;
+}
+
+.menu-selected-tab img, .menu-selected-tab:hover img{
+    filter: invert(1) brightness(2);
+}
+
+.menu-profile{
+    margin-top: 423px;
+    border: 1px solid #0C8CE9;
+    border-radius: 200px;
+    height: 40px;
+    width: 165px;
+    justify-content: center;
+    color: #0C8CE9;
+    cursor: pointer;
+}
+
+.menu-profile:hover{
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+}

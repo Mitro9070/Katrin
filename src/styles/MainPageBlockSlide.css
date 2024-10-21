@@ -1,0 +1,83 @@
+.block-slide-loader{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.block-slide .wrapper{
+    overflow: visible;
+}
+
+/* .block-slide .wrapper .content p{
+    width: 100%;
+} */
+
+.block-slide .wrapper .content{
+    gap: 0px;
+}
+
+.datatime-slide, .hashtage-slide{
+    font-weight: 500;
+}
+
+.title-slide{
+    font-size: 20px;
+}
+
+.event-type-slide{
+    margin-top: 48px;
+    font-style: italic;
+    /* position: absolute; */
+    bottom: -5px;
+}
+
+.slide-btns{
+    /* position: absolute; */
+    right: 0;
+    bottom: 0;
+    cursor: pointer;
+}
+
+.block-slide-arrow-left{
+    transform: rotate(180deg);
+}
+
+.block-slide-img-container{
+    max-width: 208px;
+    max-height: 208px;
+    border-radius: 20px;
+    overflow: hidden;
+    /* position: absolute; */
+    left: 59px;
+    top: 0px;
+}
+
+.block-slide-img-container img{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.description-slide, .title-slide-news, .title-slide-events {
+    display: -webkit-box;         /* Для работы с многоточием */
+    -webkit-line-clamp: 6;        /* Ограничиваем текст тремя строками */
+    -webkit-box-orient: vertical; /* Ориентация для выравнивания текста */
+    overflow: hidden;             /* Скрыть текст, который не помещается */
+    text-overflow: ellipsis;      /* Добавить многоточие для обрезанного текста */
+}
+
+.title-slide-news{
+    -webkit-line-clamp: 2;        /* Ограничиваем текст тремя строками */
+}
+
+.title-slide-events{
+    -webkit-line-clamp: 5;        /* Ограничиваем текст тремя строками */
+}
+
+.hashtage-slide, .event-type-slide{
+    margin-top: 10px !important;
+    gap: 10px;
+}
+
+/* photo ? '310px' : '237px'  */

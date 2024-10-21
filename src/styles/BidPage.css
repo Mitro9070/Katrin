@@ -1,0 +1,66 @@
+.bid-page-head{
+    display: flex;
+    gap: 30px;
+}
+
+.bid-page-head-2 {
+    display: flex;
+    width: 100%;
+}
+
+.filter, .archive {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 110px;
+    height: 40px;
+}
+
+.filter-worked{
+    cursor: pointer;
+    justify-content: center;
+}
+
+.archive{
+    margin-left: auto;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.archive-active{
+    border-radius: 20px;
+    color: #FFFFFF;
+    background-color: #0C8CE9;
+}
+
+.archive-active img{
+    filter: invert(1) brightness(2);
+}
+
+.bid-page-head-tab{
+    width: 345px;
+    height: 43px;
+    font-size: 32px;
+    border-bottom: 1px solid #A9A9A9;
+    cursor: pointer;
+    margin-bottom: 30px;
+}
+
+.bid-page-head-tab-selected {
+    color: #0C8CE9;
+    border-bottom: 1px solid #0C8CE9;
+}
+
+.bid-page-btn-add{
+    width: 307px;
+    height: 40px;
+    margin-left: 38px;
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    cursor: pointer;
+}

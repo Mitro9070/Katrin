@@ -1,0 +1,21 @@
+.loader {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    background: linear-gradient(0deg, #0C8CE9 0%, #0C8CE9 50%, #A9A9A9 51%, #A9A9A9 100%); /* Change from 90deg to 180deg for vertical gradient */
+    background-size: 100% 400%; /* Adjust to move vertically */
+    animation: l10 5s infinite cubic-bezier(0.3, 1, 0, 1);
+    -webkit-mask-image: url('../images/printer.svg'); /* Путь к SVG */
+    mask-image: url('../images/printer.svg'); 
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+@keyframes l10 {
+    50% { background-position: 0 calc(-1 * 100% / 3); } /* Change background-position to scroll vertically */
+    100% { background-position: 0 calc(-3 * 100% / 3); }
+}

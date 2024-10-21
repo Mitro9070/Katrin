@@ -1,0 +1,198 @@
+@font-face {
+    font-family: 'PF DinText Pro ExtraThin';
+    src: url('PFDinTextPro-ExtraThin.woff2') format('woff2'),
+        url('PFDinTextPro-ExtraThin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Bold.woff2') format('woff2'),
+        url('PFDinTextPro-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-MediumItalic.woff2') format('woff2'),
+        url('PFDinTextPro-MediumItalic.woff') format('woff');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Medium.woff2') format('woff2'),
+        url('PFDinTextPro-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Thin.woff2') format('woff2'),
+        url('PFDinTextPro-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Italic.woff2') format('woff2'),
+        url('PFDinTextPro-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Regular.woff2') format('woff2'),
+        url('PFDinTextPro-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-BoldItalic.woff2') format('woff2'),
+        url('PFDinTextPro-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-LightItalic.woff2') format('woff2'),
+        url('PFDinTextPro-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-BoldItalic.woff2') format('woff2'),
+        url('PFDinTextPro-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Italic.woff2') format('woff2'),
+        url('PFDinTextPro-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-Light.woff2') format('woff2'),
+        url('PFDinTextPro-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro ExtraThin';
+    src: url('PFDinTextPro-ExtraThinItalic.woff2') format('woff2'),
+        url('PFDinTextPro-ExtraThinItalic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro';
+    src: url('PFDinTextPro-ThinItalic.woff2') format('woff2'),
+        url('PFDinTextPro-ThinItalic.woff') format('woff');
+    font-weight: 100;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-Bold.woff2') format('woff2'),
+        url('PFDinTextUniversal-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-Medium.woff2') format('woff2'),
+        url('PFDinTextUniversal-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF DinText Pro Extra';
+    src: url('PFDinTextPro-ExtraBlackItalic.woff2') format('woff2'),
+        url('PFDinTextPro-ExtraBlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-Thin.woff2') format('woff2'),
+        url('PFDinTextUniversal-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-Light.woff2') format('woff2'),
+        url('PFDinTextUniversal-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-ExtraThin.woff2') format('woff2'),
+        url('PFDinTextUniversal-ExtraThin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal-ExtraBlack.woff2') format('woff2'),
+        url('PFDinTextUniversal-ExtraBlack.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PF Din Text Universal';
+    src: url('PFDinTextUniversal.woff2') format('woff2'),
+        url('PFDinTextUniversal.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

@@ -1,0 +1,36 @@
+.notification-push{
+    position: absolute;
+    width: 525px;
+    min-height: 200px;
+    padding-top: 30px;
+    padding-bottom: 32px;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    border: 1px #a9a9a9 solid;
+    z-index: 50;
+    top: 50px;
+    right: -2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-push-title{
+    font-size: 24px;
+}
+
+.notification-push-checkboxes{
+    width: 414px;
+    height: 109px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-row: auto auto;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.notification-push-description{
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
