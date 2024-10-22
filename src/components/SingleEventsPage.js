@@ -1,8 +1,8 @@
 import '../styles/SingleEventsPage.css';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { eventsStore } from '../stores/EventsStore';
+import { bidContentStore } from '../stores/BidContentStore';
 import MainContentSinglePage from './MainContentSinglePage';
 import Footer from './Footer';
 import NotFoundPage from './NotFoundPage';
@@ -18,8 +18,8 @@ const SingleEventsPage = observer(() => {
     useEffect(() => {
         async function fetchEvent() {
             try {
-                await eventsStore.fetchData(); // Асинхронная загрузка данных
-                const fetchedEvent = eventsStore.getEventById(id);
+                await bidContentStore.fetchEvents(); // Асинхронная загрузка данных
+                const fetchedEvent = bidContentStore.getBidById(id);
                 if (fetchedEvent) {
                     setEvent(fetchedEvent);
                 } else {

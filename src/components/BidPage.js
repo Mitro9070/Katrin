@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { action } from 'mobx';
 import { navigationStore } from '../stores/NavigationStore';
 import { newsContentStore } from '../stores/NewsContentStore';
+import { bidContentStore } from '../stores/BidContentStore';
 
 import imgArchiveIcon from '../images/archive.svg';
 import imgFilterIcon from '../images/filter.svg';
@@ -23,26 +24,52 @@ const BidPage = observer(() => {
     useEffect(() => {
         setBidCurrentTab(navigationStore.currentBidTab);
         console.log(navigationStore.currentBidTab);
-        newsContentStore.fetchData();
+        if (navigationStore.currentBidTab === 'News') {
+            newsContentStore.fetchData();
+        } else if (navigationStore.currentBidTab === 'Events') {
+            bidContentStore.fetchData();
+        }
     }, []);
 
     const changeCurrentBidTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setBidCurrentTab(selectedTab);
         navigationStore.setCurrentBidTab(selectedTab);
+        if (selectedTab === 'News') {
+            newsContentStore.fetchData();
+        } else if (selectedTab === 'Events') {
+            bidContentStore.fetchData();
+        }
     };
 
     const handleStatusChange = action(async (id, newStatus, comment = '') => {
-        const newsItem = newsContentStore.getNewsById(id);
-        newsItem.status = newStatus;
-        if (comment) {
-            if (!newsItem.comments) {
-                newsItem.comments = [];
+        try {
+            if (BidCurrentTab === 'News') {
+                const newsItem = newsContentStore.getNewsById(id);
+                newsItem.status = newStatus;
+                if (comment) {
+                    if (!newsItem.comments) {
+                        newsItem.comments = [];
+                    }
+                    newsItem.comments.push(comment);
+                }
+                await newsContentStore.updateNews(id, newsItem);
+                newsContentStore.fetchData();
+            } else if (BidCurrentTab === 'Events') {
+                const bidItem = bidContentStore.getWithId(BidCurrentTab, id)[0];
+                bidItem.status = newStatus;
+                if (comment) {
+                    if (!bidItem.comments) {
+                        bidItem.comments = [];
+                    }
+                    bidItem.comments.push(comment);
+                }
+                await bidContentStore.updateBid(id, bidItem);
+                bidContentStore.fetchData();
             }
-            newsItem.comments.push(comment);
+        } catch (error) {
+            console.error("Ошибка при изменении статуса:", error);
         }
-        await newsContentStore.updateNews(id, newsItem);
-        newsContentStore.fetchData();
     });
 
     const renderNews = (status) => {
@@ -90,6 +117,51 @@ const BidPage = observer(() => {
         ));
     };
 
+    const renderEvents = (status) => {
+        return bidContentStore.getWithStatus(BidCurrentTab, status).map(bid => (
+            <div key={bid.id} className="news-card">
+                <StandartCard
+                    status={bid.status}
+                    publicDate={bid.postData}
+                    title={bid.title}
+                    text={bid.text}
+                    images={bid.images}
+                />
+                <div className="news-card-comment">
+                    <CustomInput
+                        width='100%'
+                        placeholder='Добавить комментарий'
+                        onBlur={(e) => handleStatusChange(bid.id, bid.status, e.target.value)}
+                    />
+                </div>
+                <div className="news-card-actions">
+                    {status === 'На модерации' && (
+                        <>
+                            <button className="approve-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
+                                <img src={imgCheckIcon} alt="Одобрить" />
+                                Одобрить заявку
+                            </button>
+                            <button className="reject-btn" onClick={() => handleStatusChange(bid.id, 'Отклонено')}>
+                                <img src={imgTrashIcon} alt="Отклонить" />
+                                Отклонить заявку
+                            </button>
+                        </>
+                    )}
+                    {status === 'Одобрено' && (
+                        <button className="publish-btn" onClick={() => handleStatusChange(bid.id, 'Опубликовано')}>
+                            Опубликовать
+                        </button>
+                    )}
+                    {status === 'Опубликовано' && (
+                        <button className="view-btn" onClick={() => window.open(bid.link, '_blank')}>
+                            Посмотреть событие
+                        </button>
+                    )}
+                </div>
+            </div>
+        ));
+    };
+
     return (
         <div className="bid-page page-content">
             <div className="bid-page-head noselect">
@@ -129,13 +201,13 @@ const BidPage = observer(() => {
                 {BidCurrentTab === 'Events' && !IsAddPage && (
                     <>
                         <h2>Новые заявки</h2>
-                        {renderNews('На модерации')}
+                        {renderEvents('На модерации')}
                         <h2>Одобренные заявки</h2>
-                        {renderNews('Одобрено')}
-                        <h2>Опубликованные новости</h2>
-                        {renderNews('Опубликовано')}
+                        {renderEvents('Одобрено')}
+                        <h2>Опубликованные события</h2>
+                        {renderEvents('Опубликовано')}
                         <h2>Отклоненные заявки</h2>
-                        {renderNews('Отклонено')}
+                        {renderEvents('Отклонено')}
                     </>
                 )}
                 {BidCurrentTab === 'News' && IsAddPage && (
