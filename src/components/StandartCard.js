@@ -36,9 +36,7 @@ function StandartCard({ status, eventType, publicDate, title, text, images, isEv
     return (
         <div className="standart-card">
             <div className="bid-list-card-info-bar">
-                {!isEvents && (
-                    <p className="bid-card-info-bar-status">{status}</p>
-                )}
+             
                 <div className="bid-list-info-bar-card-column-2">
                     {!isEvents && (
                         <p className="bid-card-info-bar-event-type"><i>{eventType}</i></p>

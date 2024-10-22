@@ -9,12 +9,13 @@ import imgArchiveIcon from '../images/archive.svg';
 import imgFilterIcon from '../images/filter.svg';
 import imgCheckIcon from '../images/checkmark.svg'; // Импортируем иконку
 import imgTrashIcon from '../images/trash.svg'; // Импортируем иконку
+import imgViewIcon from '../images/view.png'; // Импортируем иконку просмотра
 
 import '../styles/BidPage.css';
 import BidForm from './BidForm';
 import Footer from './Footer';
 import StandartCard from '../components/StandartCard';
-import CustomInput from '../components/CustomInput';
+import CommentInput from '../components/CommentInput';
 
 const BidPage = observer(() => {
     const [IsAddPage, setIsAddPage] = useState(false);
@@ -74,7 +75,7 @@ const BidPage = observer(() => {
 
     const renderNews = (status) => {
         return newsContentStore.News.filter(news => news.status === status).map(news => (
-            <div key={news.id} className="news-card">
+            <div key={news.id} className="news-card-container">
                 <StandartCard
                     status={news.status}
                     publicDate={news.postData}
@@ -83,8 +84,7 @@ const BidPage = observer(() => {
                     images={news.images}
                 />
                 <div className="news-card-comment">
-                    <CustomInput
-                        width='100%'
+                    <CommentInput
                         placeholder='Добавить комментарий'
                         onBlur={(e) => handleStatusChange(news.id, news.status, e.target.value)}
                     />
@@ -94,22 +94,24 @@ const BidPage = observer(() => {
                         <>
                             <button className="approve-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
-                                Одобрить заявку
+                                <span>Одобрить заявку</span>
                             </button>
                             <button className="reject-btn" onClick={() => handleStatusChange(news.id, 'Отклонено')}>
                                 <img src={imgTrashIcon} alt="Отклонить" />
-                                Отклонить заявку
+                                <span>Отклонить заявку</span>
                             </button>
                         </>
                     )}
                     {status === 'Одобрено' && (
                         <button className="publish-btn" onClick={() => handleStatusChange(news.id, 'Опубликовано')}>
-                            Опубликовать
+                            <img src={imgCheckIcon} alt="Опубликовать" />
+                            <span>Опубликовать</span>
                         </button>
                     )}
                     {status === 'Опубликовано' && (
                         <button className="view-btn" onClick={() => window.open(news.link, '_blank')}>
-                            Посмотреть новость
+                            <img src={imgViewIcon} alt="Посмотреть" />
+                            <span>Посмотреть новость</span>
                         </button>
                     )}
                 </div>
@@ -119,7 +121,7 @@ const BidPage = observer(() => {
 
     const renderEvents = (status) => {
         return bidContentStore.getWithStatus(BidCurrentTab, status).map(bid => (
-            <div key={bid.id} className="news-card">
+            <div key={bid.id} className="news-card-container">
                 <StandartCard
                     status={bid.status}
                     publicDate={bid.postData}
@@ -128,8 +130,7 @@ const BidPage = observer(() => {
                     images={bid.images}
                 />
                 <div className="news-card-comment">
-                    <CustomInput
-                        width='100%'
+                    <CommentInput
                         placeholder='Добавить комментарий'
                         onBlur={(e) => handleStatusChange(bid.id, bid.status, e.target.value)}
                     />
@@ -139,22 +140,24 @@ const BidPage = observer(() => {
                         <>
                             <button className="approve-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
-                                Одобрить заявку
+                                <span>Одобрить заявку</span>
                             </button>
                             <button className="reject-btn" onClick={() => handleStatusChange(bid.id, 'Отклонено')}>
                                 <img src={imgTrashIcon} alt="Отклонить" />
-                                Отклонить заявку
+                                <span>Отклонить заявку</span>
                             </button>
                         </>
                     )}
                     {status === 'Одобрено' && (
                         <button className="publish-btn" onClick={() => handleStatusChange(bid.id, 'Опубликовано')}>
-                            Опубликовать
+                            <img src={imgCheckIcon} alt="Опубликовать" />
+                            <span>Опубликовать</span>
                         </button>
                     )}
                     {status === 'Опубликовано' && (
                         <button className="view-btn" onClick={() => window.open(bid.link, '_blank')}>
-                            Посмотреть событие
+                            <img src={imgViewIcon} alt="Посмотреть" />
+                            <span>Посмотреть событие</span>
                         </button>
                     )}
                 </div>
