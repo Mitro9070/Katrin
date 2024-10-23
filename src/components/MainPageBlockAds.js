@@ -17,31 +17,14 @@ function MainPageBlockAds() {
         async function fetchData() {
             try {
                 await newsContentStore.fetchData(); // Ждём завершения загрузки данных
-                let allAds = newsContentStore.getNewsByType('Объявления');
+                let allAds = newsContentStore.News.filter(news => news.elementType === 'Объявления' && news.status === 'Опубликовано');
                 
                 const currentDate = new Date();
 
                 // Разделяем объявления на важные и обычные
-                setImportantAds(allAds.filter((ad) => {
-                    // Проверяем наличие поля displayUpTo
-                    if (ad.displayUpTo) {
-                        const displayUpToDate = new Date(ad.displayUpTo); 
-                        // Если есть displayUpTo, фильтруем по fixed или по displayUpTo <= текущей дате
-                        return ad.fixed || (displayUpToDate >= currentDate);
-                    }
-                    // Если displayUpTo нет, то только по fixed
-                    return ad.fixed;
-                }));
+                setImportantAds(allAds.filter((ad) => ad.fixed));
 
-                setAds(allAds.filter((ad) => {
-                    if (ad.displayUpTo) {
-                        const displayUpToDate = new Date(ad.displayUpTo); 
-                        // Если есть displayUpTo, то объявление обычное, если displayUpTo > текущей даты и не fixed
-                        return !ad.fixed && displayUpToDate < currentDate;
-                    }
-                    // Если displayUpTo нет, объявление обычное, если не fixed
-                    return !ad.fixed;
-                }));
+                setAds(allAds.filter((ad) => !ad.fixed));
             } catch (err) {
                 setError('Не удалось загрузить данные');
             } finally {
@@ -83,4 +66,3 @@ function MainPageBlockAds() {
 }
 
 export default MainPageBlockAds;
-

@@ -4,7 +4,7 @@ import imgSettingsIcon from '../images/settings.svg'
 function MainPageBlockList({name, list, plug=true}) {
 
     let content = list.map((element, index) => (
-        <div className="content-block-list-row">
+        <div className="content-block-list-row" key={index}>
             <p className={`block-list-content-title ${index>0 ? "block-list-content-title-nofirst" : ""}`}>{element.title}</p>
             <p className="block-list-content-subtitle">{element.subtitle}</p>
             <p className="block-list-content-description">{element.description}</p>

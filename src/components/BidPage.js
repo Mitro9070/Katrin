@@ -171,7 +171,7 @@ const BidPage = observer(() => {
                                     <span>Посмотреть событие</span>
                                 </Link>
                             </button>
-                            <button className="unpublish-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
+                            <button className="view-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
                                 <img src={imgTrashIcon} alt="Снять с публикации" />
                                 <span>Снять с публикации</span>
                             </button>
