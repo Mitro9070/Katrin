@@ -34,13 +34,13 @@ const NewsPage = observer(() => {
         });
 
         if (type) {
-            return sortedNews.filter(news => news.elementType === type).map(e => (
+            return sortedNews.filter(news => news.elementType === type && news.status === 'Опубликовано').map(e => (
                 <Link to={`/news/${e.id}`} key={e.id}>
                     <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
                 </Link>
             ));
         } else {
-            return sortedNews.map(e => (
+            return sortedNews.filter(news => news.status === 'Опубликовано').map(e => (
                 <Link to={`/news/${e.id}`} key={e.id}>
                     <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
                 </Link>
@@ -64,6 +64,33 @@ const NewsPage = observer(() => {
         ));
     };
 
+    const renderAll = () => {
+        const sortedNews = [...newsContentStore.News].sort((a, b) => {
+            if (!a.postData) return 1;
+            if (!b.postData) return -1;
+            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
+                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
+        }).filter(news => news.status === 'Опубликовано');
+
+        const sortedEvents = [...bidContentStore.EventsBids].sort((a, b) => {
+            if (!a.postData) return 1;
+            if (!b.postData) return -1;
+            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
+                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
+        }).filter(event => event.status === 'Опубликовано');
+
+        const combined = [...sortedNews, ...sortedEvents].sort((a, b) => {
+            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
+                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
+        });
+
+        return combined.map(e => (
+            <Link to={`/${e.elementType === 'Мероприятия' ? 'events' : 'news'}/${e.id}`} key={e.id}>
+                <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
+            </Link>
+        ));
+    };
+
     return (
         <div className="page-content news-page">
             <div className="bid-page-head noselect">
@@ -74,7 +101,7 @@ const NewsPage = observer(() => {
             </div>
             <div className="news-page-content">
                 {currentTab !== 'All' && currentTab !== 'Activity' && renderNews(newsTypeList[currentTab])}
-                {currentTab === 'All' && renderNews()}
+                {currentTab === 'All' && renderAll()}
                 {currentTab === 'Activity' && renderEvents()}
             </div>
         </div>

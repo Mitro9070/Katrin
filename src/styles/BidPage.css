@@ -137,6 +137,15 @@
   color: black;
 }
 
+.unpublish-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.unpublish-btn:hover {
+  background-color: #da190b;
+}
+
 .view-btn:hover {
   background-color: #ddd;
 }

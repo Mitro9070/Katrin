@@ -110,12 +110,18 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <button className="view-btn">
-                            <Link to={`/news/${news.id}`} >
-                                <img src={imgViewIcon} alt="Посмотреть" />
-                                <span>Посмотреть новость</span>
-                            </Link>
-                        </button>
+                        <>
+                            <button className="view-btn">
+                                <Link to={`/news/${news.id}`} >
+                                    <img src={imgViewIcon} alt="Посмотреть" />
+                                    <span>Посмотреть новость</span>
+                                </Link>
+                            </button>
+                            <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
+                                <img src={imgTrashIcon} alt="Снять с публикации" />
+                                <span>Снять с публикации</span>
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
@@ -158,12 +164,18 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <button className="view-btn">
-                            <Link to={`/events/${bid.id}`} className="link-btn">
-                                <img src={imgViewIcon} alt="Посмотреть" />
-                                <span>Посмотреть событие</span>
-                            </Link>
-                        </button>
+                        <>
+                            <button className="view-btn">
+                                <Link to={`/events/${bid.id}`} >
+                                    <img src={imgViewIcon} alt="Посмотреть" />
+                                    <span>Посмотреть событие</span>
+                                </Link>
+                            </button>
+                            <button className="unpublish-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
+                                <img src={imgTrashIcon} alt="Снять с публикации" />
+                                <span>Снять с публикации</span>
+                            </button>
+                        </>
                     )}
                 </div>
             </div>
