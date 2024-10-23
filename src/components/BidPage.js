@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { action } from 'mobx';
+import { Link } from 'react-router-dom';
 import { navigationStore } from '../stores/NavigationStore';
 import { newsContentStore } from '../stores/NewsContentStore';
 import { bidContentStore } from '../stores/BidContentStore';
@@ -109,10 +110,10 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <button className="view-btn" onClick={() => window.open(news.link, '_blank')}>
+                        <Link to={`/news/${news.id}`} className="view-btn">
                             <img src={imgViewIcon} alt="Посмотреть" />
                             <span>Посмотреть новость</span>
-                        </button>
+                        </Link>
                     )}
                 </div>
             </div>
@@ -155,10 +156,10 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <button className="view-btn" onClick={() => window.open(bid.link, '_blank')}>
+                        <Link to={`/events/${bid.id}`} className="view-btn">
                             <img src={imgViewIcon} alt="Посмотреть" />
                             <span>Посмотреть событие</span>
-                        </button>
+                        </Link>
                     )}
                 </div>
             </div>

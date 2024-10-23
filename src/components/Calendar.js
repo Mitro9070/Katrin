@@ -2,22 +2,66 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Calendar.css';
 import goArrowRight from '../images/go-arrow.svg';
 import { navigationStore } from '../stores/NavigationStore';
-import { eventsStore } from '../stores/EventsStore';
-import { observer } from 'mobx-react-lite';
+import { database } from "../firebaseConfig";
+import { ref, get } from "firebase/database";
 
-const Calendar = observer(() => {
+const Calendar = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [events, setEvents] = useState([]);
     const todayDate = new Date();
 
     useEffect(() => {
         navigationStore.setCurrentEventsDate(`${todayDate.getDate()}.${todayDate.getMonth() + 1}.${todayDate.getFullYear()}`);
-    }, [todayDate]);
+        fetchEvents();
+    }, []);
 
-    console.log(currentDate.getMonth() + 1);
-    console.log(currentDate.getFullYear());
-    console.log(currentDate.getDate());
+    const fetchEvents = async () => {
+        try {
+            const eventsRef = ref(database, 'Events');
+            const snapshot = await get(eventsRef);
+            if (snapshot.exists()) {
+                const eventsData = [];
+                snapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    if (item.status === 'Опубликовано') {
+                        eventsData.push({
+                            ...item,
+                            id: childSnapshot.key
+                        });
+                    }
+                });
+                setEvents(eventsData);
+                console.log("Полученные события из Firebase:", eventsData);
+            } else {
+                console.log("Данные отсутствуют.");
+            }
+        } catch (error) {
+            console.error("Ошибка при получении данных:", error);
+        }
+    };
 
-    const eventDays = eventsStore.getEventsDates();
+    console.log("Текущий месяц:", currentDate.getMonth() + 1);
+    console.log("Текущий год:", currentDate.getFullYear());
+    console.log("Текущий день:", currentDate.getDate());
+
+    // Разделение событий на внутренние и внешние
+    const eventDays = {
+        internal: [],
+        external: []
+    };
+
+    events.forEach(event => {
+        const date = event.postData.split(',')[0].split('.').reverse().join('-');
+        if (event.elementType === 'Внутреннее событие') {
+            eventDays.internal.push(date);
+        } else if (event.elementType === 'Внешнее событие') {
+            eventDays.external.push(date);
+        }
+    });
+
+    console.log("Внутренние события в календарь:", eventDays.internal);
+    console.log("Внешние события в календарь:", eventDays.external);
+    console.log("Даты событий в календарь:", eventDays);
 
     const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
@@ -61,12 +105,15 @@ const Calendar = observer(() => {
                     ))}
                 </div>
                 <div className='calendar-days'>
+                    {/* Заполнение пустых ячеек до начала месяца */}
                     {[...Array(startDay).keys()].map((_, index) => (
                         <div key={index} className="empty"></div>
                     ))}
+                    {/* Отрисовка дней месяца */}
                     {daysInMonth.map((day, index) => {
-                        let hasInternalEvent = false;
-                        let hasExternalEvent = false;
+                        const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const hasInternalEvent = eventDays.internal.includes(dateString);
+                        const hasExternalEvent = eventDays.external.includes(dateString);
 
                         return (
                             <div
@@ -76,25 +123,12 @@ const Calendar = observer(() => {
                                 onClick={onDateClickHandler}
                             >
                                 {day}
-                                {eventDays.internal.map((date, index) => {
-                                    let newDate = date.split('.');
-                                    if (newDate[0] === String(day) && newDate[1] === String(currentDate.getMonth() + 1) && newDate[2] === String(currentDate.getFullYear()) && !hasInternalEvent) {
-                                        hasInternalEvent = true;
-                                        return <div key={index} className="event-line internal-event-line"></div>;
-                                    }
-                                    return null;
-                                })}
-                                {eventDays.external.map((date, index) => {
-                                    let newDate = date.split('.');
-                                    if (newDate[0] === String(day) && newDate[1] === String(currentDate.getMonth() + 1) && newDate[2] === String(currentDate.getFullYear()) && !hasExternalEvent) {
-                                        hasExternalEvent = true;
-                                        return <div key={index} className="event-line external-event-line"></div>;
-                                    }
-                                    return null;
-                                })}
+                                {hasInternalEvent && <div className="event-line internal-event-line"></div>}
+                                {hasExternalEvent && <div className="event-line external-event-line"></div>}
                             </div>
                         );
                     })}
+                    {/* Заполнение пустых ячеек после окончания месяца */}
                     {[...Array(35 - (startDay + daysInMonth.length) >= 0 ? 35 - (startDay + daysInMonth.length) : 42 - (startDay + daysInMonth.length)).keys()].map((_, index) => (
                         <div key={index} className="empty">{index + 1}</div>
                     ))}
@@ -102,6 +136,6 @@ const Calendar = observer(() => {
             </div>
         </div>
     );
-});
+};
 
 export default Calendar;

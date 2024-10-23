@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { navigationStore } from '../stores/NavigationStore';
 import { newsContentStore } from '../stores/NewsContentStore';
+import { bidContentStore } from '../stores/BidContentStore';
 import StandartCard from './StandartCard';
 
 const NewsPage = observer(() => {
@@ -12,6 +13,7 @@ const NewsPage = observer(() => {
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentNewsTab);
         newsContentStore.fetchData();
+        bidContentStore.fetchData();
     }, []);
 
     const newsTypeList = { 'Ads': 'Объявления', 'Devices': 'Устройства и ПО', 'Activity': 'Мероприятия' };
@@ -46,6 +48,22 @@ const NewsPage = observer(() => {
         }
     };
 
+    const renderEvents = () => {
+        // Сортируем события: сначала по дате (новые впереди), затем без даты в конце
+        const sortedEvents = [...bidContentStore.EventsBids].sort((a, b) => {
+            if (!a.postData) return 1;
+            if (!b.postData) return -1;
+            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
+                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
+        });
+
+        return sortedEvents.filter(event => event.status === 'Опубликовано').map(e => (
+            <Link to={`/events/${e.id}`} key={e.id}>
+                <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
+            </Link>
+        ));
+    };
+
     return (
         <div className="page-content news-page">
             <div className="bid-page-head noselect">
@@ -55,8 +73,9 @@ const NewsPage = observer(() => {
                 <p className={`bid-page-head-tab ${currentTab === 'Activity' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Activity" onClick={onTabClickHandler}>Мероприятия</p>
             </div>
             <div className="news-page-content">
-                {currentTab !== 'All' && renderNews(newsTypeList[currentTab])}
+                {currentTab !== 'All' && currentTab !== 'Activity' && renderNews(newsTypeList[currentTab])}
                 {currentTab === 'All' && renderNews()}
+                {currentTab === 'Activity' && renderEvents()}
             </div>
         </div>
     );

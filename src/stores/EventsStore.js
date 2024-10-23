@@ -52,6 +52,27 @@ class EventsStore {
     getEventById(id){
         return this.Events.filter(e => e.id === id)[0]
     }
+
+    getEventsDates() {
+        const internal = [];
+        const external = [];
+
+        this.Events.forEach(event => {
+            if (event.status === 'Опубликовано') {
+                const date = event.start_date.split('T')[0].split('-').reverse().join('.');
+                if (event.elementType === 'Внутреннее событие') {
+                    internal.push(date);
+                } else if (event.elementType === 'Внешнее событие') {
+                    external.push(date);
+                }
+            }
+        });
+
+        console.log("Внутренние события:", internal);
+        console.log("Внешние события:", external);
+
+        return { internal, external };
+    }
 }
 
 export const eventsStore = new EventsStore();
