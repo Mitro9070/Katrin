@@ -110,10 +110,12 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <Link to={`/news/${news.id}`} className="view-btn">
-                            <img src={imgViewIcon} alt="Посмотреть" />
-                            <span>Посмотреть новость</span>
-                        </Link>
+                        <button className="view-btn">
+                            <Link to={`/news/${news.id}`} >
+                                <img src={imgViewIcon} alt="Посмотреть" />
+                                <span>Посмотреть новость</span>
+                            </Link>
+                        </button>
                     )}
                 </div>
             </div>
@@ -156,10 +158,12 @@ const BidPage = observer(() => {
                         </button>
                     )}
                     {status === 'Опубликовано' && (
-                        <Link to={`/events/${bid.id}`} className="view-btn">
-                            <img src={imgViewIcon} alt="Посмотреть" />
-                            <span>Посмотреть событие</span>
-                        </Link>
+                        <button className="view-btn">
+                            <Link to={`/events/${bid.id}`} className="link-btn">
+                                <img src={imgViewIcon} alt="Посмотреть" />
+                                <span>Посмотреть событие</span>
+                            </Link>
+                        </button>
                     )}
                 </div>
             </div>
