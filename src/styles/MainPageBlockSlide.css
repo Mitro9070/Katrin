@@ -87,6 +87,7 @@
 .block-slide-text {
     padding: 0 15px;
     overflow-y: auto;
+    overflow-x: hidden; /* Скрыть горизонтальный скролл */
 }
 
 .datatime-slide, .hashtage-slide {
@@ -116,6 +117,7 @@
     font-weight: 400;
     line-height: normal;
     margin-top: 10px;
+    width: 262px;
 }
 
 .tags-slide {

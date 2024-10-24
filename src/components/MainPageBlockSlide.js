@@ -72,7 +72,6 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                                 flexDirection: isNews ? 'row' : 'column', // Изменение направления при наличии фото
                                 flex: '0 0 auto',
                                 height: 'auto', // Высота каждой карточки
-                                scrollSnapType: 'y mandatory', // Скролл с "магнитом" по вертикали
                                 scrollSnapAlign: 'start', // Притягивание к началу блока
                             }}
                         >
@@ -82,24 +81,15 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                                 </div>
                             )}
                             <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
-                                <p className="datatime-slide">{isNews ? item.postData : item.eventDate}</p>
+                                <p className="datatime-slide">{isNews ? item.postData : item.start_date}</p>
                                 <p className={`title-slide title-slide-${isNews ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                {isNews && (
-                                    <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0' }}>
-                                        {item.text ? extractTextFromHTML(item.text) : ''}
+                                <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0', width: isNews ? 'auto' : '262px' }}>
+                                    {item.text ? extractTextFromHTML(item.text) : ''}
+                                </p>
+                                {!isNews && item.tags && (
+                                    <p className="tags-slide">
+                                        {item.tags.join(', ')}
                                     </p>
-                                )}
-                                {!isNews && (
-                                    <>
-                                        <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}>
-                                            {item.text ? extractTextFromHTML(item.text) : ''}
-                                        </p>
-                                        {item.tags && (
-                                            <p className="tags-slide">
-                                                {item.tags.join(', ')}
-                                            </p>
-                                        )}
-                                    </>
                                 )}
                             </div>
                         </div>
