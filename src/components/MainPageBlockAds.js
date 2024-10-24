@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { newsContentStore } from '../stores/NewsContentStore';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebaseConfig';
 import { Link } from 'react-router-dom';
 
 import '../styles/MainPageBlockAds.css';
@@ -8,7 +9,6 @@ import imgFixedIcon from '../images/fixed.svg';
 import Loader from "./Loader";
 
 function MainPageBlockAds() {
-    const [ads, setAds] = useState([]);
     const [importantAds, setImportantAds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,15 +16,41 @@ function MainPageBlockAds() {
     useEffect(() => {
         async function fetchData() {
             try {
-                await newsContentStore.fetchData(); // Ждём завершения загрузки данных
-                let allAds = newsContentStore.News.filter(news => news.elementType === 'Объявления' && news.status === 'Опубликовано');
-                
-                const currentDate = new Date();
+                const newsRef = ref(database, 'News');
+                const eventsRef = ref(database, 'Events');
 
-                // Разделяем объявления на важные и обычные
-                setImportantAds(allAds.filter((ad) => ad.fixed));
+                const [newsSnapshot, eventsSnapshot] = await Promise.all([
+                    get(newsRef),
+                    get(eventsRef)
+                ]);
 
-                setAds(allAds.filter((ad) => !ad.fixed));
+                const importantAds = [];
+
+                if (newsSnapshot.exists()) {
+                    newsSnapshot.forEach((childSnapshot) => {
+                        const item = childSnapshot.val();
+                        if (item.status === 'Опубликовано' && item.fixed) {
+                            importantAds.push({
+                                ...item,
+                                id: childSnapshot.key
+                            });
+                        }
+                    });
+                }
+
+                if (eventsSnapshot.exists()) {
+                    eventsSnapshot.forEach((childSnapshot) => {
+                        const item = childSnapshot.val();
+                        if (item.status === 'Опубликовано' && item.fixed) {
+                            importantAds.push({
+                                ...item,
+                                id: childSnapshot.key
+                            });
+                        }
+                    });
+                }
+
+                setImportantAds(importantAds);
             } catch (err) {
                 setError('Не удалось загрузить данные');
             } finally {
@@ -42,9 +68,9 @@ function MainPageBlockAds() {
         <div className="main-page-block-ads custom-scrollbar">
             {importantAds.length > 0 && ( 
                 importantAds.map((ad) => (
-                    <Link to={`/news/${ad.id}`} key={ad.id}>
+                    <Link to={`/${ad.elementType === 'Объявления' ? 'news' : 'events'}/${ad.id}`} key={ad.id}>
                         <div className="important-ad-string">
-                            <img src={imgFixedIcon} alt="" />
+                            <img src={imgFixedIcon} alt="Закреплено" />
                             <div className="main-page-block-ad">
                                 <p>{ad.title}</p>  
                             </div>
@@ -52,15 +78,6 @@ function MainPageBlockAds() {
                     </Link>
                 ))
             )}
-            {ads.length > 0 && ( 
-                ads.map((ad) => (
-                    <Link to={`/news/${ad.id}`} key={ad.id}>
-                        <div className="main-page-block-ad">
-                            <p>{ad.title}</p>  
-                        </div>
-                    </Link>
-                ))
-            )} 
         </div>
     );
 }

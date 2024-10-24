@@ -20,7 +20,6 @@ import QuestionPush from './QuestionPush';
 import InitiativePush from './InitiativePush';
 
 const MainPage = observer(() => {
-    const [fixedNews, setFixedNews] = useState([]);
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -64,13 +63,11 @@ const MainPage = observer(() => {
                     });
                 }
 
-                const fixedNews = newsData.filter(news => news.fixed);
-                const publishedNews = newsData;
-                const publishedEvents = eventsData;
+                // Сортировка новостей по дате публикации в порядке убывания
+                newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
-                setFixedNews(fixedNews);
-                setPublishedNews(publishedNews);
-                setPublishedEvents(publishedEvents);
+                setPublishedNews(newsData);
+                setPublishedEvents(eventsData);
             } catch (err) {
                 setError('Не удалось загрузить данные');
             } finally {
@@ -107,7 +104,7 @@ const MainPage = observer(() => {
                 <img src={iconPencilImg} alt="" className="edit-main-page-img" onClick={setShowEditMainMenuPushHandler} />
             </div>
             <div className="main-page-content">
-                {fixedNews.length > 0 && <MainPageBlockAds />}
+                <MainPageBlockAds />
                 {publishedNews.length > 0 && (
                     <MainPageBlockSlide name={'Новости'} data={publishedNews} className="news" />
                 )}

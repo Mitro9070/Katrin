@@ -1,0 +1,27 @@
+.devices-page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.devices-page-head-title {
+    font-size: 32px;
+}
+
+.devices-page-btn-add {
+    width: 200px;
+    height: 40px;
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.devices-page-btn-add:hover {
+    background-color: #007bb5;
+}

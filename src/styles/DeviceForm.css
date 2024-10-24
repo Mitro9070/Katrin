@@ -1,0 +1,26 @@
+.device-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.device-form input,
+.device-form textarea,
+.device-form select {
+    padding: 10px;
+    border: 1px solid #A9A9A9;
+    border-radius: 5px;
+}
+
+.device-form button {
+    padding: 10px;
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.device-form button:hover {
+    background-color: #007bb5;
+}

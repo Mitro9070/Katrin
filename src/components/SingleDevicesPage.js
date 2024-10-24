@@ -1,45 +1,57 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-import '../styles/SingleBidPage.css'
-import '../styles/SingleDevicesPage.css'
+import '../styles/SingleBidPage.css';
+import '../styles/SingleDevicesPage.css';
 
-import { observer } from 'mobx-react-lite';
-import { devicesStore } from '../stores/DevicesStore';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebaseConfig';
 import { navigationStore } from '../stores/NavigationStore';
 import MainContentSinglePage from './MainContentSinglePage';
 
-import imgSaveIcon from '../images/save-2.svg'
-import imgOpenDownIcon from '../images/select-open-down.svg'
+import imgSaveIcon from '../images/save-2.svg';
+import imgOpenDownIcon from '../images/select-open-down.svg';
 
-const SingleDevicesPage = observer(() => {
-    const { id } = useParams()
+const SingleDevicesPage = () => {
+    const { id } = useParams();
 
     const [currentTab, setCurrentTab] = useState('All');
-
-    const [Devices, setDevices] = useState({})
-
-    const [AllParametrs, setAllParametrs] = useState(false);
+    const [device, setDevice] = useState({});
+    const [allParameters, setAllParameters] = useState(false);
 
     useEffect(() => {
-        setCurrentTab(() => navigationStore.currentDevicesTab)
-        console.log(navigationStore.currentDevicesTab)
-        setDevices(devicesStore.getDevicesById(id))
+        setCurrentTab(() => navigationStore.currentDevicesTab);
+        fetchDevice(id);
     }, [id]);
+
+    const fetchDevice = async (deviceId) => {
+        try {
+            const deviceRef = ref(database, `Devices/${deviceId}`);
+            const snapshot = await get(deviceRef);
+            if (snapshot.exists()) {
+                setDevice(snapshot.val());
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке устройства:', error);
+        }
+    };
 
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setCurrentTab(selectedTab);
         navigationStore.setCurrentDevicesTab(selectedTab);
-    }
-    return (  
+    };
+
+    return (
         <div className='page-content devices-single-page'>
-            <Link to={'/devices'}><div className="bid-page-head noselect">
-                <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
-                <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
-                <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
-            </div></Link>
-            <MainContentSinglePage linkTo={'/devices'} onClick={() => navigationStore.setCurrentDevicesTab(currentTab)} data={Devices} isDevice={true}/>
+            <Link to={'/devices'}>
+                <div className="bid-page-head noselect">
+                    <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
+                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
+                    <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
+                </div>
+            </Link>
+            <MainContentSinglePage linkTo={'/devices'} onClick={() => navigationStore.setCurrentDevicesTab(currentTab)} data={device} isDevice={true} />
             <div className="devices-info-btns">
                 <div className="devices-info-btn">
                     <img src={imgSaveIcon} alt="" />
@@ -67,7 +79,7 @@ const SingleDevicesPage = observer(() => {
                     <p className="devices-info-table-title">Основные параметры</p>
                     <div className="devices-info-table-row">
                         <p>Тип оборудования</p>
-                        <p>МФУ</p>
+                        <p>{device.type_device}</p>
                     </div>
                     <div className="devices-info-table-row">
                         <p>Торговая марка</p>
@@ -129,11 +141,11 @@ const SingleDevicesPage = observer(() => {
                     </div>
                 </div>
             </div>
-            <div className="device-btn-look-all" onClick={() => setAllParametrs(!AllParametrs)}>
-                <img src={imgOpenDownIcon} alt="" style={{transform: AllParametrs ? 'rotate(180deg)' : ''}}/>
+            <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
+                <img src={imgOpenDownIcon} alt="" style={{transform: allParameters ? 'rotate(180deg)' : ''}}/>
                 <p>Посмотреть все параметры</p>
             </div>
-            {AllParametrs && (
+            {allParameters && (
                 <div className="device-all-param">
                     <div className="column-1">
                         <p>Тип автоподатчика</p>
@@ -186,7 +198,7 @@ const SingleDevicesPage = observer(() => {
                         <p>999</p>
                         <p>6,5 сек или менее</p>
                         <p>25-400%</p>
-                        <p>37 изображений/мин в симплексе; 74 изображения/мин в дуплексе</p>
+                        <p>37 изображений/мин в симплексе; 74 изображений/мин в дуплексе</p>
                         <p>90 листов</p>
                         <p>А4</p>
                         <p>CIS</p>
@@ -201,6 +213,6 @@ const SingleDevicesPage = observer(() => {
             )}
         </div>
     );
-})
+};
 
 export default SingleDevicesPage;
