@@ -39,7 +39,7 @@
 }
 
 .block-slide.news-block .wrapper {
-    width: 1075px;
+    width: 1037px;
 }
 
 @-moz-document url-prefix() {
@@ -84,12 +84,48 @@
     gap: 0px;
 }
 
+.block-slide-text {
+    padding: 0 15px;
+    overflow-y: auto;
+}
+
 .datatime-slide, .hashtage-slide {
+    color: #2C2C2C;
+    font-family: "PF DinText Pro";
+    font-size: 16px;
+    font-style: normal;
     font-weight: 500;
+    line-height: normal;
 }
 
 .title-slide {
+    color: #2C2C2C;
+    font-family: "PF DinText Pro";
     font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 10px;
+}
+
+.description-slide {
+    color: #2C2C2C;
+    font-family: "PF DinText Pro";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 10px;
+}
+
+.tags-slide {
+    color: #222;
+    font-family: "PF DinText Pro";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    margin-top: 10px;
 }
 
 .event-type-slide {

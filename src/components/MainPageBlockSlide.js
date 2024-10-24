@@ -45,8 +45,10 @@ function MainPageBlockSlide({ name, data, className = '' }) {
         window.snapScrollTimeout = setTimeout(() => snapToCard(), 100); // 100 мс после завершения скролла
     };
 
+    const isNews = name === 'Новости';
+
     return (
-        <div className={"block-slide " + className} style={{ width: name === 'Новости' ? '1095px' : '345px', height: '237px' }}>
+        <div className={"block-slide " + className} style={{ width: isNews ? '1095px' : '345px', height: '237px' }}>
             <div
                 className="wrapper"
                 ref={slideWrapperRef}
@@ -56,34 +58,49 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                     flexDirection: 'column', // Для вертикального скролла
                     overflowY: 'auto', // Вертикальный скролл
                     scrollSnapType: 'y mandatory', // Скролл с "магнитом" по вертикали
-                    height: '217px',
-                    width: name === 'Новости' ? '1075px' : '345px',
+                    height: isNews ? '217px' : '',
+                    width: isNews ? '1037px' : '',
                     gap: '37px',
                 }}
             >
                 {data.map((item, index) => (
-                    <Link to={`/${name === 'Новости' ? 'news' : 'events'}/${item.id}`} key={index}>
+                    <Link to={`/${isNews ? 'news' : 'events'}/${item.id}`} key={index}>
                         <div
                             className="content"
                             style={{
                                 display: 'flex',
-                                flexDirection: 'column', // Изменение направления при наличии фото
+                                flexDirection: isNews ? 'row' : 'column', // Изменение направления при наличии фото
                                 flex: '0 0 auto',
-                                height: '217px', // Высота каждой карточки
+                                height: 'auto', // Высота каждой карточки
+                                scrollSnapType: 'y mandatory', // Скролл с "магнитом" по вертикали
                                 scrollSnapAlign: 'start', // Притягивание к началу блока
                             }}
                         >
-                            {item.images && item.images[0] && (
-                                <div className="block-slide-img-container" style={{ flex: '1', marginBottom: '10px' }}>
-                                    <img src={item.images[0]} alt={item.title} />
+                            {isNews && item.images && item.images[0] && (
+                                <div className="block-slide-img-container" style={{ flex: '1', marginRight: '20px' }}>
+                                    <img src={item.images[0]} alt={item.title} style={{ width: '310px', height: '310px', flexShrink: 0, borderRadius: '20px', background: `url(${item.images[0]}) lightgray 50% / cover no-repeat` }} />
                                 </div>
                             )}
-                            <div className="block-slide-text" style={{ flex: '2' }}>
-                                <p className="datatime-slide">{item.postData || item.eventDate}</p>
-                                <p className={`title-slide title-slide-${name === 'Новости' ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0' }}>
-                                    {item.text ? extractTextFromHTML(item.text) : ''}
-                                </p>
+                            <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
+                                <p className="datatime-slide">{isNews ? item.postData : item.eventDate}</p>
+                                <p className={`title-slide title-slide-${isNews ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
+                                {isNews && (
+                                    <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0' }}>
+                                        {item.text ? extractTextFromHTML(item.text) : ''}
+                                    </p>
+                                )}
+                                {!isNews && (
+                                    <>
+                                        <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}>
+                                            {item.text ? extractTextFromHTML(item.text) : ''}
+                                        </p>
+                                        {item.tags && (
+                                            <p className="tags-slide">
+                                                {item.tags.join(', ')}
+                                            </p>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </Link>
