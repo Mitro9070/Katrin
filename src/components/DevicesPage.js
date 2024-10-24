@@ -13,6 +13,8 @@ const DevicesPage = () => {
     const [currentTab, setCurrentTab] = useState('All');
     const [isAddDevice, setIsAddDevice] = useState(false);
     const [devices, setDevices] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const devicesPerPage = 6;
 
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentDevicesTab);
@@ -43,6 +45,7 @@ const DevicesPage = () => {
         const selectedTab = e.target.dataset.tab;
         setCurrentTab(selectedTab);
         navigationStore.setCurrentDevicesTab(selectedTab);
+        setCurrentPage(1); // Сбрасываем текущую страницу при смене вкладки
     };
 
     const handleAddDeviceClick = () => {
@@ -55,16 +58,43 @@ const DevicesPage = () => {
     };
 
     const renderDevices = (type) => {
-        if (type) {
-            return devices.filter(device => device.type_device === type).map(e => {
-                return <Link to={`/devices/${e.id}`} key={e.id}><StandartCard title={e.id} text={e.description} status={e.type_device} publicDate={e.postData} images={e.images} /></Link>
-            });
-        } else {
-            return devices.map(e => {
-                return <Link to={`/devices/${e.id}`} key={e.id}><StandartCard title={e.id} text={e.description} status={e.type_device} publicDate={e.postData} images={e.images} /></Link>
-            });
-        }
+        const filteredDevices = type ? devices.filter(device => device.type_device === type) : devices;
+        const indexOfLastDevice = currentPage * devicesPerPage;
+        const indexOfFirstDevice = indexOfLastDevice - devicesPerPage;
+        const currentDevices = filteredDevices.slice(indexOfFirstDevice, indexOfLastDevice);
+
+        return currentDevices.map(e => (
+            <Link to={`/devices/${e.id}`} key={e.id}>
+                <StandartCard title={e.id} text={e.description} status={e.type_device} publicDate={e.postData} images={e.images} />
+            </Link>
+        ));
     };
+
+    const getFilteredDevices = () => {
+        if (currentTab === 'All') {
+            return devices;
+        } else if (currentTab === 'MFU') {
+            return devices.filter(device => device.type_device === 'МФУ');
+        } else if (currentTab === 'Printers') {
+            return devices.filter(device => device.type_device === 'Принтер');
+        }
+        return [];
+    };
+
+    const filteredDevices = getFilteredDevices();
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(filteredDevices.length / devicesPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const renderPageNumbers = pageNumbers.map(number => (
+        <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <a onClick={() => setCurrentPage(number)} className="page-link">
+                {number}
+            </a>
+        </li>
+    ));
 
     const devicesTypeList = { 'MFU': 'МФУ', 'Printers': 'Принтер' };
 
@@ -87,6 +117,11 @@ const DevicesPage = () => {
                 {currentTab !== 'All' && renderDevices(devicesTypeList[currentTab])}
                 {currentTab === 'All' && renderDevices()}
             </div>
+            {filteredDevices.length > devicesPerPage || currentPage > 1 ? (
+                <ul className="pagination">
+                    {renderPageNumbers}
+                </ul>
+            ) : null}
         </div>
     );
 };
