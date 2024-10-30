@@ -54,13 +54,18 @@ function Header({ setShowAuthPush }) {
                     if (roleSnapshot.exists()) {
                         const roleData = roleSnapshot.val();
                         setRoleName(roleData.rusname);
+                        Cookies.set('permissions', JSON.stringify(roleData.permissions));
                     }
                 }
                 setShowUserMenu(false); // Закрываем меню по умолчанию
-                navigate('/'); // Переходим на главную страницу
+                const currentPage = Cookies.get('currentPage');
+                if (!currentPage || currentPage === '/') {
+                    navigate('/'); // Переходим на главную страницу
+                }
             } else {
                 setUser(null);
                 Cookies.remove('userId');
+                Cookies.remove('permissions');
             }
         });
     }, [navigate]);
@@ -74,6 +79,7 @@ function Header({ setShowAuthPush }) {
         signOut(auth).then(() => {
             setUser(null);
             Cookies.remove('userId');
+            Cookies.remove('permissions');
             navigate(0); // Перезагрузка страницы
         }).catch((error) => {
             console.error('Ошибка при выходе из системы:', error);
