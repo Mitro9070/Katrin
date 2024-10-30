@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    position: relative;
 }
 
 .device-form input,
@@ -12,15 +13,36 @@
     border-radius: 5px;
 }
 
-.device-form button {
-    padding: 10px;
-    background-color: #0C8CE9;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
 }
 
-.device-form button:hover {
+.close-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.close-btn:hover {
+    background-color: #ff1a1a;
+}
+
+.submit-btn {
+    background-color: #0C8CE9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.submit-btn:hover {
     background-color: #007bb5;
 }

@@ -1,6 +1,8 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { database } from "../firebaseConfig";
 import { ref, get, update } from "firebase/database";
+import { getAuth } from 'firebase/auth';
+import Cookies from 'js-cookie';
 
 class BidContentStore {
     NewsBids = [];
@@ -15,6 +17,30 @@ class BidContentStore {
     async fetchData() {
         this.loading = true;
         try {
+            const auth = getAuth();
+            const currentUser = auth.currentUser ? auth.currentUser.uid : Cookies.get('userId');
+            let roleId = 2; // Default role ID for "Гость"
+
+            if (currentUser) {
+                const userRef = ref(database, `Users/${currentUser}`);
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.val();
+                    roleId = userData.role;
+                }
+            }
+
+            const roleRef = ref(database, `Roles/${roleId}`);
+            const roleSnapshot = await get(roleRef);
+            if (roleSnapshot.exists()) {
+                const roleData = roleSnapshot.val();
+                if (!roleData.permissions.bidpage) {
+                    throw new Error('У вас недостаточно прав для просмотра заявок');
+                }
+            } else {
+                throw new Error('Роль не найдена');
+            }
+
             const bidsRef = ref(database, 'Bids');
             const eventsRef = ref(database, 'Events');
             const [bidsSnapshot, eventsSnapshot] = await Promise.all([get(bidsRef), get(eventsRef)]);

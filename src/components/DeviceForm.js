@@ -81,7 +81,10 @@ const DeviceForm = ({ setIsAddDevice }) => {
                 onChange={handleImageChange}
                 required
             />
-            <button type="submit">Добавить устройство</button>
+            <div className="form-buttons">
+                <button type="button" className="close-btn" onClick={() => setIsAddDevice(false)}>Закрыть</button>
+                <button type="submit" className="submit-btn">Добавить устройство</button>
+            </div>
             {loading && <Loader />}
         </form>
     );

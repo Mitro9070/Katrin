@@ -1,33 +1,68 @@
 import { useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
 import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
-
-import '../styles/MainPage.css';
-import MainPageBlockList from './MainPageBlockList';
+import Cookies from 'js-cookie';
+import Loader from './Loader'; // Импорт компонента Loader
+import MainPageBlockList from './MainPageBlockList'; // Импортируем необходимые компоненты
 import MainPageBlockSlide from './MainPageBlockSlide';
+import MainPageBlockAds from './MainPageBlockAds';
+import EditMainMenuPush from './EditMainMenuPush';
+import QuestionPush from './QuestionPush';
+import InitiativePush from './InitiativePush';
+import Footer from './Footer';
 
-import iconHintImg from '../images/hint-ring.svg';
+import iconHintImg from '../images/hint-ring.svg'; // Импортируем иконки
 import iconMainInImg from '../images/mail-in.svg';
 import iconBatchImg from '../images/batch.svg';
 import iconPencilImg from '../images/pencil.svg';
-import EditMainMenuPush from './EditMainMenuPush';
 
-import Footer from './Footer';
-import MainPageBlockAds from './MainPageBlockAds';
-import Loader from './Loader';
-import QuestionPush from './QuestionPush';
-import InitiativePush from './InitiativePush';
+import '../styles/MainPage.css'; // Импортируем стили
 
-const MainPage = observer(() => {
+const MainPage = () => {
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userName, setUserName] = useState('Гость');
+    const [permissions, setPermissions] = useState({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const userId = Cookies.get('userId');
+                const roleId = Cookies.get('roleId');
+
+                // Если пользователь не авторизован, используем значения по умолчанию
+                if (!userId || !roleId) {
+                    setUserName('Гость');
+                    // Разрешения по умолчанию
+                    setPermissions({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
+                } else {
+                    const roleRef = ref(database, `Roles/${roleId}`);
+                    const roleSnapshot = await get(roleRef);
+                    if (roleSnapshot.exists()) {
+                        const roleData = roleSnapshot.val();
+                        setPermissions(roleData.permissions);
+                        console.log('Role data:', roleData);
+                    } else {
+                        throw new Error('Роль не найдена');
+                    }
+
+                    const userRef = ref(database, `Users/${userId}`);
+                    const userSnapshot = await get(userRef);
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.val();
+                        setUserName(userData.Name);
+                    } else {
+                        throw new Error('Пользователь не найден');
+                    }
+                }
+
+                // Проверяем разрешения для доступа к странице
+                if (!permissions.homepage) {
+                    throw new Error('У вас нет доступа к этой странице');
+                }
+
                 const newsRef = ref(database, 'News');
                 const eventsRef = ref(database, 'Events');
 
@@ -69,6 +104,7 @@ const MainPage = observer(() => {
                 setPublishedNews(newsData);
                 setPublishedEvents(eventsData);
             } catch (err) {
+                console.error('Ошибка при загрузке данных:', err);
                 setError('Не удалось загрузить данные');
             } finally {
                 setLoading(false);
@@ -76,7 +112,7 @@ const MainPage = observer(() => {
         };
 
         fetchData();
-    }, []);
+    }, []); // Убираем зависимости, чтобы избежать бесконечного цикла
 
     const [ShowEditMainMenuPush, setShowEditMainMenuPush] = useState(false);
     const [ShowQuestionPush, setShowQuestionPush] = useState(false);
@@ -100,7 +136,7 @@ const MainPage = observer(() => {
     return (
         <div className="main-page page-content noselect">
             <div className="main-page-head">
-                <p className="welcome-text">{`Добрый день, Имя!`}</p>
+                <p className="welcome-text">{`Добрый день, ${userName}!`}</p>
                 <img src={iconPencilImg} alt="" className="edit-main-page-img" onClick={setShowEditMainMenuPushHandler} />
             </div>
             <div className="main-page-content">
@@ -140,6 +176,6 @@ const MainPage = observer(() => {
             <Footer />
         </div>
     );
-});
+};
 
 export default MainPage;

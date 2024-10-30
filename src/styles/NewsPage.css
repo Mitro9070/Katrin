@@ -1,9 +1,72 @@
-.news-page-content{
+.news-page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.news-page-head-title {
+    font-size: 32px;
+}
+
+.news-page-btn-add {
+    width: 200px;
+    height: 40px;
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.news-page-btn-add:hover {
+    background-color: #007bb5;
+}
+
+.news-page-content {
     display: grid;
     grid-template-columns: auto auto; /* Две колонки одинаковой ширины */
     gap: 30px;
 }
 
-.news-page-content div{
+.news-page-content div {
     cursor: pointer;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    display: block;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    color: #007bff;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.page-item.active .page-link,
+.page-link.disabled {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    cursor: not-allowed;
+}
+
+.page-link:hover:not(.disabled) {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
 }

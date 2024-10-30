@@ -1,11 +1,12 @@
 import '../styles/DevicesPage.css';
 import StandartCard from './StandartCard';
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
 import { ref, get } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import { database } from '../firebaseConfig';
+import Cookies from 'js-cookie';
+import Loader from './Loader'; // Добавляем импорт компонента Loader
 import DeviceForm from './DeviceForm'; // Предполагается, что у вас есть форма для добавления устройства
 import { navigationStore } from '../stores/NavigationStore'; // Добавляем импорт navigationStore
 
@@ -15,10 +16,66 @@ const DevicesPage = () => {
     const [devices, setDevices] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const devicesPerPage = 6;
+    const [permissions, setPermissions] = useState({ devicepage: false });
+    const [userName, setUserName] = useState('Гость');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        setCurrentTab(() => navigationStore.currentDevicesTab);
-        fetchDevices(); // Загружаем устройства при монтировании компонента
+        const fetchData = async () => {
+            try {
+                const auth = getAuth();
+                const currentUser = auth.currentUser ? auth.currentUser.uid : Cookies.get('userId');
+                console.log('Current User:', currentUser);
+                let roleId = 2; // Default role ID for "Гость"
+
+                if (currentUser) {
+                    const userRef = ref(database, `Users/${currentUser}`);
+                    const userSnapshot = await get(userRef);
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.val();
+                        setUserName(userData.Name);
+                        roleId = userData.role;
+                        console.log('User Data:', userData);
+                    } else {
+                        console.error('User not found');
+                    }
+                }
+
+                const roleRef = ref(database, `Roles/${roleId}`);
+                const roleSnapshot = await get(roleRef);
+                let roleData;
+                if (roleSnapshot.exists()) {
+                    roleData = roleSnapshot.val();
+                    setPermissions(roleData.permissions);
+                    console.log('Role Data:', roleData);
+                } else {
+                    throw new Error('Роль не найдена');
+                }
+
+                if (!roleData.permissions.devicepage) {
+                    if (roleId === 2) {
+                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                    } else {
+                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, обратитесь к администратору.');
+                    }
+                    setShowModal(true);
+                    return;
+                }
+
+                setCurrentTab(() => navigationStore.currentDevicesTab);
+                fetchDevices(); // Загружаем устройства при монтировании компонента
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+                setError('Не удалось загрузить данные');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const fetchDevices = async () => {
@@ -98,8 +155,19 @@ const DevicesPage = () => {
 
     const devicesTypeList = { 'MFU': 'МФУ', 'Printers': 'Принтер' };
 
+    if (loading) return <Loader />;
+    if (error) return <p>{error}</p>;
+
     return (
         <div className="page-content devices-page">
+            {showModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <p>{modalMessage}</p>
+                        <button onClick={() => setShowModal(false)}>Закрыть</button>
+                    </div>
+                </div>
+            )}
             <div className="bid-page-head noselect">
                 <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
                 <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>

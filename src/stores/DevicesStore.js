@@ -1,32 +1,72 @@
 import { makeAutoObservable } from "mobx";
+import { getAuth } from 'firebase/auth';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebaseConfig';
+import Cookies from 'js-cookie';
 
 class DevicesStore {
-    Devices = [
-        {
-            title: 'M240T',
-            tags: ['M240T', 'Принтер', 'МФУ'],
-            elementType: 'МФУ',
-            image: '',
-            text: 'Модель M240 с основным лотком увеличенной емкости, поставляющимся в бизе и позволяющим загрузить целую пачку бумаги. В отличии от базовой модели может быть доукомплектована опциональным лотком. Для напольной установки требуется специальная тумба, для Т конфигурации.',
-            parameters: {
-                "Основной показатель": "Значение устройства 1"
-            },
-            postData: '15 Июня, 12:00',
-            id: '1',
+    Devices = [];
+    loading = false;
+
+    constructor() {
+        makeAutoObservable(this);
+        this.fetchData(); // Вызов метода получения данных при инициализации
+    }
+
+    async fetchData() {
+        this.loading = true;
+        try {
+            const auth = getAuth();
+            const currentUser = auth.currentUser ? auth.currentUser.uid : Cookies.get('userId');
+            let roleId = 2; // Default role ID for "Гость"
+
+            if (currentUser) {
+                const userRef = ref(database, `Users/${currentUser}`);
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.val();
+                    roleId = userData.role;
+                }
+            }
+
+            const roleRef = ref(database, `Roles/${roleId}`);
+            const roleSnapshot = await get(roleRef);
+            if (roleSnapshot.exists()) {
+                const roleData = roleSnapshot.val();
+                if (!roleData.permissions.devicepage) {
+                    throw new Error('У вас недостаточно прав для просмотра устройств');
+                }
+            } else {
+                throw new Error('Роль не найдена');
+            }
+
+            const devicesRef = ref(database, 'Devices');
+            const snapshot = await get(devicesRef);
+            if (snapshot.exists()) {
+                const devicesData = [];
+                snapshot.forEach(childSnapshot => {
+                    const device = childSnapshot.val();
+                    devicesData.push({
+                        id: childSnapshot.key,
+                        ...device
+                    });
+                });
+                this.Devices = devicesData;
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке устройств:', error);
+        } finally {
+            this.loading = false;
         }
-    ]
-
-    constructor(){
-        makeAutoObservable(this)
     }
 
-    getDevicesByType(type){
-        return this.Devices.filter(e => e.elementType === type)
+    getDevicesByType(type) {
+        return this.Devices.filter(e => e.elementType === type);
     }
 
-    getDevicesById(id){
-        return this.Devices.filter(e => e.id === id)[0]
+    getDevicesById(id) {
+        return this.Devices.filter(e => e.id === id)[0];
     }
 }
 
-export const devicesStore = new DevicesStore()
+export const devicesStore = new DevicesStore();
