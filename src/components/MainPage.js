@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
-import Loader from './Loader'; // Импорт компонента Loader
-import MainPageBlockList from './MainPageBlockList'; // Импортируем необходимые компоненты
-import MainPageBlockSlide from './MainPageBlockSlide';
-import MainPageBlockAds from './MainPageBlockAds';
-import EditMainMenuPush from './EditMainMenuPush';
-import QuestionPush from './QuestionPush';
-import InitiativePush from './InitiativePush';
-import Footer from './Footer';
 
-import iconHintImg from '../images/hint-ring.svg'; // Импортируем иконки
+import '../styles/MainPage.css';
+import MainPageBlockList from './MainPageBlockList';
+import MainPageBlockSlide from './MainPageBlockSlide';
+
+import iconHintImg from '../images/hint-ring.svg';
 import iconMainInImg from '../images/mail-in.svg';
 import iconBatchImg from '../images/batch.svg';
 import iconPencilImg from '../images/pencil.svg';
+import EditMainMenuPush from './EditMainMenuPush';
 
-import '../styles/MainPage.css'; // Импортируем стили
+import Footer from './Footer';
+import MainPageBlockAds from './MainPageBlockAds';
+import Loader from './Loader';
+import QuestionPush from './QuestionPush';
+import InitiativePush from './InitiativePush';
 
-const MainPage = () => {
+const MainPage = observer(() => {
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,10 +34,8 @@ const MainPage = () => {
                 const userId = Cookies.get('userId');
                 const roleId = Cookies.get('roleId');
 
-                // Если пользователь не авторизован, используем значения по умолчанию
                 if (!userId || !roleId) {
                     setUserName('Гость');
-                    // Разрешения по умолчанию
                     setPermissions({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
                 } else {
                     const roleRef = ref(database, `Roles/${roleId}`);
@@ -58,7 +58,6 @@ const MainPage = () => {
                     }
                 }
 
-                // Проверяем разрешения для доступа к странице
                 if (!permissions.homepage) {
                     throw new Error('У вас нет доступа к этой странице');
                 }
@@ -98,13 +97,11 @@ const MainPage = () => {
                     });
                 }
 
-                // Сортировка новостей по дате публикации в порядке убывания
                 newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
                 setPublishedNews(newsData);
                 setPublishedEvents(eventsData);
             } catch (err) {
-                console.error('Ошибка при загрузке данных:', err);
                 setError('Не удалось загрузить данные');
             } finally {
                 setLoading(false);
@@ -112,7 +109,8 @@ const MainPage = () => {
         };
 
         fetchData();
-    }, []); // Убираем зависимости, чтобы избежать бесконечного цикла
+        Cookies.set('currentPage', 'main');
+    }, []);
 
     const [ShowEditMainMenuPush, setShowEditMainMenuPush] = useState(false);
     const [ShowQuestionPush, setShowQuestionPush] = useState(false);
@@ -176,6 +174,6 @@ const MainPage = () => {
             <Footer />
         </div>
     );
-};
+});
 
 export default MainPage;
