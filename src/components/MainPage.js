@@ -19,47 +19,53 @@ import MainPageBlockAds from './MainPageBlockAds';
 import Loader from './Loader';
 import QuestionPush from './QuestionPush';
 import InitiativePush from './InitiativePush';
+import { getPermissions } from '../utils/Permissions';
 
 const MainPage = observer(() => {
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userName, setUserName] = useState('Гость');
     const [permissions, setPermissions] = useState({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [userName, setUserName] = useState('Гость');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const userId = Cookies.get('userId');
-                const roleId = Cookies.get('roleId');
+                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
+                const permissions = getPermissions(roleId);
 
-                if (!userId || !roleId) {
-                    setUserName('Гость');
-                    setPermissions({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
-                } else {
-                    const roleRef = ref(database, `Roles/${roleId}`);
-                    const roleSnapshot = await get(roleRef);
-                    if (roleSnapshot.exists()) {
-                        const roleData = roleSnapshot.val();
-                        setPermissions(roleData.permissions);
-                        console.log('Role data:', roleData);
-                    } else {
-                        throw new Error('Роль не найдена');
-                    }
+                setPermissions(permissions);
 
+                switch (roleId) {
+                    case '1': // Администратор
+                    case '3': // Авторизованный пользователь
+                    case '4': // Контент менеджер
+                        if (!permissions.homepage) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '2': // Гость
+                        if (!permissions.homepage) {
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
+                        }
+                        break;
+                    default:
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                }
+
+                if (userId) {
                     const userRef = ref(database, `Users/${userId}`);
                     const userSnapshot = await get(userRef);
                     if (userSnapshot.exists()) {
                         const userData = userSnapshot.val();
                         setUserName(userData.Name);
-                    } else {
-                        throw new Error('Пользователь не найден');
                     }
-                }
-
-                if (!permissions.homepage) {
-                    throw new Error('У вас нет доступа к этой странице');
                 }
 
                 const newsRef = ref(database, 'News');

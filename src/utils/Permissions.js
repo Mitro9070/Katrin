@@ -47,6 +47,22 @@ const permissionsData = {
         userManagement: false,
         viewingLogs: false,
     },
+    4: { // Роль с id 4 Контент менеджер
+        homepage: true,
+        newspage: true,
+        devicepage: true,
+        calendarevents: true,
+        map: true,
+        software: true,
+        submissionNews: true,
+        submissionEvents: false,
+        processingEvents: true,
+        processingNews: true,
+        publishingNews: true,
+        publishingTech: false,
+        userManagement: false,
+        viewingLogs: false,
+    },
     // Добавьте другие роли здесь
 };
 

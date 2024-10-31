@@ -7,7 +7,7 @@ import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import StandartCard from '../components/StandartCard';
-import CommentInput from '../components/CommentInput';
+import CommentInput from '../components/CommentInput'; // Импорт компонента CommentInput
 
 import imgArchiveIcon from '../images/archive.svg';
 import imgFilterIcon from '../images/filter.svg';
@@ -30,14 +30,12 @@ const BidPage = () => {
 
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
+    const userId = Cookies.get('userId');
     const isRole3 = roleId === '3';
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userId = Cookies.get('userId');
-                const roleId = Cookies.get('roleId');
-
                 if (!userId) {
                     navigate('/'); // Переадресация на главную страницу для гостей
                     return;
@@ -54,6 +52,7 @@ const BidPage = () => {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
                         break;
+                    
                     default:
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
@@ -72,6 +71,7 @@ const BidPage = () => {
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
+                        if (roleId === '3' && item.organizer !== userId) return;
                         newsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -82,6 +82,7 @@ const BidPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
+                        if (roleId === '3' && item.organizer !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -101,7 +102,7 @@ const BidPage = () => {
 
         fetchData();
         Cookies.set('currentPage', 'bid');
-    }, [navigate]);
+    }, [navigate, roleId, permissions, userId]);
 
     const changeCurrentBidTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
@@ -156,12 +157,14 @@ const BidPage = () => {
                     text={news.text}
                     images={news.images}
                 />
-                <div className="news-card-comment">
-                    <CommentInput
-                        placeholder='Добавить комментарий'
-                        onBlur={(e) => handleStatusChange(news.id, news.status, e.target.value)}
-                    />
-                </div>
+                {!isRole3 && (
+                    <div className="news-card-comment">
+                        <CommentInput
+                            placeholder='Добавить комментарий'
+                            onBlur={(e) => handleStatusChange(news.id, news.status, e.target.value)}
+                        />
+                    </div>
+                )}
                 <div className="news-card-actions">
                     {status === 'На модерации' && !isRole3 && (
                         <>
@@ -210,12 +213,14 @@ const BidPage = () => {
                     text={event.text}
                     images={event.images}
                 />
-                <div className="news-card-comment">
-                    <CommentInput
-                        placeholder='Добавить комментарий'
-                        onBlur={(e) => handleStatusChange(event.id, event.status, e.target.value)}
-                    />
-                </div>
+                {!isRole3 && (
+                    <div className="news-card-comment">
+                        <CommentInput
+                            placeholder='Добавить комментарий'
+                            onBlur={(e) => handleStatusChange(event.id, event.status, e.target.value)}
+                        />
+                    </div>
+                )}
                 <div className="news-card-actions">
                     {status === 'На модерации' && !isRole3 && (
                         <>
