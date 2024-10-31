@@ -1,9 +1,7 @@
 import '../styles/Header.css';
 import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
+import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { database } from '../firebaseConfig';
 import notificationImg from '../images/notification.svg';
 import NotificationPush from './NotificationPush';
 import Cookies from 'js-cookie';
@@ -17,58 +15,15 @@ function Header({ setShowAuthPush }) {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const auth = getAuth();
         const storedUserId = Cookies.get('userId');
+        const storedRoleName = Cookies.get('roleName');
 
         if (storedUserId) {
-            const userRef = ref(database, `Users/${storedUserId}`);
-            get(userRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    setUser(userData);
-                    setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
-
-                    const roleRef = ref(database, `Roles/${userData.role}`);
-                    get(roleRef).then((roleSnapshot) => {
-                        if (roleSnapshot.exists()) {
-                            const roleData = roleSnapshot.val();
-                            setRoleName(roleData.rusname);
-                        }
-                    });
-                }
-            });
+            setUser({ id: storedUserId });
+            setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
+            setRoleName(storedRoleName);
         }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userRef = ref(database, `Users/${user.uid}`);
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    setUser(userData);
-                    setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
-                    Cookies.set('userId', user.uid);
-
-                    const roleRef = ref(database, `Roles/${userData.role}`);
-                    const roleSnapshot = await get(roleRef);
-                    if (roleSnapshot.exists()) {
-                        const roleData = roleSnapshot.val();
-                        setRoleName(roleData.rusname);
-                        Cookies.set('permissions', JSON.stringify(roleData.permissions));
-                    }
-                }
-                setShowUserMenu(false); // Закрываем меню по умолчанию
-                const currentPage = Cookies.get('currentPage');
-                if (!currentPage || currentPage === '/') {
-                    navigate('/'); // Переходим на главную страницу
-                }
-            } else {
-                setUser(null);
-                Cookies.remove('userId');
-                Cookies.remove('permissions');
-            }
-        });
-    }, [navigate]);
+    }, []);
 
     const setShowNotificationsSettingsHandler = () => {
         setShowNotificationsSettings(() => !ShowNotificationsSettings);
@@ -79,7 +34,9 @@ function Header({ setShowAuthPush }) {
         signOut(auth).then(() => {
             setUser(null);
             Cookies.remove('userId');
+            Cookies.remove('roleId');
             Cookies.remove('permissions');
+            Cookies.remove('roleName');
             navigate(0); // Перезагрузка страницы
         }).catch((error) => {
             console.error('Ошибка при выходе из системы:', error);

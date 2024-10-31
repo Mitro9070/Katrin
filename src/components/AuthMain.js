@@ -18,6 +18,11 @@ function AuthMain({ setStage, setShowAuthPush }) {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
+            // Удаляем старые куки
+            Cookies.remove('userId');
+            Cookies.remove('roleId');
+            Cookies.remove('permissions');
+
             // Получаем данные пользователя и его роль
             const userRef = ref(database, `Users/${user.uid}`);
             const userSnapshot = await get(userRef);

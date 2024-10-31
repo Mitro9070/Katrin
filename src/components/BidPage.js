@@ -1,81 +1,151 @@
 import { useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { action } from 'mobx';
 import { Link } from 'react-router-dom';
-import { navigationStore } from '../stores/NavigationStore';
-import { newsContentStore } from '../stores/NewsContentStore';
-import { bidContentStore } from '../stores/BidContentStore';
-
-import imgArchiveIcon from '../images/archive.svg';
-import imgFilterIcon from '../images/filter.svg';
-import imgCheckIcon from '../images/checkmark.svg'; // Импортируем иконку
-import imgTrashIcon from '../images/trash.svg'; // Импортируем иконку
-import imgViewIcon from '../images/view.png'; // Импортируем иконку просмотра
-
-import '../styles/BidPage.css';
-import BidForm from './BidForm';
+import { ref, get, set } from 'firebase/database';
+import { database } from '../firebaseConfig';
+import Cookies from 'js-cookie';
+import { getPermissions } from '../utils/Permissions';
+import Loader from './Loader';
 import Footer from './Footer';
 import StandartCard from '../components/StandartCard';
 import CommentInput from '../components/CommentInput';
 
-const BidPage = observer(() => {
+import imgArchiveIcon from '../images/archive.svg';
+import imgFilterIcon from '../images/filter.svg';
+import imgCheckIcon from '../images/checkmark.svg';
+import imgTrashIcon from '../images/trash.svg';
+import imgViewIcon from '../images/view.png';
+
+import '../styles/BidPage.css';
+import BidForm from './BidForm';
+
+const BidPage = () => {
     const [IsAddPage, setIsAddPage] = useState(false);
     const [IsArchive, setIsArchive] = useState(false);
     const [BidCurrentTab, setBidCurrentTab] = useState('News');
+    const [newsData, setNewsData] = useState([]);
+    const [eventsData, setEventsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const roleId = Cookies.get('roleId');
+    const permissions = getPermissions(roleId);
+    const isRole3 = roleId === '3';
 
     useEffect(() => {
-        setBidCurrentTab(navigationStore.currentBidTab);
-        console.log(navigationStore.currentBidTab);
-        if (navigationStore.currentBidTab === 'News') {
-            newsContentStore.fetchData();
-        } else if (navigationStore.currentBidTab === 'Events') {
-            bidContentStore.fetchData();
-        }
+        const fetchData = async () => {
+            try {
+                const userId = Cookies.get('userId');
+                const roleId = Cookies.get('roleId');
+
+                if (!userId || !roleId) {
+                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                }
+
+                switch (roleId) {
+                    case '1': // Администратор
+                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '3': // Авторизованный пользователь
+                        if (!permissions.submissionNews && !permissions.submissionEvents) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    default:
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                }
+
+                const newsRef = ref(database, 'News');
+                const eventsRef = ref(database, 'Events');
+
+                const [newsSnapshot, eventsSnapshot] = await Promise.all([
+                    get(newsRef),
+                    get(eventsRef)
+                ]);
+
+                const newsData = [];
+                const eventsData = [];
+
+                if (newsSnapshot.exists()) {
+                    newsSnapshot.forEach((childSnapshot) => {
+                        const item = childSnapshot.val();
+                        newsData.push({
+                            ...item,
+                            id: childSnapshot.key
+                        });
+                    });
+                }
+
+                if (eventsSnapshot.exists()) {
+                    eventsSnapshot.forEach((childSnapshot) => {
+                        const item = childSnapshot.val();
+                        eventsData.push({
+                            ...item,
+                            id: childSnapshot.key
+                        });
+                    });
+                }
+
+                setNewsData(newsData);
+                setEventsData(eventsData);
+            } catch (err) {
+                console.error('Ошибка при загрузке данных:', err);
+                setError('Не удалось загрузить данные');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        Cookies.set('currentPage', 'bid');
     }, []);
 
     const changeCurrentBidTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setBidCurrentTab(selectedTab);
-        navigationStore.setCurrentBidTab(selectedTab);
-        if (selectedTab === 'News') {
-            newsContentStore.fetchData();
-        } else if (selectedTab === 'Events') {
-            bidContentStore.fetchData();
-        }
     };
 
-    const handleStatusChange = action(async (id, newStatus, comment = '') => {
+    const handleStatusChange = async (id, newStatus, comment = '') => {
         try {
             if (BidCurrentTab === 'News') {
-                const newsItem = newsContentStore.getNewsById(id);
-                newsItem.status = newStatus;
-                if (comment) {
-                    if (!newsItem.comments) {
-                        newsItem.comments = [];
+                const newsRef = ref(database, `News/${id}`);
+                const newsSnapshot = await get(newsRef);
+                if (newsSnapshot.exists()) {
+                    const newsItem = newsSnapshot.val();
+                    newsItem.status = newStatus;
+                    if (comment) {
+                        if (!newsItem.comments) {
+                            newsItem.comments = [];
+                        }
+                        newsItem.comments.push(comment);
                     }
-                    newsItem.comments.push(comment);
+                    await set(newsRef, newsItem);
+                    setNewsData(newsData.map(news => news.id === id ? newsItem : news));
                 }
-                await newsContentStore.updateNews(id, newsItem);
-                newsContentStore.fetchData();
             } else if (BidCurrentTab === 'Events') {
-                const bidItem = bidContentStore.getWithId(BidCurrentTab, id)[0];
-                bidItem.status = newStatus;
-                if (comment) {
-                    if (!bidItem.comments) {
-                        bidItem.comments = [];
+                const eventRef = ref(database, `Events/${id}`);
+                const eventSnapshot = await get(eventRef);
+                if (eventSnapshot.exists()) {
+                    const eventItem = eventSnapshot.val();
+                    eventItem.status = newStatus;
+                    if (comment) {
+                        if (!eventItem.comments) {
+                            eventItem.comments = [];
+                        }
+                        eventItem.comments.push(comment);
                     }
-                    bidItem.comments.push(comment);
+                    await set(eventRef, eventItem);
+                    setEventsData(eventsData.map(event => event.id === id ? eventItem : event));
                 }
-                await bidContentStore.updateBid(id, bidItem);
-                bidContentStore.fetchData();
             }
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
         }
-    });
+    };
 
     const renderNews = (status) => {
-        return newsContentStore.News.filter(news => news.status === status).map(news => (
+        return newsData.filter(news => news.status === status).map(news => (
             <div key={news.id} className="news-card-container">
                 <StandartCard
                     status={news.status}
@@ -91,7 +161,7 @@ const BidPage = observer(() => {
                     />
                 </div>
                 <div className="news-card-actions">
-                    {status === 'На модерации' && (
+                    {status === 'На модерации' && !isRole3 && (
                         <>
                             <button className="approve-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
@@ -103,13 +173,13 @@ const BidPage = observer(() => {
                             </button>
                         </>
                     )}
-                    {status === 'Одобрено' && (
+                    {status === 'Одобрено' && !isRole3 && (
                         <button className="publish-btn" onClick={() => handleStatusChange(news.id, 'Опубликовано')}>
                             <img src={imgCheckIcon} alt="Опубликовать" />
                             <span>Опубликовать</span>
                         </button>
                     )}
-                    {status === 'Опубликовано' && (
+                    {status === 'Опубликовано' && !isRole3 && (
                         <>
                             <button className="view-btn">
                                 <Link to={`/news/${news.id}`} >
@@ -129,49 +199,49 @@ const BidPage = observer(() => {
     };
 
     const renderEvents = (status) => {
-        return bidContentStore.getWithStatus(BidCurrentTab, status).map(bid => (
-            <div key={bid.id} className="news-card-container">
+        return eventsData.filter(event => event.status === status).map(event => (
+            <div key={event.id} className="news-card-container">
                 <StandartCard
-                    status={bid.status}
-                    publicDate={bid.postData}
-                    title={bid.title}
-                    text={bid.text}
-                    images={bid.images}
+                    status={event.status}
+                    publicDate={event.postData}
+                    title={event.title}
+                    text={event.text}
+                    images={event.images}
                 />
                 <div className="news-card-comment">
                     <CommentInput
                         placeholder='Добавить комментарий'
-                        onBlur={(e) => handleStatusChange(bid.id, bid.status, e.target.value)}
+                        onBlur={(e) => handleStatusChange(event.id, event.status, e.target.value)}
                     />
                 </div>
                 <div className="news-card-actions">
-                    {status === 'На модерации' && (
+                    {status === 'На модерации' && !isRole3 && (
                         <>
-                            <button className="approve-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
+                            <button className="approve-btn" onClick={() => handleStatusChange(event.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
                                 <span>Одобрить заявку</span>
                             </button>
-                            <button className="reject-btn" onClick={() => handleStatusChange(bid.id, 'Отклонено')}>
+                            <button className="reject-btn" onClick={() => handleStatusChange(event.id, 'Отклонено')}>
                                 <img src={imgTrashIcon} alt="Отклонить" />
                                 <span>Отклонить заявку</span>
                             </button>
                         </>
                     )}
-                    {status === 'Одобрено' && (
-                        <button className="publish-btn" onClick={() => handleStatusChange(bid.id, 'Опубликовано')}>
+                    {status === 'Одобрено' && !isRole3 && (
+                        <button className="publish-btn" onClick={() => handleStatusChange(event.id, 'Опубликовано')}>
                             <img src={imgCheckIcon} alt="Опубликовать" />
                             <span>Опубликовать</span>
                         </button>
                     )}
-                    {status === 'Опубликовано' && (
+                    {status === 'Опубликовано' && !isRole3 && (
                         <>
                             <button className="view-btn">
-                                <Link to={`/events/${bid.id}`} >
+                                <Link to={`/events/${event.id}`} >
                                     <img src={imgViewIcon} alt="Посмотреть" />
                                     <span>Посмотреть событие</span>
                                 </Link>
                             </button>
-                            <button className="view-btn" onClick={() => handleStatusChange(bid.id, 'Одобрено')}>
+                            <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено')}>
                                 <img src={imgTrashIcon} alt="Снять с публикации" />
                                 <span>Снять с публикации</span>
                             </button>
@@ -181,6 +251,9 @@ const BidPage = observer(() => {
             </div>
         ));
     };
+
+    if (loading) return <Loader />;
+    if (error) return <p>{error}</p>;
 
     return (
         <div className="bid-page page-content">
@@ -240,6 +313,6 @@ const BidPage = observer(() => {
             <Footer />
         </div>
     );
-});
+};
 
 export default BidPage;

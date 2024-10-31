@@ -1,0 +1,55 @@
+const permissionsData = {
+    1: { // Администратор
+        homepage: true,
+        newspage: true,
+        devicepage: true,
+        calendarevents: true,
+        map: true,
+        software: true,
+        submissionNews: true,
+        submissionEvents: true,
+        processingEvents: true,
+        processingNews: true,
+        publishingNews: true,
+        publishingTech: true,
+        userManagement: true,
+        viewingLogs: true,
+    },
+    2: { // Гость
+        homepage: true,
+        newspage: true,
+        devicepage: true,
+        calendarevents: true,
+        map: true,
+        software: true,
+        submissionNews: false,
+        submissionEvents: false,
+        processingEvents: false,
+        processingNews: false,
+        publishingNews: true,
+        publishingTech: false,
+        userManagement: false,
+        viewingLogs: false,
+    },
+    3: { // Роль с id 3 Авторизованный пользователь
+        homepage: true,
+        newspage: true,
+        devicepage: true,
+        calendarevents: true,
+        map: true,
+        software: true,
+        submissionNews: true,
+        submissionEvents: true,
+        processingEvents: false,
+        processingNews: false,
+        publishingNews: false,
+        publishingTech: false,
+        userManagement: false,
+        viewingLogs: false,
+    },
+    // Добавьте другие роли здесь
+};
+
+export const getPermissions = (roleId) => {
+    return permissionsData[roleId] || {};
+};
