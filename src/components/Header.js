@@ -2,6 +2,8 @@ import '../styles/Header.css';
 import { useState, useEffect } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebaseConfig';
 import notificationImg from '../images/notification.svg';
 import NotificationPush from './NotificationPush';
 import Cookies from 'js-cookie';
@@ -16,12 +18,25 @@ function Header({ setShowAuthPush }) {
 
     useEffect(() => {
         const storedUserId = Cookies.get('userId');
-        const storedRoleName = Cookies.get('roleName');
 
         if (storedUserId) {
-            setUser({ id: storedUserId });
-            setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
-            setRoleName(storedRoleName);
+            const userRef = ref(database, `Users/${storedUserId}`);
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    setUser(userData);
+                    setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
+
+                    const roleRef = ref(database, `Roles/${userData.role}`);
+                    get(roleRef).then((roleSnapshot) => {
+                        if (roleSnapshot.exists()) {
+                            const roleData = roleSnapshot.val();
+                            setRoleName(roleData.rusname);
+                            Cookies.set('roleName', roleData.rusname);
+                        }
+                    });
+                }
+            });
         }
     }, []);
 
@@ -35,7 +50,6 @@ function Header({ setShowAuthPush }) {
             setUser(null);
             Cookies.remove('userId');
             Cookies.remove('roleId');
-            Cookies.remove('permissions');
             Cookies.remove('roleName');
             navigate(0); // Перезагрузка страницы
         }).catch((error) => {

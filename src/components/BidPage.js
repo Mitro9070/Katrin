@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ref, get, set } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
@@ -26,6 +26,7 @@ const BidPage = () => {
     const [eventsData, setEventsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
@@ -37,8 +38,9 @@ const BidPage = () => {
                 const userId = Cookies.get('userId');
                 const roleId = Cookies.get('roleId');
 
-                if (!userId || !roleId) {
-                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                if (!userId) {
+                    navigate('/'); // Переадресация на главную страницу для гостей
+                    return;
                 }
 
                 switch (roleId) {
@@ -99,7 +101,7 @@ const BidPage = () => {
 
         fetchData();
         Cookies.set('currentPage', 'bid');
-    }, []);
+    }, [navigate]);
 
     const changeCurrentBidTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;

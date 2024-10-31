@@ -1,12 +1,12 @@
 import '../styles/NewsPage.css'; // Импорт стилей для страницы новостей
 import { useState, useEffect } from 'react'; // Импорт хуков useState и useEffect из React
-import { Link } from 'react-router-dom'; // Импорт компонента Link из react-router-dom для навигации
+import { Link, useNavigate } from 'react-router-dom'; // Импорт компонента Link из react-router-dom для навигации
 import StandartCard from './StandartCard'; // Импорт компонента StandartCard для отображения карточек новостей
 import { ref, get } from 'firebase/database'; // Импорт функций ref и get из firebase/database для работы с базой данных Firebase
-import { getAuth } from 'firebase/auth'; // Импорт функции getAuth из firebase/auth для работы с аутентификацией Firebase
 import { database } from '../firebaseConfig'; // Импорт конфигурации Firebase
 import Cookies from 'js-cookie'; // Импорт библиотеки js-cookie для работы с куки
 import Loader from './Loader'; // Импорт компонента Loader для отображения индикатора загрузки
+import { getPermissions } from '../utils/Permissions'; // Импорт функции getPermissions для получения разрешений
 
 const NewsPage = () => {
     const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
@@ -21,48 +21,37 @@ const NewsPage = () => {
     const [modalMessage, setModalMessage] = useState(''); // Состояние для сообщения в модальном окне
     const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
     const [error, setError] = useState(null); // Состояние для обработки ошибок
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const auth = getAuth(); // Получение объекта аутентификации Firebase
-                const currentUser = auth.currentUser ? auth.currentUser.uid : Cookies.get('userId'); // Получение текущего пользователя или идентификатора пользователя из куки
-                console.log('Current User бля:', currentUser);
-                let roleId = 2; // Идентификатор роли по умолчанию для "Гость"
+                const userId = Cookies.get('userId');
+                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
+                const permissions = getPermissions(roleId);
 
-                if (currentUser) {
-                    const userRef = ref(database, `Users/${currentUser}`); // Ссылка на данные пользователя в базе данных Firebase
-                    const userSnapshot = await get(userRef); // Получение данных пользователя из базы данных
-                    if (userSnapshot.exists()) {
-                        const userData = userSnapshot.val(); // Получение данных пользователя
-                        setUserName(userData.Name); // Установка имени пользователя
-                        roleId = userData.role; // Установка идентификатора роли пользователя
-                        console.log('User Data Бля:', userData);
-                    } else {
-                        console.error('User not found'); // Ошибка, если пользователь не найден
-                    }
-                }
+                setPermissions(permissions);
 
-                const roleRef = ref(database, `Roles/${roleId}`); // Ссылка на данные роли в базе данных Firebase
-                const roleSnapshot = await get(roleRef); // Получение данных роли из базы данных
-                let roleData;
-                if (roleSnapshot.exists()) {
-                    roleData = roleSnapshot.val(); // Получение данных роли
-                    setPermissions(roleData.permissions); // Установка разрешений пользователя
-                    console.log('Role Data Бля:', roleData);
-                } else {
-                    throw new Error('Роль не найдена'); // Ошибка, если роль не найдена
-                }
-
-                // Проверяем разрешения для доступа к странице новостей
-                if (!roleData.permissions.newspage) {
-                    if (roleId === 2) {
-                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                    } else {
-                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, обратитесь к администратору.');
-                    }
-                    setShowModal(true); // Отображение модального окна с сообщением
-                    return;
+                switch (roleId) {
+                    case '1': // Администратор
+                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '3': // Авторизованный пользователь
+                        if (!permissions.submissionNews && !permissions.submissionEvents) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '2': // Гость
+                        if (!permissions.newspage) {
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
+                        }
+                        break;
+                    default:
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
 
                 await fetchNews(); // Загрузка новостей
@@ -77,7 +66,8 @@ const NewsPage = () => {
         };
 
         fetchData(); // Вызов функции загрузки данных
-    }, []);
+        Cookies.set('currentPage', 'news');
+    }, [navigate]);
 
     const fetchNews = async () => {
         try {

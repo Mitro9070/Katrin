@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
 
 import '../styles/Menu.css';
-import iconHomeImg from '../images/home.svg';
+import iconHomeImg from '../images/home.png';
 import iconBookImg from '../images/book.svg';
 import iconPrinterImg from '../images/printer.svg';
 import iconPOImg from '../images/on-laptop.svg';

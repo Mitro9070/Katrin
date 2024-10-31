@@ -1,117 +1,105 @@
-import '../styles/DevicesPage.css';
-import StandartCard from './StandartCard';
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ref, get } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
-import { database } from '../firebaseConfig';
-import Cookies from 'js-cookie';
-import Loader from './Loader'; // Добавляем импорт компонента Loader
-import DeviceForm from './DeviceForm'; // Предполагается, что у вас есть форма для добавления устройства
-import { navigationStore } from '../stores/NavigationStore'; // Добавляем импорт navigationStore
+import '../styles/DevicesPage.css'; // Импорт стилей для страницы устройств
+import { useState, useEffect } from 'react'; // Импорт хуков useState и useEffect из React
+import { Link, useNavigate } from 'react-router-dom'; // Импорт компонента Link из react-router-dom для навигации
+import StandartCard from './StandartCard'; // Импорт компонента StandartCard для отображения карточек устройств
+import { ref, get } from 'firebase/database'; // Импорт функций ref и get из firebase/database для работы с базой данных Firebase
+import { database } from '../firebaseConfig'; // Импорт конфигурации Firebase
+import Cookies from 'js-cookie'; // Импорт библиотеки js-cookie для работы с куки
+import Loader from './Loader'; // Импорт компонента Loader для отображения индикатора загрузки
+import DeviceForm from './DeviceForm'; // Импорт формы для добавления устройства
+import { getPermissions } from '../utils/Permissions'; // Импорт функции getPermissions для получения разрешений
 
 const DevicesPage = () => {
-    const [currentTab, setCurrentTab] = useState('All');
-    const [isAddDevice, setIsAddDevice] = useState(false);
-    const [devices, setDevices] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const devicesPerPage = 6;
-    const [permissions, setPermissions] = useState({ devicepage: false });
-    const [userName, setUserName] = useState('Гость');
-    const [showModal, setShowModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
+    const [isAddDevice, setIsAddDevice] = useState(false); // Состояние для отображения формы добавления устройства
+    const [devices, setDevices] = useState([]); // Состояние для устройств
+    const [currentPage, setCurrentPage] = useState(1); // Состояние для текущей страницы
+    const devicesPerPage = 6; // Количество устройств на странице
+    const [permissions, setPermissions] = useState({ devicepage: false }); // Состояние для разрешений пользователя
+    const [userName, setUserName] = useState('Гость'); // Состояние для имени пользователя
+    const [showModal, setShowModal] = useState(false); // Состояние для отображения модального окна
+    const [modalMessage, setModalMessage] = useState(''); // Состояние для сообщения в модальном окне
+    const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
+    const [error, setError] = useState(null); // Состояние для обработки ошибок
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const auth = getAuth();
-                const currentUser = auth.currentUser ? auth.currentUser.uid : Cookies.get('userId');
-                console.log('Current User:', currentUser);
-                let roleId = 2; // Default role ID for "Гость"
+                const userId = Cookies.get('userId');
+                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
+                const permissions = getPermissions(roleId);
 
-                if (currentUser) {
-                    const userRef = ref(database, `Users/${currentUser}`);
-                    const userSnapshot = await get(userRef);
-                    if (userSnapshot.exists()) {
-                        const userData = userSnapshot.val();
-                        setUserName(userData.Name);
-                        roleId = userData.role;
-                        console.log('User Data:', userData);
-                    } else {
-                        console.error('User not found');
-                    }
+                setPermissions(permissions);
+
+                switch (roleId) {
+                    case '1': // Администратор
+                        if (!permissions.devicepage) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '3': // Авторизованный пользователь
+                        if (!permissions.devicepage) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
+                    case '2': // Гость
+                        if (!permissions.devicepage) {
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
+                        }
+                        break;
+                    default:
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
 
-                const roleRef = ref(database, `Roles/${roleId}`);
-                const roleSnapshot = await get(roleRef);
-                let roleData;
-                if (roleSnapshot.exists()) {
-                    roleData = roleSnapshot.val();
-                    setPermissions(roleData.permissions);
-                    console.log('Role Data:', roleData);
-                } else {
-                    throw new Error('Роль не найдена');
-                }
-
-                if (!roleData.permissions.devicepage) {
-                    if (roleId === 2) {
-                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                    } else {
-                        setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, обратитесь к администратору.');
-                    }
-                    setShowModal(true);
-                    return;
-                }
-
-                setCurrentTab(() => navigationStore.currentDevicesTab);
-                fetchDevices(); // Загружаем устройства при монтировании компонента
+                await fetchDevices(); // Загрузка устройств при монтировании компонента
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
-                setError('Не удалось загрузить данные');
+                setError('Не удалось загрузить данные'); // Установка сообщения об ошибке
             } finally {
-                setLoading(false);
+                setLoading(false); // Отключение индикатора загрузки
             }
         };
 
-        fetchData();
-    }, []);
+        fetchData(); // Вызов функции загрузки данных
+        Cookies.set('currentPage', 'devices');
+    }, [navigate]);
 
     const fetchDevices = async () => {
         try {
-            const devicesRef = ref(database, 'Devices');
-            const snapshot = await get(devicesRef);
+            const devicesRef = ref(database, 'Devices'); // Ссылка на данные устройств в базе данных Firebase
+            const snapshot = await get(devicesRef); // Получение данных устройств из базы данных
             if (snapshot.exists()) {
                 const devicesData = [];
                 snapshot.forEach(childSnapshot => {
-                    const device = childSnapshot.val();
+                    const device = childSnapshot.val(); // Получение данных устройства
                     devicesData.push({
                         id: childSnapshot.key,
                         ...device
                     });
                 });
-                setDevices(devicesData);
+                setDevices(devicesData); // Установка состояния устройств
             }
         } catch (error) {
-            console.error('Ошибка при загрузке устройств:', error);
+            console.error('Ошибка при загрузке устройств:', error); // Обработка ошибки загрузки устройств
         }
     };
 
     const onTabClickHandler = (e) => {
-        const selectedTab = e.target.dataset.tab;
-        setCurrentTab(selectedTab);
-        navigationStore.setCurrentDevicesTab(selectedTab);
-        setCurrentPage(1); // Сбрасываем текущую страницу при смене вкладки
+        const selectedTab = e.target.dataset.tab; // Получение выбранной вкладки
+        setCurrentTab(selectedTab); // Установка текущей вкладки
+        setCurrentPage(1); // Сброс текущей страницы при смене вкладки
     };
 
     const handleAddDeviceClick = () => {
-        setIsAddDevice(true);
+        setIsAddDevice(true); // Отображение формы добавления устройства
     };
 
     const handleFormClose = () => {
-        setIsAddDevice(false);
-        fetchDevices(); // Перезагружаем устройства после закрытия формы
+        setIsAddDevice(false); // Скрытие формы добавления устройства
+        fetchDevices(); // Перезагрузка устройств после закрытия формы
     };
 
     const renderDevices = (type) => {

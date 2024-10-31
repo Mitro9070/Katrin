@@ -21,7 +21,7 @@ function AuthMain({ setStage, setShowAuthPush }) {
             // Удаляем старые куки
             Cookies.remove('userId');
             Cookies.remove('roleId');
-            Cookies.remove('permissions');
+            Cookies.remove('roleName');
 
             // Получаем данные пользователя и его роль
             const userRef = ref(database, `Users/${user.uid}`);
@@ -32,10 +32,10 @@ function AuthMain({ setStage, setShowAuthPush }) {
                 const roleSnapshot = await get(roleRef);
                 if (roleSnapshot.exists()) {
                     const roleData = roleSnapshot.val();
-                    // Сохраняем ID пользователя, ID роли и разрешения в куках
+                    // Сохраняем ID пользователя, ID роли и название роли в куки
                     Cookies.set('userId', user.uid);
                     Cookies.set('roleId', userData.role);
-                    Cookies.set('permissions', JSON.stringify(roleData.permissions));
+                    //Cookies.set('roleName', roleData.rusname);
                 }
             }
 

@@ -41,6 +41,7 @@
     display: flex;
     flex-direction: row;
     text-align: start;
+    
     gap: 5px;
     padding-left: 20px;
 }
@@ -52,6 +53,7 @@
 .menu-tab img {
     width: 24px;
     height: auto;
+    
 }
 
 .menu-tab:hover img, .header-notifications:hover img, .slide-btns img:hover{
