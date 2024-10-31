@@ -55,6 +55,13 @@ const EventsPage = () => {
                             return;
                         }
                         break;
+                    case '5': // Менеджер событий
+                        if (!permissions.newspage) {
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
+                        }
+                        break;
                     default:
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
