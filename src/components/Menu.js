@@ -10,6 +10,7 @@ import iconPOImg from '../images/on-laptop.svg';
 import iconCalendarImg from '../images/calendar.svg';
 import iconMapImg from '../images/map-2.svg';
 import iconDocImg from '../images/write-on-doc.svg';
+import iconContentImg from '../images/write-on-doc.png'; // Импорт иконки для пункта "Контент"
 
 import logo from '../images/logo.png';
 
@@ -38,6 +39,12 @@ function Menu({ setShowAuthPush }) {
                 <Link to="/map"><span onClick={(e) => onClickTabHandler(e, '/map')} className={`menu-tab ${currentPath === '/map' ? 'menu-selected-tab' : ''}`}><img src={iconMapImg} alt="" />Карта</span></Link>
                 {permissions.homepage && permissions.newspage && permissions.devicepage && permissions.calendarevents && permissions.map && permissions.software && (
                     <Link to="/bid"><span onClick={(e) => onClickTabHandler(e, '/bid')} className={`menu-tab ${currentPath === '/bid' ? 'menu-selected-tab' : ''}`}><img src={iconDocImg} alt="" />Заявки</span></Link>
+                )}
+                {(roleId === '4' || roleId === '1') && (
+                    <>
+                        <div className="menu-divider"></div> {/* Серая линия */}
+                        <Link to="/content"><span onClick={(e) => onClickTabHandler(e, '/content')} className={`menu-tab ${currentPath === '/content' ? 'menu-selected-tab' : ''}`}><img src={iconContentImg} alt="" />Контент</span></Link>
+                    </>
                 )}
             </div>
             <div className="menu-profile" onClick={() => setShowAuthPush(true)}>

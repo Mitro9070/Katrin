@@ -32,6 +32,7 @@ const BidPage = () => {
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
     const isRole3 = roleId === '3';
+    const isRole4 = roleId === '4';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,7 +53,11 @@ const BidPage = () => {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
                         break;
-                    
+                    case '4': // Контент менеджер
+                        if (!permissions.processingNews && !permissions.publishingNews) {
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        }
+                        break;
                     default:
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
@@ -82,7 +87,7 @@ const BidPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if (roleId === '3' && item.organizer !== userId) return;
+                        if ((roleId === '3' || roleId === '4') && item.organizer !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -166,7 +171,7 @@ const BidPage = () => {
                     </div>
                 )}
                 <div className="news-card-actions">
-                    {status === 'На модерации' && !isRole3 && (
+                    {status === 'На модерации' && (roleId === '1' || roleId === '4') && (
                         <>
                             <button className="approve-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
@@ -178,13 +183,13 @@ const BidPage = () => {
                             </button>
                         </>
                     )}
-                    {status === 'Одобрено' && !isRole3 && (
+                    {status === 'Одобрено' && (roleId === '1' || roleId === '4') && (
                         <button className="publish-btn" onClick={() => handleStatusChange(news.id, 'Опубликовано')}>
                             <img src={imgCheckIcon} alt="Опубликовать" />
                             <span>Опубликовать</span>
                         </button>
                     )}
-                    {status === 'Опубликовано' && !isRole3 && (
+                    {status === 'Опубликовано' && (roleId === '1' || roleId === '4') && (
                         <>
                             <button className="view-btn">
                                 <Link to={`/news/${news.id}`} >
@@ -222,7 +227,7 @@ const BidPage = () => {
                     </div>
                 )}
                 <div className="news-card-actions">
-                    {status === 'На модерации' && !isRole3 && (
+                    {status === 'На модерации' && roleId === '1' && (
                         <>
                             <button className="approve-btn" onClick={() => handleStatusChange(event.id, 'Одобрено')}>
                                 <img src={imgCheckIcon} alt="Одобрить" />
@@ -234,13 +239,13 @@ const BidPage = () => {
                             </button>
                         </>
                     )}
-                    {status === 'Одобрено' && !isRole3 && (
+                    {status === 'Одобрено' && roleId === '1' && (
                         <button className="publish-btn" onClick={() => handleStatusChange(event.id, 'Опубликовано')}>
                             <img src={imgCheckIcon} alt="Опубликовать" />
                             <span>Опубликовать</span>
                         </button>
                     )}
-                    {status === 'Опубликовано' && !isRole3 && (
+                    {status === 'Опубликовано' && roleId === '1' && (
                         <>
                             <button className="view-btn">
                                 <Link to={`/events/${event.id}`} >

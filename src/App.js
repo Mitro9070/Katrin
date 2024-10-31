@@ -21,6 +21,7 @@ import SingleEventsPage from './components/SingleEventsPage';
 import Readaktor from './components/Readaktor';
 import CKEditorRedaktor from './components/CKEditor';
 import EditBidPage from './components/EditBidPage';
+import ContentPage from './components/ContentPage'; // Импорт компонента ContentPage
 
 function App() {
     const [ShowAuth, setShowAuth] = useState(false);
@@ -48,6 +49,7 @@ function App() {
                     <Route exact path='/bid/edit/:typeForm/:id' element={<EditBidPage />} />
                     <Route exact path='/bid/:bidType/:id' element={<SingleBidPage />} />
                     <Route exact path='/red' element={<CKEditorRedaktor />} />
+                    <Route exact path='/content' element={<ContentPage />} /> {/* Добавляем маршрут для ContentPage */}
                     <Route exact path='/*' element={<NotFoundPage />} />
                 </Routes>
                 {ShowAuth && (
