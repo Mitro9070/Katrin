@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, get, set } from 'firebase/database';
+import { ref, get, set, push } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
@@ -31,9 +31,11 @@ const BidPage = () => {
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
+    const userEmail = Cookies.get('userEmail'); // Получаем email пользователя из куков
     const isRole3 = roleId === '3';
     const isRole4 = roleId === '4';
     const isRole5 = roleId === '5';
+    const isRole6 = roleId === '6'; // Техник
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,6 +52,7 @@ const BidPage = () => {
                         }
                         break;
                     case '3': // Авторизованный пользователь
+                    case '6': // Техник
                         if (!permissions.submissionNews && !permissions.submissionEvents) {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
@@ -82,7 +85,7 @@ const BidPage = () => {
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if (roleId === '3' && item.organizer !== userId) return;
+                        if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
                         if (roleId === '5' && item.organizer !== userId) return;
                         newsData.push({
                             ...item,
@@ -94,7 +97,7 @@ const BidPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if ((roleId === '3' || roleId === '4') && item.organizer !== userId) return;
+                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -159,6 +162,36 @@ const BidPage = () => {
         }
     };
 
+    const handleAddNews = async (newsItem) => {
+        try {
+            const newsRef = ref(database, 'News');
+            const newNewsRef = push(newsRef);
+            await set(newNewsRef, {
+                ...newsItem,
+                organizer: userId,
+                organizer_email: userEmail
+            });
+            setNewsData([...newsData, { ...newsItem, id: newNewsRef.key, organizer: userId, organizer_email: userEmail }]);
+        } catch (error) {
+            console.error("Ошибка при добавлении новости:", error);
+        }
+    };
+
+    const handleAddEvent = async (eventItem) => {
+        try {
+            const eventsRef = ref(database, 'Events');
+            const newEventRef = push(eventsRef);
+            await set(newEventRef, {
+                ...eventItem,
+                organizer: userId,
+                organizer_email: userEmail
+            });
+            setEventsData([...eventsData, { ...eventItem, id: newEventRef.key, organizer: userId, organizer_email: userEmail }]);
+        } catch (error) {
+            console.error("Ошибка при добавлении события:", error);
+        }
+    };
+
     const renderNews = (status) => {
         return newsData.filter(news => news.status === status).map(news => (
             <div key={news.id} className="news-card-container">
@@ -169,7 +202,7 @@ const BidPage = () => {
                     text={news.text}
                     images={news.images}
                 />
-                {!isRole3 && !isRole5 && (
+                {!isRole3 && !isRole5 && !isRole6 && (
                     <div className="news-card-comment">
                         <CommentInput
                             placeholder='Добавить комментарий'
@@ -323,10 +356,10 @@ const BidPage = () => {
                     </>
                 )}
                 {BidCurrentTab === 'News' && IsAddPage && (
-                    <BidForm setIsAddPage={setIsAddPage} typeForm={'News'} />
+                    <BidForm setIsAddPage={setIsAddPage} typeForm={'News'} onAdd={handleAddNews} />
                 )}
                 {BidCurrentTab === 'Events' && IsAddPage && (
-                    <BidForm setIsAddPage={setIsAddPage} typeForm={'Events'} />
+                    <BidForm setIsAddPage={setIsAddPage} typeForm={'Events'} onAdd={handleAddEvent} />
                 )}
             </div>
             <Footer />

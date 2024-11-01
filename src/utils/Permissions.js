@@ -79,6 +79,22 @@ const permissionsData = {
         userManagement: false,
         viewingLogs: false,
     },
+    6: { // Роль с id 6 Техник
+        homepage: true,
+        newspage: true,
+        devicepage: true,
+        calendarevents: true,
+        map: true,
+        software: true,
+        submissionNews: true,
+        submissionEvents: true,
+        processingEvents: false,
+        processingNews: false,
+        publishingNews: false,
+        publishingTech: true,
+        userManagement: false,
+        viewingLogs: false,
+    },
     // Добавьте другие роли здесь
 };
 

@@ -23,6 +23,8 @@ const NewsPage = () => {
     const [error, setError] = useState(null); // Состояние для обработки ошибок
     const navigate = useNavigate();
 
+    const roleId = Cookies.get('roleId'); // Получение идентификатора роли из куки
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -31,6 +33,11 @@ const NewsPage = () => {
                 const permissions = getPermissions(roleId);
 
                 setPermissions(permissions);
+
+                if (!userId) {
+                    navigate('/'); // Переадресация на главную страницу для гостей
+                    return;
+                }
 
                 switch (roleId) {
                     case '1': // Администратор
@@ -58,6 +65,13 @@ const NewsPage = () => {
                         }
                         break;
                     case '5': // Менеджер событий
+                        if (!permissions.newspage) {
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
+                        }
+                        break;
+                    case '6': // Техник
                         if (!permissions.newspage) {
                             setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
                             setShowModal(true); // Отображение модального окна с сообщением
@@ -147,12 +161,21 @@ const NewsPage = () => {
         }
     };
 
-    const newsTypeList = { 'Ads': 'Объявления', 'Devices': 'Устройства и ПО', 'Activity': 'Мероприятия' }; // Список типов новостей
+    const newsTypeList = { 'Ads': 'Объявления', 'Devices': 'Устройства и ПО', 'Activity': 'Мероприятия', 'TechNews': 'Тех. новости' }; // Список типов новостей
 
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab; // Получение выбранной вкладки
         setCurrentTab(selectedTab); // Установка текущей вкладки
         setCurrentPage(1); // Сброс текущей страницы при смене вкладки
+    };
+
+    const renderTechNews = () => {
+        return (
+            <div className="tech-news-placeholder">
+                <h2>Тех. новости</h2>
+                <p>Эта страница доступна только для ролей Техник и Администратор.</p>
+            </div>
+        );
     };
 
     const renderNews = (type) => {
@@ -258,6 +281,8 @@ const NewsPage = () => {
             return devices;
         } else if (currentTab === 'Activity') {
             return events;
+        } else if (currentTab === 'TechNews') {
+            return news.filter(news => news.elementType === 'Тех. новости');
         } else {
             return news.filter(news => news.elementType === newsTypeList[currentTab]);
         }
@@ -293,13 +318,17 @@ const NewsPage = () => {
             )}
             <div className="bid-page-head noselect">
                 <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
+                {(roleId === '1' || roleId === '6') && (
+                    <p className={`bid-page-head-tab ${currentTab === 'TechNews' ? 'bid-page-head-tab-selected' : ''}`} data-tab="TechNews" onClick={onTabClickHandler}>Тех. новости</p>
+                )}
                 <p className={`bid-page-head-tab ${currentTab === 'Ads' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Ads" onClick={onTabClickHandler}>Объявления</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Devices' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Devices" onClick={onTabClickHandler}>Устройства и ПО</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Activity' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Activity" onClick={onTabClickHandler}>Мероприятия</p>
             </div>
             <div className="news-page-content">
                 {currentTab === 'Devices' && renderDevices()}
-                {currentTab !== 'All' && currentTab !== 'Activity' && currentTab !== 'Devices' && renderNews(newsTypeList[currentTab])}
+                {currentTab === 'TechNews' && renderTechNews()}
+                {currentTab !== 'All' && currentTab !== 'Activity' && currentTab !== 'Devices' && currentTab !== 'TechNews' && renderNews(newsTypeList[currentTab])}
                 {currentTab === 'All' && renderAll()}
                 {currentTab === 'Activity' && renderEvents()}
             </div>

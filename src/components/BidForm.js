@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { database, storage } from '../firebaseConfig';
-import { ref as databaseRef, set } from "firebase/database";
+import { ref as databaseRef, set, get } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid'; // Для генерации UID
 
@@ -21,6 +21,7 @@ import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 
 import { navigationStore } from '../stores/NavigationStore';
+import Cookies from 'js-cookie';
 
 function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     let datetime = '15 Июня, 12:00';
@@ -31,8 +32,28 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [isAdsChecked, setIsAdsChecked] = useState(false); // Состояние для отслеживания чекбокса "Объявления"
     const [isImportant, setIsImportant] = useState(false);
     const [loading, setLoading] = useState(false); // Состояние для отслеживания загрузки
+    const [userEmail, setUserEmail] = useState(''); // Состояние для хранения email пользователя
 
     const [CarouselPosition, setCarouselPosition] = useState(0);
+
+    const userId = Cookies.get('userId');
+
+    useEffect(() => {
+        const fetchUserEmail = async () => {
+            try {
+                const userRef = databaseRef(database, `Users/${userId}`);
+                const userSnapshot = await get(userRef);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.val();
+                    setUserEmail(userData.email);
+                }
+            } catch (error) {
+                console.error("Ошибка при получении email пользователя:", error);
+            }
+        };
+
+        fetchUserEmail();
+    }, [userId]);
 
     const changeAddPageHandler = () => {
         setIsAddPage && setIsAddPage(() => false);
@@ -113,9 +134,9 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 place: document?.getElementById('bid-place')?.value || '',
                 start_date: document?.getElementById('bid-start-date')?.value || '',
                 end_date: document?.getElementById('bid-end-date')?.value || '',
-                organizer: document?.getElementById('bid-organizer')?.value || '',
+                organizer: document?.getElementById('bid-organizer')?.value || userId,
                 organizer_phone: document?.getElementById('organizer-phone')?.value || '',
-                organizer_email: document?.getElementById('organizer-email')?.value || '',
+                organizer_email: document?.getElementById('organizer-email')?.value || userEmail,
                 status: "На модерации",
                 images: photosUrls || [],
                 files: filesUrls || [],

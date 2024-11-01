@@ -11,6 +11,7 @@ import iconCalendarImg from '../images/calendar.svg';
 import iconMapImg from '../images/map-2.svg';
 import iconDocImg from '../images/write-on-doc.svg';
 import iconContentImg from '../images/write-on-doc.png'; // Импорт иконки для пункта "Контент"
+import iconTechNewsImg from '../images/settings.svg'; // Импорт иконки для пункта "Тех. новости"
 
 import logo from '../images/logo.png';
 
@@ -44,6 +45,12 @@ function Menu({ setShowAuthPush }) {
                     <>
                         <div className="menu-divider"></div> {/* Серая линия */}
                         <Link to="/content"><span onClick={(e) => onClickTabHandler(e, '/content')} className={`menu-tab ${currentPath === '/content' ? 'menu-selected-tab' : ''}`}><img src={iconContentImg} alt="" />Контент</span></Link>
+                    </>
+                )}
+                {(roleId === '6' || roleId === '1') && (
+                    <>
+                        <div className="menu-divider"></div> {/* Серая линия */}
+                        <Link to="/tech-news"><span onClick={(e) => onClickTabHandler(e, '/tech-news')} className={`menu-tab ${currentPath === '/tech-news' ? 'menu-selected-tab' : ''}`}><img src={iconTechNewsImg} alt="" />Тех. новости</span></Link>
                     </>
                 )}
             </div>
