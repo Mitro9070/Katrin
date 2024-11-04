@@ -29,7 +29,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' />]);
     const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' />]);
-    const [isAdsChecked, setIsAdsChecked] = useState(false); // Состояние для отслеживания чекбокса "Объявления"
+    const [isAdsChecked, setIsAdsChecked] = useState(true); // По умолчанию выбран чекбокс "Объявления"
     const [isImportant, setIsImportant] = useState(false);
     const [loading, setLoading] = useState(false); // Состояние для отслеживания загрузки
     const [userEmail, setUserEmail] = useState(''); // Состояние для хранения email пользователя
@@ -134,6 +134,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 place: document?.getElementById('bid-place')?.value || '',
                 start_date: document?.getElementById('bid-start-date')?.value || '',
                 end_date: document?.getElementById('bid-end-date')?.value || '',
+                event_date: document?.getElementById('display_up_to')?.value || '', // Дата из CustomInput Дата Объявления
                 organizer: document?.getElementById('bid-organizer')?.value || userId,
                 organizer_phone: document?.getElementById('organizer-phone')?.value || '',
                 organizer_email: document?.getElementById('organizer-email')?.value || userEmail,
@@ -146,7 +147,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 postData: new Date().toLocaleString('ru-RU')
             };
 
-            const newBidRef = databaseRef(database, `${format[0] === 'Объявления' ? 'News' : 'Events'}/${newBidKey}`);
+            const newBidRef = databaseRef(database, `${typeForm === 'Events' ? 'Events' : 'News'}/${newBidKey}`);
             await set(newBidRef, newBidData);
 
             setLoading(false); // Остановка загрузки
@@ -181,7 +182,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         {typeForm !== 'Events' && (
                             <>
                                 <label className='bid-form-format-element'>
-                                    <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} />
+                                    <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} checked={isAdsChecked} />
                                     <p><img src={imgCheckmark} alt="" />Объявления</p>
                                 </label>
                                 <label className='bid-form-format-element'>
@@ -266,7 +267,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     {filesList.map((file) => file)}
                     <img src={imgAddIcon} alt="" className="add-filefield" onClick={addFileFieldHandler} />
                 </div>
-                <p className='title-bid-form'>Ссылки</p>
+                <p className='title-бид-form'>Ссылки</p>
                 <div className="links-row">
                     {linksList.map((link) => link)}
                     <img src={imgAddIcon} alt="" className="add-linkfield" onClick={addLinkFieldHandler} />

@@ -11,8 +11,6 @@ import { getPermissions } from '../utils/Permissions'; // Импорт функ�
 const NewsPage = () => {
     const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
     const [news, setNews] = useState([]); // Состояние для новостей
-    const [events, setEvents] = useState([]); // Состояние для событий
-    const [devices, setDevices] = useState([]); // Состояние для устройств
     const [currentPage, setCurrentPage] = useState(1); // Состояние для текущей страницы
     const itemsPerPage = 6; // Количество элементов на странице
     const [permissions, setPermissions] = useState({ newspage: false }); // Состояние для разрешений пользователя
@@ -33,11 +31,6 @@ const NewsPage = () => {
                 const permissions = getPermissions(roleId);
 
                 setPermissions(permissions);
-
-                if (!userId) {
-                    navigate('/'); // Переадресация на главную страницу для гостей
-                    return;
-                }
 
                 switch (roleId) {
                     case '1': // Администратор
@@ -71,20 +64,13 @@ const NewsPage = () => {
                             return;
                         }
                         break;
-                    case '6': // Техник
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
                     default:
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
 
                 await fetchNews(); // Загрузка новостей
-                await fetchEvents(); // Загрузка событий
-                await fetchDevices(); // Загрузка устройств при монтировании компонента
+                //await fetchEvents(); // Загрузка событий
+                //await fetchDevices(); // Загрузка устройств при монтировании компонента
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
                 setError('Не удалось загрузить данные'); // Установка сообщения об ошибке
@@ -119,63 +105,12 @@ const NewsPage = () => {
         }
     };
 
-    const fetchEvents = async () => {
-        try {
-            const eventsRef = ref(database, 'Events'); // Ссылка на данные событий в базе данных Firebase
-            const snapshot = await get(eventsRef); // Получение данных событий из базы данных
-            if (snapshot.exists()) {
-                const eventsData = [];
-                snapshot.forEach(childSnapshot => {
-                    const item = childSnapshot.val(); // Получение данных события
-                    if (item.status === 'Опубликовано') {
-                        eventsData.push({
-                            ...item,
-                            id: childSnapshot.key
-                        });
-                    }
-                });
-                setEvents(eventsData); // Установка состояния событий
-            }
-        } catch (error) {
-            console.error('Ошибка при загрузке событий:', error); // Обработка ошибки загрузки событий
-        }
-    };
-
-    const fetchDevices = async () => {
-        try {
-            const devicesRef = ref(database, 'Devices'); // Ссылка на данные устройств в базе данных Firebase
-            const snapshot = await get(devicesRef); // Получение данных устройств из базы данных
-            if (snapshot.exists()) {
-                const devicesData = [];
-                snapshot.forEach(childSnapshot => {
-                    const device = childSnapshot.val(); // Получение данных устройства
-                    devicesData.push({
-                        id: childSnapshot.key,
-                        ...device
-                    });
-                });
-                setDevices(devicesData); // Установка состояния устройств
-            }
-        } catch (error) {
-            console.error('Ошибка при загрузке устройств:', error); // Обработка ошибки загрузки устройств
-        }
-    };
-
     const newsTypeList = { 'Ads': 'Объявления', 'Devices': 'Устройства и ПО', 'Activity': 'Мероприятия', 'TechNews': 'Тех. новости' }; // Список типов новостей
 
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab; // Получение выбранной вкладки
         setCurrentTab(selectedTab); // Установка текущей вкладки
         setCurrentPage(1); // Сброс текущей страницы при смене вкладки
-    };
-
-    const renderTechNews = () => {
-        return (
-            <div className="tech-news-placeholder">
-                <h2>Тех. новости</h2>
-                <p>Эта страница доступна только для ролей Техник и Администратор.</p>
-            </div>
-        );
     };
 
     const renderNews = (type) => {
@@ -198,7 +133,7 @@ const NewsPage = () => {
                 </Link>
             ));
         } else {
-            const filteredNews = sortedNews.filter(news => news.status === 'Опубликовано');
+            const filteredNews = sortedNews.filter(news => news.status === 'Опубликовано' && news.elementType !== 'Тех. новости');
             const indexOfLastItem = currentPage * itemsPerPage;
             const indexOfFirstItem = indexOfLastItem - itemsPerPage;
             const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
@@ -211,64 +146,20 @@ const NewsPage = () => {
         }
     };
 
-    const renderDevices = () => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        const currentItems = devices.slice(indexOfFirstItem, indexOfLastItem);
-
-        return currentItems.map(e => (
-            <Link to={`/devices/${e.id}`} key={e.id}>
-                <StandartCard title={e.id} text={e.description} status={e.type_device} publicDate={e.postData} images={e.images} />
-            </Link>
-        ));
-    };
-
-    const renderEvents = () => {
-        const sortedEvents = [...events].sort((a, b) => {
-            if (!a.postData) return 1;
-            if (!b.postData) return -1;
-            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
-                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
-        });
-
-        const filteredEvents = sortedEvents.filter(event => event.status === 'Опубликовано');
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        const currentItems = filteredEvents.slice(indexOfFirstItem, indexOfLastItem);
-
-        return currentItems.map(e => (
-            <Link to={`/events/${e.id}`} key={e.id}>
-                <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
-            </Link>
-        ));
-    };
-
     const renderAll = () => {
         const sortedNews = [...news].sort((a, b) => {
             if (!a.postData) return 1;
             if (!b.postData) return -1;
             return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
                    new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
-        }).filter(news => news.status === 'Опубликовано');
-
-        const sortedEvents = [...events].sort((a, b) => {
-            if (!a.postData) return 1;
-            if (!b.postData) return -1;
-            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
-                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
-        }).filter(event => event.status === 'Опубликовано');
-
-        const combined = [...sortedNews, ...sortedEvents].sort((a, b) => {
-            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
-                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
-        });
+        }).filter(news => news.status === 'Опубликовано' && news.elementType !== 'Тех. новости');
 
         const indexOfLastItem = currentPage * itemsPerPage;
         const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        const currentItems = combined.slice(indexOfFirstItem, indexOfLastItem);
+        const currentItems = sortedNews.slice(indexOfFirstItem, indexOfLastItem);
 
         return currentItems.map(e => (
-            <Link to={`/${e.elementType === 'Мероприятия' ? 'events' : 'news'}/${e.id}`} key={e.id}>
+            <Link to={`/news/${e.id}`} key={e.id}>
                 <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
             </Link>
         ));
@@ -276,11 +167,7 @@ const NewsPage = () => {
 
     const getFilteredItems = () => {
         if (currentTab === 'All') {
-            return [...news, ...events];
-        } else if (currentTab === 'Devices') {
-            return devices;
-        } else if (currentTab === 'Activity') {
-            return events;
+            return news.filter(news => news.elementType !== 'Тех. новости');
         } else if (currentTab === 'TechNews') {
             return news.filter(news => news.elementType === 'Тех. новости');
         } else {
@@ -326,11 +213,9 @@ const NewsPage = () => {
                 <p className={`bid-page-head-tab ${currentTab === 'Activity' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Activity" onClick={onTabClickHandler}>Мероприятия</p>
             </div>
             <div className="news-page-content">
-                {currentTab === 'Devices' && renderDevices()}
-                {currentTab === 'TechNews' && renderTechNews()}
-                {currentTab !== 'All' && currentTab !== 'Activity' && currentTab !== 'Devices' && currentTab !== 'TechNews' && renderNews(newsTypeList[currentTab])}
+                {currentTab === 'TechNews' && renderNews('Тех. новости')}
+                {currentTab !== 'All' && currentTab !== 'TechNews' && renderNews(newsTypeList[currentTab])}
                 {currentTab === 'All' && renderAll()}
-                {currentTab === 'Activity' && renderEvents()}
             </div>
             {filteredItems.length > itemsPerPage || currentPage > 1 ? (
                 <ul className="pagination">
