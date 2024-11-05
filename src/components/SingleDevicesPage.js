@@ -1,13 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-
 import '../styles/SingleBidPage.css';
 import '../styles/SingleDevicesPage.css';
-
 import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import { navigationStore } from '../stores/NavigationStore';
-
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
@@ -31,7 +28,6 @@ const SingleDevicesPage = () => {
             const snapshot = await get(deviceRef);
             if (snapshot.exists()) {
                 const deviceData = snapshot.val();
-                // Перемещаем main_image в начало массива images
                 if (deviceData.main_image && deviceData.images) {
                     deviceData.images = [deviceData.main_image, ...deviceData.images.filter(img => img !== deviceData.main_image)];
                 }
@@ -96,8 +92,8 @@ const SingleDevicesPage = () => {
     const optionsFields = [
         { label: 'Опция беспроводного интерфейса', key: 'wireless_interface_option' },
         { label: 'Опция подачи бумаги', key: 'paper_feed_option' },
-        { label: 'Опция установки 1', key: 'installation_option 1' },
-        { label: 'Опция установки 2', key: 'installation_option 2' },
+        { label: 'Опция установки 1', key: 'installation_option_1' },
+        { label: 'Опция установки 2', key: 'installation_option_2' },
         { label: 'Опция факса', key: 'fax_option' },
     ];
 
@@ -118,29 +114,29 @@ const SingleDevicesPage = () => {
         { label: 'Панель управления', key: 'control_panel' },
         { label: 'Интерфейсы', key: 'interfaces' },
         { label: 'Технология печати', key: 'printing_technology' },
-        { label: 'Скорость печати', key: 'printing_speed' },
-        { label: 'Разрешение печати', key: 'printing_resolution' },
+        { label: 'Скорость печати', key: 'print_speed' },
+        { label: 'Разрешение печати', key: 'print_resolution' },
         { label: 'Двусторонняя печать', key: 'duplex_printing' },
-        { label: 'Поддерживаемые языки описания страниц', key: 'page_description_languages' },
+        { label: 'Поддерживаемые языки описания страниц', key: 'supported_page_description_languages' },
         { label: 'Емкость лотка ручной подачи', key: 'manual_feed_tray_capacity' },
-        { label: 'Емкость основного лотка подачи на печать', key: 'main_feed_tray_capacity' },
-        { label: 'Максимальная емкость лотков подачи на печать', key: 'max_feed_tray_capacity' },
+        { label: 'Емкость основного лотка подачи на печать', key: 'main_input_tray_capacity' },
+        { label: 'Максимальная емкость лотков подачи на печать', key: 'maximum_input_tray_capacity' },
         { label: 'Емкость выходного лотка', key: 'output_tray_capacity' },
-        { label: 'Максимальный формат печати', key: 'max_printing_format' },
+        { label: 'Максимальный формат печати', key: 'maximum_print_size' },
         { label: 'Минимальная плотность материалов для печати', key: 'min_printing_material_density' },
         { label: 'Максимальная плотность материалов для печати', key: 'max_printing_material_density' },
-        { label: 'Время выхода первого отпечатка', key: 'first_print_time' },
+        { label: 'Время выхода первого отпечатка', key: 'first_print_out_time' },
         { label: 'Тиражирование', key: 'copying' },
-        { label: 'Время выхода первой копии', key: 'first_copy_time' },
+        { label: 'Время выхода первой копии', key: 'first_copy_out_time' },
         { label: 'Масштабирование', key: 'scaling' },
-        { label: 'Скорость сканирования', key: 'scanning_speed' },
-        { label: 'Емкость автоподатчиков оригиналов на сканирование', key: 'feeder_capacity' },
-        { label: 'Максимальный формат сканирования', key: 'max_scanning_format' },
-        { label: 'Технология системы сканирования', key: 'scanning_system_technology' },
-        { label: 'Оптическое разрешение сканирования', key: 'optical_scanning_resolution' },
-        { label: 'Интерполяционное разрешение сканирования', key: 'interpolated_scanning_resolution' },
-        { label: 'Направления сканирования', key: 'scanning_directions' },
-        { label: 'Формат файлов сканирования', key: 'scanning_file_format' },
+        { label: 'Скорость сканирования', key: 'scan_speed' },
+        { label: 'Емкость автоподатчиков оригиналов на сканирование', key: 'adf_capacity' },
+        { label: 'Максимальный формат сканирования', key: 'maximum_scan_size' },
+        { label: 'Технология системы сканирования', key: 'scanning_technology' },
+        { label: 'Оптическое разрешение сканирования', key: 'optical_scan_resolution' },
+        { label: 'Интерполяционное разрешение сканирования', key: 'interpolated_scan_resolution' },
+        { label: 'Направления сканирования', key: 'scan_destinations' },
+        { label: 'Форматы файлов сканирования', key: 'scan_file_formats' },
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
     ];
 
@@ -221,7 +217,7 @@ const SingleDevicesPage = () => {
                 </div>
                 <div className="column-3">
                     <p className="devices-info-table-title">Расходные материалы</p>
-                    {renderParameters(device.options?.сonsumables, consumablesFields)}
+                    {renderParameters(device.options?.consumables, consumablesFields)}
                 </div>
             </div>
             <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
