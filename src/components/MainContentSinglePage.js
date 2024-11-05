@@ -12,13 +12,18 @@ import photo from '../images/photo-news.png';
 import imgDeviceM240T from '../images/М240Т.png';
 
 function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevice = false }) {
+    // Состояние для текущего изображения
     const [currentImage, setCurrentImage] = useState(0);
+    // Состояние для URL изображений
     const [imageUrls, setImageUrls] = useState([]);
+    // Состояние для URL файлов
     const [fileUrls, setFileUrls] = useState([]);
 
+    // useEffect для загрузки изображений и файлов
     useEffect(() => {
         const fetchImageUrls = async () => {
             if (data?.images) {
+                // Загружаем URL изображений
                 const urls = await Promise.all(data.images.map(async (image) => {
                     const cachedImage = localStorage.getItem(image);
                     if (cachedImage) {
@@ -36,6 +41,7 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
 
         const fetchFileUrls = async () => {
             if (data?.files) {
+                // Загружаем URL файлов
                 const urls = await Promise.all(data.files.map(async (file) => {
                     const cachedFile = localStorage.getItem(file);
                     if (cachedFile) {
@@ -55,10 +61,12 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
         fetchFileUrls();
     }, [data]);
 
+    // Функция для перехода к предыдущему изображению
     const prevImage = () => {
         currentImage > 0 && setCurrentImage(currentImage - 1);
     };
 
+    // Функция для перехода к следующему изображению
     const nextImage = () => {
         if (currentImage < imageUrls.length - 1) {
             setCurrentImage(currentImage + 1);
@@ -90,7 +98,7 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                                 <img src={imageUrls[currentImage] || photo} alt="" />
                             )}
                             {isDevice && (
-                                <img src={imgDeviceM240T} alt="" />
+                                <img src={imageUrls[currentImage] || imgDeviceM240T} alt="" />
                             )}
                         </div>
                         <div className="single-bid-tags-carousel-container">
