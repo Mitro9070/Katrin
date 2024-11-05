@@ -51,10 +51,26 @@ const SingleDevicesPage = () => {
     const renderParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
-                <tr key={index}>
-                    <td>{field.label}</td>
-                    <td>{parameters[field.key] || 'Нет данных'}</td>
-                </tr>
+                parameters[field.key] && (
+                    <div className="devices-info-table-row" key={index}>
+                        <p>{field.label}</p>
+                        <p>{parameters[field.key]}</p>
+                    </div>
+                )
+            ));
+        }
+        return <p>Нет данных</p>;
+    };
+
+    const renderTableParameters = (parameters, fields) => {
+        if (typeof parameters === 'object') {
+            return fields.map((field, index) => (
+                parameters[field.key] && (
+                    <tr key={index}>
+                        <td style={{ paddingRight: '30px' }}><strong>{field.label}</strong></td>
+                        <td>{parameters[field.key]}</td>
+                    </tr>
+                )
             ));
         }
         return <p>Нет данных</p>;
@@ -70,12 +86,19 @@ const SingleDevicesPage = () => {
         }
     };
 
+    const basicFields = [
+        { label: 'Тип оборудования', key: 'type_div' },
+        { label: 'Торговая марка', key: 'marc' },
+        { label: 'Модель', key: 'model' },
+        { label: 'Артикул', key: 'article_number' },
+    ];
+
     const optionsFields = [
-        { label: 'Опция беспроводного интерфейса', key: 'wireless_interface' },
-        { label: 'Опция подачи бумаги', key: 'paper_feed' },
-        { label: 'Опция установки 1', key: 'installation_1' },
-        { label: 'Опция установки 2', key: 'installation_2' },
-        { label: 'Опция факса', key: 'fax' },
+        { label: 'Опция беспроводного интерфейса', key: 'wireless_interface_option' },
+        { label: 'Опция подачи бумаги', key: 'paper_feed_option' },
+        { label: 'Опция установки 1', key: 'installation_option 1' },
+        { label: 'Опция установки 2', key: 'installation_option 2' },
+        { label: 'Опция факса', key: 'fax_option' },
     ];
 
     const consumablesFields = [
@@ -126,7 +149,7 @@ const SingleDevicesPage = () => {
             <Link to={'/devices'}>
                 <div className="bid-page-head noselect">
                     <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
-                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
+                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFУ" onClick={onTabClickHandler}>МФУ</p>
                     <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
                 </div>
             </Link>
@@ -162,7 +185,7 @@ const SingleDevicesPage = () => {
                 </div>
                 <div className="single-device-info">
                     <h1 className="device-title">{id}</h1>
-                    <p className="device-description">{device.description}</p>
+                    <p className="device-description">{device.description || 'Нет данных'}</p>
                 </div>
             </div>
             <div className="devices-info-btns">
@@ -190,22 +213,7 @@ const SingleDevicesPage = () => {
             <div className="devices-info-table">
                 <div className="column-1">
                     <p className="devices-info-table-title">Основные параметры</p>
-                    <div className="devices-info-table-row">
-                        <p>Тип оборудования</p>
-                        <p>{device.options?.basic?.type_device || 'Нет данных'}</p>
-                    </div>
-                    <div className="devices-info-table-row">
-                        <p>Торговая марка</p>
-                        <p>{device.options?.basic?.marc || 'Нет данных'}</p>
-                    </div>
-                    <div className="devices-info-table-row">
-                        <p>Модель</p>
-                        <p>{id}</p>
-                    </div>
-                    <div className="devices-info-table-row">
-                        <p>Артикул</p>
-                        <p>{device.options?.basic?.article || 'Нет данных'}</p>
-                    </div>
+                    {renderParameters(device.options?.basic, basicFields)}
                 </div>
                 <div className="column-2">
                     <p className="devices-info-table-title">Опции</p>
@@ -224,7 +232,7 @@ const SingleDevicesPage = () => {
                 <div className="device-all-param">
                     <table>
                         <tbody>
-                            {renderParameters(device.options?.all, allFields)}
+                            {renderTableParameters(device.options?.all, allFields)}
                         </tbody>
                     </table>
                 </div>
