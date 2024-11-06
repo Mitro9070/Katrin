@@ -1,0 +1,136 @@
+/* src/styles/ContentPage.css */
+
+.content-page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.content-page-head-2 {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.content-page-head-tab {
+    width: 345px;
+    height: 43px;
+    font-size: 28px;
+    border-bottom: 1px solid #A9A9A9;
+    cursor: pointer;
+    margin-bottom: 30px;
+}
+
+.content-page-head-tab-selected {
+    color: #0C8CE9;
+    border-bottom: 1px solid #0C8CE9;
+}
+
+.content-page-btn-add {
+    width: 307px;
+    height: 40px;
+    margin-left: 38px;
+    background-color: #0C8CE9;
+    color: #FFFFFF;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.subtabs {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.subtab {
+    width: 111px;
+    color: #A9A9A9;
+    font-family: "PF DinText Pro";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.subtab-selected {
+    color: #0C8CE9;
+}
+
+.filter {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-left: -200px;
+}
+
+.filter img {
+    margin-right: 10px;
+}
+
+.custom-approve-reject-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 80px;
+    height: 40px;
+}
+
+.custom-approve-btn, .custom-reject-btn, .custom-publish-btn, .custom-unpublish-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 40px;
+    background-color: #FFFFFF;
+    border: 1px solid #989898;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.custom-approve-btn:active, .custom-reject-btn:active, .custom-publish-btn:active, .custom-unpublish-btn:active {
+    background-color: #989898;
+}
+
+.comments-menu-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 80px;
+    height: 40px;
+}
+
+.comments-btn, .menu-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: #FFFFFF;
+    border: none; /* Убрана рамка */
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.comments-btn:active, .menu-btn:active {
+    background-color: #989898;
+}
+
+.comments-menu-buttons .menu {
+    display: none;
+    position: absolute;
+}
+
+.comments-menu-buttons button:hover .menu, .comments-menu-buttons button:focus-within .menu {
+    display: block;
+    background-color: white;
+    border: 1px solid #ccc;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    z-index: 1;
+}
