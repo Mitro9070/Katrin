@@ -22,50 +22,30 @@ const DevicesPage = () => {
     const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
     const [error, setError] = useState(null); // Состояние для обработки ошибок
     const navigate = useNavigate();
+    const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const userId = Cookies.get('userId');
-                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
                 const permissions = getPermissions(roleId);
 
                 setPermissions(permissions);
 
                 switch (roleId) {
                     case '1': // Администратор
-                        if (!permissions.devicepage) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
                     case '3': // Авторизованный пользователь
+                    case '4': // Контент-менеджер
+                    case '5': // Менеджер событий
+                    case '6': // Техник
                         if (!permissions.devicepage) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                            setShowModal(true); // Отображение модального окна с сообщением
+                            return;
                         }
                         break;
                     case '2': // Гость
                         if (!permissions.devicepage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '4': // Контент-менеджер
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '5': // Менеджер событий
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '6': // Техник
-                        if (!permissions.newspage) {
                             setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
                             setShowModal(true); // Отображение модального окна с сообщением
                             return;
@@ -124,14 +104,14 @@ const DevicesPage = () => {
     };
 
     const renderDevices = (type) => {
-        const filteredDevices = type ? devices.filter(device => device.type_device === type) : devices;
+        const filteredDevices = type ? devices.filter(device => device.options_all_type_of_automatic_document_feeder === type) : devices;
         const indexOfLastDevice = currentPage * devicesPerPage;
         const indexOfFirstDevice = indexOfLastDevice - devicesPerPage;
         const currentDevices = filteredDevices.slice(indexOfFirstDevice, indexOfLastDevice);
 
         return currentDevices.map(e => (
             <Link to={`/devices/${e.id}`} key={e.id}>
-                <StandartCard title={e.id} text={e.description} status={e.type_device} publicDate={e.postData} images={e.images} />
+                <StandartCard title={e.id} text={e.description} status={e.options_all_type_of_automatic_document_feeder} publicDate={e.postData} images={e.images} />
             </Link>
         ));
     };
@@ -140,9 +120,9 @@ const DevicesPage = () => {
         if (currentTab === 'All') {
             return devices;
         } else if (currentTab === 'MFU') {
-            return devices.filter(device => device.type_device === 'МФУ');
+            return devices.filter(device => device.options_all_type_of_automatic_document_feeder === 'МФУ');
         } else if (currentTab === 'Printers') {
-            return devices.filter(device => device.type_device === 'Принтер');
+            return devices.filter(device => device.options_all_type_of_automatic_document_feeder === 'Принтер');
         }
         return [];
     };
@@ -181,7 +161,7 @@ const DevicesPage = () => {
                 <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
                 <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
-                {!isAddDevice && (
+                {!isAddDevice && roleId === '1' && (
                     <div className="devices-page-btn-add" onClick={handleAddDeviceClick}>
                         <p>Добавить устройство</p>
                     </div>
