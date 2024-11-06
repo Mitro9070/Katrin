@@ -76,14 +76,18 @@ const DeviceForm = ({ setIsAddDevice }) => {
             const imagesUrls = [];
             let mainImageUrl = '';
 
-            for (const image of images) {
-                const imageRef = storageRef(storage, `Devices/${deviceName}/${image.name}`);
-                await uploadBytes(imageRef, image);
-                const imageUrl = await getDownloadURL(imageRef);
-                imagesUrls.push(imageUrl);
+            if (images && images.length > 0) {
+                for (const image of images) {
+                    if (image && image.name) {
+                        const imageRef = storageRef(storage, `Devices/${deviceName}/${image.name}`);
+                        await uploadBytes(imageRef, image);
+                        const imageUrl = await getDownloadURL(imageRef);
+                        imagesUrls.push(imageUrl);
 
-                if (image.name.startsWith('Main')) {
-                    mainImageUrl = imageUrl;
+                        if (image.name.startsWith('Main')) {
+                            mainImageUrl = imageUrl;
+                        }
+                    }
                 }
             }
 
@@ -94,10 +98,10 @@ const DeviceForm = ({ setIsAddDevice }) => {
             }
 
             const updatedData = {
-                ...existingData,
+                ...(existingData || {}),
                 options_all_type_of_automatic_document_feeder: deviceType,
                 description: deviceDescription,
-                images: imagesUrls.length > 0 ? imagesUrls : existingData.images,
+                images: imagesUrls.length > 0 ? imagesUrls : existingData.images || [],
                 main_image: mainImageUrl || existingData.main_image
             };
 
@@ -233,7 +237,7 @@ const DeviceForm = ({ setIsAddDevice }) => {
                     setUploadProgress((completedItems / totalItems) * 100);
                 }
 
-                console.log('Данные сохранены.');
+                console.log('Data saved successfully.');
             };
 
             reader.readAsArrayBuffer(file);
