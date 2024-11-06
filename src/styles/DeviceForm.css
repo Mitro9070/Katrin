@@ -39,6 +39,10 @@
     background-color: #ff4d4d;
 }
 
+.upload-btn {
+    background-color: hsl(114, 71%, 27%);
+}
+
 .close-btn:hover {
     background-color: #ff1a1a;
 }

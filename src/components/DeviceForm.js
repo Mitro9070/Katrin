@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import React, { useState, useEffect } from 'react';
+import { ref as databaseRef, get, set, update } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { database, storage } from '../firebaseConfig';
-import { set, update, ref as dbRef } from 'firebase/database';
 import * as XLSX from 'xlsx';
 import '../styles/DeviceForm.css';
 import Loader from './Loader';
@@ -12,8 +12,53 @@ const DeviceForm = ({ setIsAddDevice }) => {
     const [deviceDescription, setDeviceDescription] = useState('');
     const [deviceType, setDeviceType] = useState('МФУ');
     const [images, setImages] = useState([]);
+    const [mainImage, setMainImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [devicesList, setDevicesList] = useState([]);
+    const [selectedDevice, setSelectedDevice] = useState('');
+
+    useEffect(() => {
+        fetchDevicesList();
+    }, []);
+
+    const fetchDevicesList = async () => {
+        try {
+            const devicesRef = databaseRef(database, 'Devices');
+            const snapshot = await get(devicesRef);
+            if (snapshot.exists()) {
+                const devicesData = [];
+                snapshot.forEach(childSnapshot => {
+                    devicesData.push(childSnapshot.key);
+                });
+                setDevicesList(devicesData);
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке списка устройств:', error);
+        }
+    };
+
+    const handleDeviceSelect = async (e) => {
+        const selectedDeviceName = e.target.value;
+        setSelectedDevice(selectedDeviceName);
+
+        if (selectedDeviceName) {
+            try {
+                const deviceRef = databaseRef(database, `Devices/${selectedDeviceName}`);
+                const snapshot = await get(deviceRef);
+                if (snapshot.exists()) {
+                    const deviceData = snapshot.val();
+                    setDeviceName(selectedDeviceName);
+                    setDeviceDescription(deviceData.description || '');
+                    setDeviceType(deviceData.options_all_type_of_automatic_document_feeder || 'МФУ');
+                    setImages(deviceData.images || []);
+                    setMainImage(deviceData.main_image || '');
+                }
+            } catch (error) {
+                console.error(`Ошибка при загрузке устройства ${selectedDeviceName}:`, error);
+            }
+        }
+    };
 
     const handleImageChange = (e) => {
         setImages([...e.target.files]);
@@ -24,12 +69,15 @@ const DeviceForm = ({ setIsAddDevice }) => {
         setLoading(true);
 
         try {
-            const deviceRef = dbRef(database, `Devices/${deviceName}`);
+            const deviceRef = databaseRef(database, `Devices/${deviceName}`);
+            const snapshot = await get(deviceRef);
+            const existingData = snapshot.exists() ? snapshot.val() : {};
+
             const imagesUrls = [];
             let mainImageUrl = '';
 
             for (const image of images) {
-                const imageRef = ref(storage, `Devices/${deviceName}/${image.name}`);
+                const imageRef = storageRef(storage, `Devices/${deviceName}/${image.name}`);
                 await uploadBytes(imageRef, image);
                 const imageUrl = await getDownloadURL(imageRef);
                 imagesUrls.push(imageUrl);
@@ -41,14 +89,19 @@ const DeviceForm = ({ setIsAddDevice }) => {
 
             if (!mainImageUrl && imagesUrls.length > 0) {
                 mainImageUrl = imagesUrls[0];
+            } else if (!mainImageUrl && mainImage) {
+                mainImageUrl = mainImage;
             }
 
-            await set(deviceRef, {
-                type_device: deviceType,
+            const updatedData = {
+                ...existingData,
+                options_all_type_of_automatic_document_feeder: deviceType,
                 description: deviceDescription,
-                images: imagesUrls,
-                main_image: mainImageUrl
-            });
+                images: imagesUrls.length > 0 ? imagesUrls : existingData.images,
+                main_image: mainImageUrl || existingData.main_image
+            };
+
+            await update(deviceRef, updatedData);
 
             setIsAddDevice(false);
         } catch (error) {
@@ -74,7 +127,7 @@ const DeviceForm = ({ setIsAddDevice }) => {
                 const devices = {};
 
                 const saveToParsedData = (parsedData, path, value) => {
-                    if (value === undefined) return; // Пропускаем undefined
+                    if (value === undefined) return;
 
                     const keys = path.split('.');
                     let current = parsedData;
@@ -174,13 +227,13 @@ const DeviceForm = ({ setIsAddDevice }) => {
 
                 for (const [key, value] of Object.entries(devices)) {
                     if (value !== undefined && value !== "") {
-                        await update(dbRef(database, `Devices/${key}`), value);
+                        await update(databaseRef(database, `Devices/${key}`), value);
                     }
                     completedItems++;
                     setUploadProgress((completedItems / totalItems) * 100);
                 }
 
-                console.log('Data saved successfully.');
+                console.log('Данные сохранены.');
             };
 
             reader.readAsArrayBuffer(file);
@@ -193,6 +246,12 @@ const DeviceForm = ({ setIsAddDevice }) => {
 
     return (
         <form className="device-form" onSubmit={handleSubmit}>
+            <select value={selectedDevice} onChange={handleDeviceSelect}>
+                <option value="" disabled>Выберите устройство для редактирования</option>
+                {devicesList.map((device, index) => (
+                    <option key={index} value={device}>{device}</option>
+                ))}
+            </select>
             <input
                 type="text"
                 placeholder="Название устройства"
@@ -210,15 +269,17 @@ const DeviceForm = ({ setIsAddDevice }) => {
                 <option value="МФУ">МФУ</option>
                 <option value="Принтер">Принтер</option>
             </select>
+            <div>
+                <span>Загружено {images.length} фото</span>
+            </div>
             <input
                 type="file"
                 multiple
                 onChange={handleImageChange}
-                required
             />
             <div className="form-buttons">
                 <button type="button" className="close-btn" onClick={() => setIsAddDevice(false)}>Закрыть</button>
-                <button type="submit" className="submit-btn">Добавить устройство</button>
+                <button type="submit" className="submit-btn">Сохранить устройство</button>
                 <label htmlFor="file-upload" className="upload-btn">
                     <img src={imgUploadIcon} alt="Upload" />
                     <span>Загрузить данные устройств</span>
@@ -232,9 +293,7 @@ const DeviceForm = ({ setIsAddDevice }) => {
                 />
             </div>
             {loading && (
-                <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }}></div>
-                </div>
+                <Loader />
             )}
         </form>
     );
