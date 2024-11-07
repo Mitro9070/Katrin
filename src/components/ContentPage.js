@@ -153,11 +153,37 @@ const ContentPage = () => {
         }
     };
 
+    // Функция для парсинга даты из postData и ее конвертации в корректный формат
+    const parseDate = (dateString) => {
+        // Логирование полученной строки даты
+        console.log('Исходная строка даты:', dateString);
+
+        // Разделяем строку на дату и время
+        const [date, time] = dateString.split(', ');
+
+        // Разделяем дату на части
+        const [day, month, year] = date.split('.');
+
+        // Формируем строку для объекта Date
+        const formattedDateString = `${year}-${month}-${day}T${time}`;
+        
+        // Логирование строки формата ISO
+        console.log('Форматированная строка даты:', formattedDateString);
+
+        // Создаем и возвращаем объект Date
+        const parsedDate = new Date(formattedDateString);
+        
+        // Логирование объекта Date
+        console.log('Объект Date:', parsedDate);
+
+        return parsedDate;
+    };
+
     const renderItemsAsTable = (items) => {
         return (
             <table>
                 <tbody>
-                    {items.map((item, index) => (
+                    {items.map((item) => (
                         <React.Fragment key={item.id}>
                             <tr>
                                 <td colSpan="6" style={{ padding: '0' }}>
@@ -182,7 +208,8 @@ const ContentPage = () => {
                                     lineHeight: '125%',
                                     padding: '10px'
                                 }}>
-                                    {new Date(item.postData).toLocaleString()}
+                                    {/* Парсим и форматируем дату из postData */}
+                                    {parseDate(item.postData).toLocaleString()}
                                 </td>
                                 <td style={{
                                     width: '570px',
