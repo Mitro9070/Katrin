@@ -81,11 +81,14 @@ const ContentPage = () => {
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
+                        const organizer = users[item.organizer];
+                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
                         if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
                         if (roleId === '5' && item.organizer !== userId) return;
                         filteredNewsData.push({
                             ...item,
-                            organizerName: users[item.organizer]?.surname + ' ' + users[item.organizer]?.name,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                             id: childSnapshot.key
                         });
                     });
@@ -94,10 +97,13 @@ const ContentPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
+                        const organizer = users[item.organizer];
+                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
                         if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
                         filteredEventsData.push({
                             ...item,
-                            organizerName: users[item.organizer]?.surname + ' ' + users[item.organizer]?.name,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                             id: childSnapshot.key
                         });
                     });
@@ -136,7 +142,24 @@ const ContentPage = () => {
                     const newsItem = newsSnapshot.val();
                     newsItem.status = newStatus;
                     await set(newsRef, newsItem);
-                    setNewsData(newsData.map(news => news.id === id ? newsItem : news));
+
+                    // Обновим новости и состояние
+                    const usersRef = ref(database, 'Users');
+                    const usersSnapshot = await get(usersRef);
+                    const users = usersSnapshot.val();
+
+                    const updatedNewsData = newsData.map(news => {
+                        if (news.id === id) {
+                            return {
+                                ...newsItem,
+                                organizerName: `${users[newsItem.organizer]?.surname || ''} ${users[newsItem.organizer]?.Name ? users[newsItem.organizer].Name.charAt(0) + '.' : ''}`.trim(),
+                                id: news.id
+                            };
+                        }
+                        return news;
+                    });
+
+                    setNewsData(updatedNewsData);
                 }
             } else if (currentTab === 'Events') {
                 const eventRef = ref(database, `Events/${id}`);
@@ -145,7 +168,24 @@ const ContentPage = () => {
                     const eventItem = eventSnapshot.val();
                     eventItem.status = newStatus;
                     await set(eventRef, eventItem);
-                    setEventsData(eventsData.map(event => event.id === id ? eventItem : event));
+
+                    // Обновим события и состояние
+                    const usersRef = ref(database, 'Users');
+                    const usersSnapshot = await get(usersRef);
+                    const users = usersSnapshot.val();
+
+                    const updatedEventsData = eventsData.map(event => {
+                        if (event.id === id) {
+                            return {
+                                ...eventItem,
+                                organizerName: `${users[eventItem.organizer]?.surname || ''} ${users[eventItem.organizer]?.Name ? users[eventItem.organizer].Name.charAt(0) + '.' : ''}`.trim(),
+                                id: event.id
+                            };
+                        }
+                        return event;
+                    });
+
+                    setEventsData(updatedEventsData);
                 }
             }
         } catch (error) {
@@ -208,7 +248,6 @@ const ContentPage = () => {
                                     lineHeight: '125%',
                                     padding: '10px'
                                 }}>
-                                    {/* Парсим и форматируем дату из postData */}
                                     {parseDate(item.postData).toLocaleString()}
                                 </td>
                                 <td style={{
@@ -235,26 +274,26 @@ const ContentPage = () => {
                                     lineHeight: '125%',
                                     padding: '10px'
                                 }}>
-                                    {item.organizerName}
+                                    {item.organizerName !== 'Неизвестно' && item.organizerName}
                                 </td>
                                 <td style={{ padding: '10px' }}>
                                     {item.status === 'На модерации' && (
                                         <div className="custom-approve-reject-buttons">
-                                            <button className="custom-approve-btn" onClick={() => handleStatusChange(item.id, 'Одобрено')}>
+                                            <button title="Одобрить" className="custom-approve-btn" onClick={() => handleStatusChange(item.id, 'Одобрено')}>
                                                 <img src={imgCheckIcon} alt="Одобрить" />
                                             </button>
-                                            <button className="custom-reject-btn" onClick={() => handleStatusChange(item.id, 'Отклонено')}>
+                                            <button title="Отклонить" className="custom-reject-btn" onClick={() => handleStatusChange(item.id, 'Отклонено')}>
                                                 <img src={imgCloseCancelIcon} alt="Отклонить" />
                                             </button>
                                         </div>
                                     )}
                                     {item.status === 'Одобрено' && (
-                                        <button className="custom-publish-btn" onClick={() => handleStatusChange(item.id, 'Опубликовано')}>
+                                        <button title="Опубликовать" className="custom-publish-btn" onClick={() => handleStatusChange(item.id, 'Опубликовано')}>
                                             <img src={imgLocationIcon} alt="Опубликовать" />
                                         </button>
                                     )}
                                     {item.status === 'Опубликовано' && (
-                                        <button className="custom-unpublish-btn" onClick={() => handleStatusChange(item.id, 'Одобрено')}>
+                                        <button title="Снять с публикации" className="custom-unpublish-btn" onClick={() => handleStatusChange(item.id, 'Одобрено')}>
                                             <img src={imgRefreshRepeatIcon} alt="Снять с публикации" />
                                         </button>
                                     )}
@@ -284,9 +323,6 @@ const ContentPage = () => {
             </table>
         );
     };
-
-    if (loading) return <Loader />;
-    if (error) return <p>{error}</p>;
 
     return (
         <div className="content-page page-content">
@@ -318,7 +354,7 @@ const ContentPage = () => {
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Мероприятия</h2>
                         {renderItemsAsTable(newsData.filter(item => item.elementType === 'Мероприятия'))}
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
-                        {renderItemsAsTable(newsData.filter(item => item.elementType === 'Технические новости'))}
+                        {renderItemsAsTable(newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))}
                     </>
                 )}
                 {currentTab === 'Events' && !isAddPage && (
@@ -330,7 +366,7 @@ const ContentPage = () => {
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Мероприятия</h2>
                         {renderItemsAsTable(eventsData.filter(item => item.elementType === 'Мероприятия'))}
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
-                        {renderItemsAsTable(eventsData.filter(item => item.elementType === 'Технические новости'))}
+                        {renderItemsAsTable(eventsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))}
                     </>
                 )}
             </div>
