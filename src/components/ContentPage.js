@@ -1,5 +1,3 @@
-// src/components/ContentPage.js
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ref, get, set, push } from 'firebase/database';
@@ -28,6 +26,8 @@ const ContentPage = () => {
     const [subTab, setSubTab] = useState('Draft');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showMenuId, setShowMenuId] = useState(null);
+
     const navigate = useNavigate();
 
     const roleId = Cookies.get('roleId');
@@ -232,20 +232,23 @@ const ContentPage = () => {
                                         </button>
                                     )}
                                 </td>
-                                <td style={{ padding: '10px' }}>
+                                <td style={{ padding: '10px', position: 'relative' }}>
                                     <div className="comments-menu-buttons">
                                         <button className="comments-btn">
                                             <img src={imgChatGroupIcon} alt="Комментарии" />
                                         </button>
-                                        <button className="menu-btn">
+                                        <button className="menu-btn" onClick={() => setShowMenuId(showMenuId === item.id ? null : item.id)}>
                                             <img src={imgMoreHorIcon} alt="Меню" />
-                                            <ul className="menu">
-                                                <li><Link to={`/details/${item.id}`}>Посмотреть</Link></li>
-                                                <li><Link to={`/edit/${item.id}`}>Редактировать</Link></li>
-                                                <li onClick={() => handleStatusChange(item.id, 'Архив')}>В архив</li>
-                                            </ul>
                                         </button>
                                     </div>
+                                    {/* Отображаем меню только для текущего элемента */}
+                                    {showMenuId === item.id && (
+                                        <div className="comments-menu">
+                                            <div className="comments-menu-item"><Link to={`/details/${item.id}`}>Посмотреть</Link></div>
+                                            <div className="comments-menu-item"><Link to={`/edit/${item.id}`}>Редактировать</Link></div>
+                                            <div className="comments-menu-item" onClick={() => handleStatusChange(item.id, 'Архив')}>В архив</div>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         </React.Fragment>
@@ -267,15 +270,15 @@ const ContentPage = () => {
             <div className="content-page-head-2 noselect">
                 <div className="subtabs">
                     <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
-                    <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" onClick={changeSubTabHandler}>Архив</p>
-                    <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler}>Корзина</p>
+                    <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" style={{ marginRight: '20px' }}>Архив</p>
+                    <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" style={{ marginRight: '20px' }}>Корзина</p>
+                    <div className="filter" style={{ marginRight: '20px' }}>
+                        <img src={imgFilterIcon} alt="filter" />
+                        <p className="filter-text">Фильтр</p>
+                    </div>
                 </div>
                 <div className="content-page-btn-add" onClick={() => setIsAddPage(true)}>
                     <p>Создать новость</p>
-                </div>
-                <div className="filter">
-                    <img src={imgFilterIcon} alt="filter" />
-                    <p>Фильтр</p>
                 </div>
             </div>
             <div className="content-page-content">
