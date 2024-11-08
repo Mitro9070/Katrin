@@ -12,7 +12,7 @@ import TableComponent from './TableComponent'; // Импорт TableComponent
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
-const ContentPage = () => {
+const TechPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
     const [currentTab, setCurrentTab] = useState('News');
     const [newsData, setNewsData] = useState([]);
@@ -48,16 +48,7 @@ const ContentPage = () => {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
                         break;
-                    case '4': // Контент менеджер
-                        if (!permissions.processingNews) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '5': // Менеджер событий
-                        if (!permissions.processingEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
+                    
                     default:
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                 }
@@ -85,7 +76,7 @@ const ContentPage = () => {
                                 organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                                 id: childSnapshot.key
                             });
-                        } else if (roleId !== '5' || item.organизатор === userId) {
+                        } else if (roleId !== '5' || item.organizer === userId) {
                             filteredNewsData.push({
                                 ...item,
                                 organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
@@ -101,14 +92,14 @@ const ContentPage = () => {
                         const organizer = users[item.organizer];
                         const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
-                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
+                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
                         if (item.status === 'Архив') {
                             filteredEventsData.push({
                                 ...item,
                                 organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                                 id: childSnapshot.key
                             });
-                        } else if (roleId !== '4' || item.organизатор === userId) {
+                        } else if (roleId !== '4' || item.organizer === userId) {
                             filteredEventsData.push({
                                 ...item,
                                 organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
@@ -139,7 +130,6 @@ const ContentPage = () => {
 
     const changeSubTabHandler = (e) => {
         const selectedSubTab = e.target.dataset.subtab;
-        console.log('Selected SubTab:', selectedSubTab); // Debugging
         setSubTab(selectedSubTab);
     };
 
@@ -198,14 +188,14 @@ const ContentPage = () => {
             ) : (
                 <>
                     <div className="content-page-head noselect">
-                        <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Новости</p>
-                        <p className={`content-page-head-tab ${currentTab === 'Events' ? 'content-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentTabHandler}>События</p>
+                        <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Тех. новости</p>
+                        
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
                             <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
-                            <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Архив</p>
-                            <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Корзина</p>
+                            <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" style={{ marginRight: '20px' }}>Архив</p>
+                            <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" style={{ marginRight: '20px' }}>Корзина</p>
                             <div className="filter" style={{ marginRight: '20px' }}>
                                 <img src={imgFilterIcon} alt="filter" />
                                 <p className="filter-text">Фильтр</p>
@@ -220,24 +210,7 @@ const ContentPage = () => {
                     <div className="content-page-content">
                         {currentTab === 'News' && (
                             <>
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Объявления</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Устройства и ПО</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Мероприятия</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
+                                
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
                                 {subTab === 'Archive' ? (
                                     <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
@@ -270,4 +243,4 @@ const ContentPage = () => {
     );
 };
 
-export default ContentPage;
+export default TechPage;
