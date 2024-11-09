@@ -23,6 +23,8 @@ import CKEditorRedaktor from './components/CKEditor';
 import EditBidPage from './components/EditBidPage';
 import ContentPage from './components/ContentPage'; // Импорт компонента ContentPage
 import TechPage from './components/TechPage'; // Импорт компонента TechPage
+import Profile from './components/Profile'; // Импорт компонента Profile
+import Admin from './components/Admin'; // Импорт компонента Admin
 
 function App() {
     const [ShowAuth, setShowAuth] = useState(false);
@@ -52,6 +54,8 @@ function App() {
                     <Route exact path='/red' element={<CKEditorRedaktor />} />
                     <Route exact path='/content' element={<ContentPage />} /> {/* Добавляем маршрут для ContentPage */}
                     <Route exact path='/tech-news' element={<TechPage />} /> {/* Добавляем маршрут для TechPage */}
+                    <Route exact path='/profile' element={<Profile />} /> {/* Добавляем маршрут для Profile */}
+                    <Route exact path='/admin' element={<Admin />} /> {/* Добавляем маршрут для Admin */}
                     <Route exact path='/*' element={<NotFoundPage />} />
                 </Routes>
                 {ShowAuth && (

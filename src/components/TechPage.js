@@ -14,9 +14,8 @@ import '../styles/ContentPage.css';
 
 const TechPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
-    const [currentTab, setCurrentTab] = useState('News');
+    const [currentTab, setCurrentTab] = useState('TechNews');
     const [newsData, setNewsData] = useState([]);
-    const [eventsData, setEventsData] = useState([]);
     const [subTab, setSubTab] = useState('Draft');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,7 +41,7 @@ const TechPage = () => {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
                         break;
-                    case '3': // Авторизованный пользователь
+                    
                     case '6': // Техник
                         if (!permissions.submissionNews && !permissions.submissionEvents) {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
@@ -54,14 +53,12 @@ const TechPage = () => {
                 }
 
                 const newsRef = ref(database, 'News');
-                const eventsRef = ref(database, 'Events');
                 const usersRef = ref(database, 'Users');
 
-                const [newsSnapshot, eventsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(eventsRef), get(usersRef)]);
+                const [newsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(usersRef)]);
                 const users = usersSnapshot.val();
 
                 const filteredNewsData = [];
-                const filteredEventsData = [];
 
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
@@ -69,7 +66,6 @@ const TechPage = () => {
                         const organizer = users[item.organizer];
                         const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
-                        if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
                         if (item.status === 'Архив') {
                             filteredNewsData.push({
                                 ...item,
@@ -86,31 +82,7 @@ const TechPage = () => {
                     });
                 }
 
-                if (eventsSnapshot.exists()) {
-                    eventsSnapshot.forEach((childSnapshot) => {
-                        const item = childSnapshot.val();
-                        const organizer = users[item.organizer];
-                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
-                        if (item.status === 'Архив') {
-                            filteredEventsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        } else if (roleId !== '4' || item.organizer === userId) {
-                            filteredEventsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        }
-                    });
-                }
-
                 setNewsData(filteredNewsData);
-                setEventsData(filteredEventsData);
             } catch (err) {
                 console.error('Ошибка при загрузке данных:', err);
                 setError('Не удалось загрузить данные');
@@ -120,7 +92,7 @@ const TechPage = () => {
         };
 
         fetchData();
-        Cookies.set('currentPage', 'content');
+        Cookies.set('currentPage', 'tech-news');
     }, [navigate, roleId, permissions, userId]);
 
     const changeCurrentTabHandler = (e) => {
@@ -135,46 +107,24 @@ const TechPage = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            if (currentTab === 'News') {
-                const newsRef = ref(database, `News/${id}`);
-                const newsSnapshot = await get(newsRef);
-                if (newsSnapshot.exists()) {
-                    const newsItem = newsSnapshot.val();
-                    newsItem.status = newStatus;
-                    await set(newsRef, newsItem);
+            const newsRef = ref(database, `News/${id}`);
+            const newsSnapshot = await get(newsRef);
+            if (newsSnapshot.exists()) {
+                const newsItem = newsSnapshot.val();
+                newsItem.status = newStatus;
+                await set(newsRef, newsItem);
 
-                    const updatedNewsData = newsData.map(news => {
-                        if (news.id === id) {
-                            return {
-                                ...newsItem,
-                                id: news.id
-                            };
-                        }
-                        return news;
-                    });
+                const updatedNewsData = newsData.map(news => {
+                    if (news.id === id) {
+                        return {
+                            ...newsItem,
+                            id: news.id
+                        };
+                    }
+                    return news;
+                });
 
-                    setNewsData(updatedNewsData.filter(news => subTab !== 'Archive' || news.status === 'Архив'));
-                }
-            } else if (currentTab === 'Events') {
-                const eventRef = ref(database, `Events/${id}`);
-                const eventSnapshot = await get(eventRef);
-                if (eventSnapshot.exists()) {
-                    const eventItem = eventSnapshot.val();
-                    eventItem.status = newStatus;
-                    await set(eventRef, eventItem);
-
-                    const updatedEventsData = eventsData.map(event => {
-                        if (event.id === id) {
-                            return {
-                                ...eventItem,
-                                id: event.id
-                            };
-                        }
-                        return event;
-                    });
-
-                    setEventsData(updatedEventsData.filter(event => subTab !== 'Archive' || event.status === 'Архив'));
-                }
+                setNewsData(updatedNewsData.filter(news => subTab !== 'Archive' || news.status === 'Архив'));
             }
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
@@ -184,18 +134,17 @@ const TechPage = () => {
     return (
         <div className="content-page page-content">
             {isAddPage ? (
-                <BidForm setIsAddPage={setIsAddPage} typeForm={currentTab === 'News' ? 'News' : 'Events'} />
+                <BidForm setIsAddPage={setIsAddPage} typeForm="TechNews" />
             ) : (
                 <>
                     <div className="content-page-head noselect">
-                        <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Тех. новости</p>
-                        
+                        <p className={`content-page-head-tab ${currentTab === 'TechNews' ? 'content-page-head-tab-selected' : ''}`} data-tab="TechNews" onClick={changeCurrentTabHandler}>Тех. новости</p>
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
                             <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
-                            <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" style={{ marginRight: '20px' }}>Архив</p>
-                            <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" style={{ marginRight: '20px' }}>Корзина</p>
+                            <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" style={{ marginRight: '20px' }} onClick={() => setSubTab('Archive')}>Архив</p>
+                            <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Корзина</p>
                             <div className="filter" style={{ marginRight: '20px' }}>
                                 <img src={imgFilterIcon} alt="filter" />
                                 <p className="filter-text">Фильтр</p>
@@ -203,42 +152,23 @@ const TechPage = () => {
                         </div>
                         {subTab !== 'Archive' && (
                             <div className="content-page-btn-add" onClick={() => setIsAddPage(true)}>
-                                <p>{currentTab === 'News' ? 'Создать новость' : 'Создать событие'}</p>
+                                <p>Создать тех. новость</p>
                             </div>
                         )}
                     </div>
                     <div className="content-page-content">
-                        {currentTab === 'News' && (
-                            <>
-                                
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
-                            </>
-                        )}
-                        {currentTab === 'Events' && (
-                            <>
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Внутренние события</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
-                                <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Внешние события</h2>
-                                {subTab === 'Archive' ? (
-                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                ) : (
-                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
-                                )}
-                            </>
+                        <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
+                        {subTab === 'Archive' ? (
+                            // Отображение таблицы с новостями в статусе "Архив"
+                            <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                        ) : (
+                            // Отображение таблицы с новостями, которые не находятся в статусе "Архив"
+                            <TableComponent items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
                         )}
                     </div>
                 </>
             )}
-            
+            <Footer />
         </div>
     );
 };

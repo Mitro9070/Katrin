@@ -78,7 +78,7 @@ function Header({ setShowAuthPush }) {
                     )
                 ) : (
                     <div className="header-follow" onClick={() => setShowAuthPush(true)}>
-                        <p>Подписаться</p>
+                        <p>Войти</p>
                     </div>
                 )}
                 {showUserMenu && user && (

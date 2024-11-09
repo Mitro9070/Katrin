@@ -23,7 +23,6 @@ const ContentPage = () => {
     const [showMenuId, setShowMenuId] = useState(null);
 
     const navigate = useNavigate();
-
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
@@ -79,19 +78,11 @@ const ContentPage = () => {
                         const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
                         if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
-                        if (item.status === 'Архив') {
-                            filteredNewsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        } else if (roleId !== '5' || item.organизатор === userId) {
-                            filteredNewsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        }
+                        filteredNewsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
                     });
                 }
 
@@ -102,19 +93,11 @@ const ContentPage = () => {
                         const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
                         if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
-                        if (item.status === 'Архив') {
-                            filteredEventsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        } else if (roleId !== '4' || item.organизатор === userId) {
-                            filteredEventsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        }
+                        filteredEventsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
                     });
                 }
 
@@ -139,7 +122,6 @@ const ContentPage = () => {
 
     const changeSubTabHandler = (e) => {
         const selectedSubTab = e.target.dataset.subtab;
-        console.log('Selected SubTab:', selectedSubTab); // Debugging
         setSubTab(selectedSubTab);
     };
 
@@ -198,8 +180,12 @@ const ContentPage = () => {
             ) : (
                 <>
                     <div className="content-page-head noselect">
-                        <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Новости</p>
-                        <p className={`content-page-head-tab ${currentTab === 'Events' ? 'content-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentTabHandler}>События</p>
+                        {(roleId === '1' || roleId === '4') && (
+                            <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Новости</p>
+                        )}
+                        {(roleId === '1' || roleId === '5') && (
+                            <p className={`content-page-head-tab ${currentTab === 'Events' ? 'content-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentTabHandler}>События</p>
+                        )}
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
@@ -265,7 +251,7 @@ const ContentPage = () => {
                     </div>
                 </>
             )}
-            
+            <Footer />
         </div>
     );
 };

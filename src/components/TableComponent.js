@@ -82,18 +82,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                 }}>
                                     {item.organizerName !== 'Неизвестно' && item.organizerName}
                                 </td>
-                                {subTab !== 'Archive' && 
                                 <td style={{ padding: '10px' }}>
-                                    {item.status === 'На модерации' && (
-                                        <div className="custom-approve-reject-buttons">
-                                            <button title="Одобрить" className="custom-approve-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
-                                                <img src={imgCheckIcon} alt="Одобрить" />
-                                            </button>
-                                            <button title="Отклонить" className="custom-reject-btn" onClick={() => onStatusChange(item.id, 'Отклонено')}>
-                                                <img src={imgCloseCancelIcon} alt="Отклонить" />
-                                            </button>
-                                        </div>
-                                    )}
                                     {item.status === 'Одобрено' && (
                                         <button title="Опубликовать" className="custom-publish-btn" onClick={() => onStatusChange(item.id, 'Опубликовано')}>
                                             <img src={imgLocationIcon} alt="Опубликовать" />
@@ -104,7 +93,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                             <img src={imgRefreshRepeatIcon} alt="Снять с публикации" />
                                         </button>
                                     )}
-                                </td>}
+                                </td>
                                 <td style={{ padding: '10px', position: 'relative' }}>
                                     <div className="comments-menu-buttons">
                                         <button className="comments-btn">
@@ -116,25 +105,22 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                     </div>
                                     {showMenuId === item.id && (
                                         <div className="comments-menu">
-                                            {currentTab === 'Events' ? (
-                                                <div className="comments-menu-item">
-                                                    <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                </div>
+                                            <div className="comments-menu-item">
+                                                <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                                    Посмотреть
+                                                </Link>
+                                            </div>
+                                            <div className="comments-menu-item">
+                                                <Link to={`/edit/${item.id}`}>Редактировать</Link>
+                                            </div>
+                                            {subTab === 'Archive' ? (
+                                                <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
                                             ) : (
-                                                <div className="comments-menu-item">
-                                                    <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                </div>
+                                                <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Архив')}>В архив</div>
                                             )}
-                                            {subTab !== 'Archive' && (<div className="comments-menu-item"><Link to={`/edit/${item.id}`}>Редактировать</Link></div>)}                                           
-                                            {subTab !== 'Archive'&& (<div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Архив')}>В архив</div>)}
                                         </div>
                                     )}
                                 </td>
-
                             </tr>
                         </React.Fragment>
                     ))}
