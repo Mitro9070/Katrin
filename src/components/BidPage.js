@@ -7,20 +7,15 @@ import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import StandartCard from '../components/StandartCard';
-import CommentInput from '../components/CommentInput'; // Импорт компонента CommentInput
 
-import imgArchiveIcon from '../images/archive.svg';
 import imgFilterIcon from '../images/filter.svg';
-import imgCheckIcon from '../images/checkmark.svg';
-import imgTrashIcon from '../images/trash.svg';
-import imgViewIcon from '../images/view.png';
+import imgViewIcon from '../images/view.png';  // Import the image for view button
 
 import '../styles/BidPage.css';
 import BidForm from './BidForm';
 
 const BidPage = () => {
     const [IsAddPage, setIsAddPage] = useState(false);
-    const [IsArchive, setIsArchive] = useState(false);
     const [BidCurrentTab, setBidCurrentTab] = useState('News');
     const [newsData, setNewsData] = useState([]);
     const [eventsData, setEventsData] = useState([]);
@@ -31,44 +26,40 @@ const BidPage = () => {
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
-    const userEmail = Cookies.get('userEmail'); // Получаем email пользователя из куков
-    const isRole3 = roleId === '3';
-    const isRole4 = roleId === '4';
-    const isRole5 = roleId === '5';
-    const isRole6 = roleId === '6'; // Техник
+    const userEmail = Cookies.get('userEmail');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (!userId) {
-                    navigate('/'); // Переадресация на главную страницу для гостей
+                    navigate('/');
                     return;
                 }
 
                 switch (roleId) {
-                    case '1': // Администратор
+                    case '1':
                         if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                         }
                         break;
-                    case '3': // Авторизованный пользователь
-                    case '6': // Техник
+                    case '3':
+                    case '6':
                         if (!permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                         }
                         break;
-                    case '4': // Контент менеджер
+                    case '4':
                         if (!permissions.processingNews && !permissions.publishingNews) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                         }
                         break;
-                    case '5': // Менеджер событий
+                    case '5':
                         if (!permissions.processingEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                         }
                         break;
                     default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                 }
 
                 const newsRef = ref(database, 'News');
@@ -86,7 +77,7 @@ const BidPage = () => {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
                         if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
-                        if (roleId === '5' && item.organizer !== userId) return;
+                        if (roleId === '5' && item.organизатор !== userId) return;
                         newsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -97,7 +88,7 @@ const BidPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
+                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -124,37 +115,20 @@ const BidPage = () => {
         setBidCurrentTab(selectedTab);
     };
 
-    const handleStatusChange = async (id, newStatus, comment = '') => {
+    const handleStatusChange = async (id, newStatus, type) => {
         try {
-            if (BidCurrentTab === 'News') {
-                const newsRef = ref(database, `News/${id}`);
-                const newsSnapshot = await get(newsRef);
-                if (newsSnapshot.exists()) {
-                    const newsItem = newsSnapshot.val();
-                    newsItem.status = newStatus;
-                    if (comment) {
-                        if (!newsItem.comments) {
-                            newsItem.comments = [];
-                        }
-                        newsItem.comments.push(comment);
-                    }
-                    await set(newsRef, newsItem);
-                    setNewsData(newsData.map(news => news.id === id ? newsItem : news));
-                }
-            } else if (BidCurrentTab === 'Events') {
-                const eventRef = ref(database, `Events/${id}`);
-                const eventSnapshot = await get(eventRef);
-                if (eventSnapshot.exists()) {
-                    const eventItem = eventSnapshot.val();
-                    eventItem.status = newStatus;
-                    if (comment) {
-                        if (!eventItem.comments) {
-                            eventItem.comments = [];
-                        }
-                        eventItem.comments.push(comment);
-                    }
-                    await set(eventRef, eventItem);
-                    setEventsData(eventsData.map(event => event.id === id ? eventItem : event));
+            const refPath = type === 'News' ? `News/${id}` : `Events/${id}`;
+            const dataRef = ref(database, refPath);
+            const snapshot = await get(dataRef);
+            if (snapshot.exists()) {
+                const dataItem = snapshot.val();
+                dataItem.status = newStatus;
+                await set(dataRef, dataItem);
+
+                if (type === 'News') {
+                    setNewsData(newsData.map(news => news.id === id ? { ...news, status: newStatus } : news));
+                } else {
+                    setEventsData(eventsData.map(event => event.id === id ? { ...event, status: newStatus } : event));
                 }
             }
         } catch (error) {
@@ -202,46 +176,18 @@ const BidPage = () => {
                     text={news.text}
                     images={news.images}
                 />
-                {!isRole3 && !isRole5 && !isRole6 && (
-                    <div className="news-card-comment">
-                        <CommentInput
-                            placeholder='Добавить комментарий'
-                            onBlur={(e) => handleStatusChange(news.id, news.status, e.target.value)}
-                        />
-                    </div>
-                )}
                 <div className="news-card-actions">
-                    {status === 'На модерации' && (roleId === '1' || roleId === '4') && (
-                        <>
-                            <button className="approve-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
-                                <img src={imgCheckIcon} alt="Одобрить" />
-                                <span>Одобрить заявку</span>
-                            </button>
-                            <button className="reject-btn" onClick={() => handleStatusChange(news.id, 'Отклонено')}>
-                                <img src={imgTrashIcon} alt="Отклонить" />
-                                <span>Отклонить заявку</span>
-                            </button>
-                        </>
-                    )}
-                    {status === 'Одобрено' && (roleId === '1' || roleId === '4') && (
-                        <button className="publish-btn" onClick={() => handleStatusChange(news.id, 'Опубликовано')}>
-                            <img src={imgCheckIcon} alt="Опубликовать" />
-                            <span>Опубликовать</span>
+                    <button className="view-btn">
+                        <Link to={`/news/${news.id}`}>
+                            <img src={imgViewIcon} alt="Посмотреть" />
+                            <span>Посмотреть новость</span>
+                        </Link>
+                    </button>
+                    {status === 'Архив' && (
+                        <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено', 'News')}>
+                            <img src={imgViewIcon} alt="Из архива" />
+                            <span>Из архива</span>
                         </button>
-                    )}
-                    {status === 'Опубликовано' && (roleId === '1' || roleId === '4') && (
-                        <>
-                            <button className="view-btn">
-                                <Link to={`/news/${news.id}`} >
-                                    <img src={imgViewIcon} alt="Посмотреть" />
-                                    <span>Посмотреть новость</span>
-                                </Link>
-                            </button>
-                            <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено')}>
-                                <img src={imgTrashIcon} alt="Снять с публикации" />
-                                <span>Снять с публикации</span>
-                            </button>
-                        </>
                     )}
                 </div>
             </div>
@@ -258,53 +204,25 @@ const BidPage = () => {
                     text={event.text}
                     images={event.images}
                 />
-                {(roleId === '1' || roleId === '5') && (
-                    <div className="news-card-comment">
-                        <CommentInput
-                            placeholder='Добавить комментарий'
-                            onBlur={(e) => handleStatusChange(event.id, event.status, e.target.value)}
-                        />
-                    </div>
-                )}
                 <div className="news-card-actions">
-                    {status === 'На модерации' && (roleId === '1' || roleId === '5') && (
-                        <>
-                            <button className="approve-btn" onClick={() => handleStatusChange(event.id, 'Одобрено')}>
-                                <img src={imgCheckIcon} alt="Одобрить" />
-                                <span>Одобрить заявку</span>
-                            </button>
-                            <button className="reject-btn" onClick={() => handleStatusChange(event.id, 'Отклонено')}>
-                                <img src={imgTrashIcon} alt="Отклонить" />
-                                <span>Отклонить заявку</span>
-                            </button>
-                        </>
-                    )}
-                    {status === 'Одобрено' && (roleId === '1' || roleId === '5') && (
-                        <button className="publish-btn" onClick={() => handleStatusChange(event.id, 'Опубликовано')}>
-                            <img src={imgCheckIcon} alt="Опубликовать" />
-                            <span>Опубликовать</span>
+                    <button className="view-btn">
+                        <Link to={`/events/${event.id}`}>
+                            <img src={imgViewIcon} alt="Посмотреть"/>
+                            <span>Посмотреть событие</span>
+                        </Link>
+                    </button>
+                    {status === 'Архив' && (
+                        <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено', 'Events')}>
+                            <img src={imgViewIcon} alt="Из архива" />
+                            <span>Из архива</span>
                         </button>
-                    )}
-                    {status === 'Опубликовано' && (roleId === '1' || roleId === '5') && (
-                        <>
-                            <button className="view-btn">
-                                <Link to={`/events/${event.id}`} >
-                                    <img src={imgViewIcon} alt="Посмотреть" />
-                                    <span>Посмотреть событие</span>
-                                </Link>
-                            </button>
-                            <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено')}>
-                                <img src={imgTrashIcon} alt="Снять с публикации" />
-                                <span>Снять с публикации</span>
-                            </button>
-                        </>
                     )}
                 </div>
             </div>
         ));
     };
 
-    if (loading) return <Loader />;
+    if (loading) return <Loader/>;
     if (error) return <p>{error}</p>;
 
     return (
@@ -324,10 +242,6 @@ const BidPage = () => {
                         <img src={imgFilterIcon} alt="" />
                         <p>Фильтр</p>
                     </div>
-                    <div className={`archive ${IsArchive ? 'archive-active' : ''}`} onClick={() => setIsArchive(!IsArchive)}>
-                        <img src={imgArchiveIcon} alt="" />
-                        <p>Архив</p>
-                    </div>
                 </div>
             )}
             <div className="bid-page-content">
@@ -341,6 +255,8 @@ const BidPage = () => {
                         {renderNews('Опубликовано')}
                         <h2>Отклоненные заявки</h2>
                         {renderNews('Отклонено')}
+                        <h2>Заявки из архива</h2>
+                        {renderNews('Архив')}
                     </>
                 )}
                 {BidCurrentTab === 'Events' && !IsAddPage && (
@@ -353,6 +269,8 @@ const BidPage = () => {
                         {renderEvents('Опубликовано')}
                         <h2>Отклоненные заявки</h2>
                         {renderEvents('Отклонено')}
+                        <h2>Заявки из архива</h2>
+                        {renderEvents('Архив')}
                     </>
                 )}
                 {BidCurrentTab === 'News' && IsAddPage && (

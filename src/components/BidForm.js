@@ -91,20 +91,22 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         let format;
 
         // Проверка формата
-        if (typeForm !== 'Events') {
+        if (typeForm !== 'Events' && typeForm !== 'TechNews') {
             format = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
             if (format.length === 0) {
                 alert("Пожалуйста, выберите хотя бы один формат: Объявления, Устройства и ПО или Мероприятия.");
                 setLoading(false); // Остановка загрузки
                 return; // Прерывание выполнения, если ничего не выбрано
             }
-        } else {
+        } else if (typeForm === 'Events') {
             format = [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value];
             if (!format[0]) {
                 alert("Пожалуйста, выберите хотя бы один формат: Внешнее событие или Внутреннее событие.");
                 setLoading(false); // Остановка загрузки
                 return; // Прерывание выполнения, если ничего не выбрано
             }
+        } else {
+            format = ['Тех. новости'];
         }
 
         try {
@@ -138,12 +140,12 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 organizer: document?.getElementById('bid-organizer')?.value || userId,
                 organizer_phone: document?.getElementById('organizer-phone')?.value || '',
                 organizer_email: document?.getElementById('organizer-email')?.value || userEmail,
-                status: "На модерации",
+                status: typeForm === 'TechNews' ? 'Одобрено' : 'На модерации',
                 images: photosUrls || [],
                 files: filesUrls || [],
                 links: n_links || [],
                 display_up_to: document?.getElementById('display_up_to')?.value || '',
-                fixed: isImportant,
+                fixed: typeForm === 'TechNews' ? false : isImportant,
                 postData: new Date().toLocaleString('ru-RU')
             };
 
@@ -179,7 +181,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 <div className="bid-form-body-oneline">
                     <CustomInput width='50%' placeholder='Теги' img={imgCheckIcon} id='bid-tags' />
                     <div className="bid-form-format-container">
-                        {typeForm !== 'Events' && (
+                        {typeForm !== 'Events' && typeForm !== 'TechNews' && (
                             <>
                                 <label className='bid-form-format-element'>
                                     <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} checked={isAdsChecked} />
@@ -209,7 +211,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         )}
                     </div>
                 </div>
-                {isAdsChecked && (
+                {isAdsChecked && typeForm !== 'TechNews' && (
                     <div className='bid-form-body-oneline'>
                         <p>Дата</p>
                         <CustomInput width='217px' placeholder='Дата объявления' type='date' id='display_up_to' />
@@ -267,7 +269,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     {filesList.map((file) => file)}
                     <img src={imgAddIcon} alt="" className="add-filefield" onClick={addFileFieldHandler} />
                 </div>
-                <p className='title-бид-form'>Ссылки</p>
+                <p className='title-bid-form'>Ссылки</p>
                 <div className="links-row">
                     {linksList.map((link) => link)}
                     <img src={imgAddIcon} alt="" className="add-linkfield" onClick={addLinkFieldHandler} />
