@@ -1,0 +1,103 @@
+.admin-page, .admin-page-head, .admin-page-head-tab, .admin-page-head-2, .admin-page-btn-add, .admin-page-content, .admin-buttons, .filter, .sort {
+    display: flex;
+    align-items: center;
+}
+
+.admin-page {
+    height: auto;
+    width: 100%;
+    background-color: #F2F3F4;
+    border-radius: 20px;
+    position: relative;
+    top: 30px;
+    padding: 20px;
+}
+
+.admin-page-head {
+    justify-content: space-between;
+}
+
+.admin-page-head-tab {
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'PF DinText Pro';
+    font-size: 16px;
+    font-weight: 400;
+    color: #525252;
+    background-color: #dcdcdc;
+    margin-right: 10px;
+}
+
+.admin-page-head-tab-selected {
+    background-color: #0C8CE9;
+    color: #FFF;
+}
+
+.admin-page-btn-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFF;
+    border: 1px solid #0C8CE9;
+    border-radius: 20px;
+    padding: 10px 20px;
+    color: #0C8CE9;
+    font-family: 'PF DinText Pro';
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.admin-buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.filter, .sort {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filter p, .sort p {
+    margin-left: 5px;
+    font-family: 'PF DinText Pro';
+    font-size: 16px;
+    font-weight: 400;
+    color: #0C8CE9;
+}
+
+.table-row {
+    display: flex;
+    width: 100%; /* Устанавливаем ширину таблицы на 100% */
+}
+
+.table-row td {
+    padding: 10px;
+}
+
+.office-section {
+    margin-bottom: 30px;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.img-photo {
+    width: 83px;
+    height: 83px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.table-row-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}

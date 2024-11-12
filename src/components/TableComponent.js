@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import BidFormEdit from './BidFormEdit'; // Импорт BidFormEdit
 
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
@@ -9,7 +10,9 @@ import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
 
 const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId }) => {
-    
+    const [isEditPage, setIsEditPage] = useState(false);
+    const [editBidId, setEditBidId] = useState(null);
+
     const parseDate = (dateString) => {
         console.log('Исходная строка даты:', dateString);
 
@@ -110,8 +113,8 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                                     Посмотреть
                                                 </Link>
                                             </div>
-                                            <div className="comments-menu-item">
-                                                <Link to={`/edit/${item.id}`}>Редактировать</Link>
+                                            <div className="comments-menu-item" onClick={() => { setIsEditPage(true); setEditBidId(item.id); }}>
+                                                Редактировать
                                             </div>
                                             {subTab === 'Archive' ? (
                                                 <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
@@ -129,7 +132,15 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
         );
     };
 
-    return renderItemsAsTable(items);
+    return (
+        <>
+            {isEditPage ? (
+                <BidFormEdit setIsAddPage={setIsEditPage} typeForm={currentTab} bidId={editBidId} />
+            ) : (
+                renderItemsAsTable(items)
+            )}
+        </>
+    );
 };
 
 export default TableComponent;

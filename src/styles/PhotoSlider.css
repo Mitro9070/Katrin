@@ -1,0 +1,45 @@
+.photo-slider {
+    width: 100%;
+    overflow: hidden;
+}
+
+.photo-slider-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.photo-slider-item {
+    position: relative;
+    margin-right: 10px;
+}
+
+.photo-slider-photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
+
+.photo-slider-delete-container {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.photo-slider-delete {
+    width: 20px;
+    height: 20px;
+}
+
+.photo-slider-add {
+    width: 150px;
+    height: 150px;
+    border: 1px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}

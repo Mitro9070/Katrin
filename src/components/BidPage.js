@@ -255,8 +255,8 @@ const BidPage = () => {
                         {renderNews('Опубликовано')}
                         <h2>Отклоненные заявки</h2>
                         {renderNews('Отклонено')}
-                        <h2>Заявки из архива</h2>
-                        {renderNews('Архив')}
+                       {/*  <h2>Заявки из архива</h2>
+                        {renderNews('Архив')} */}
                     </>
                 )}
                 {BidCurrentTab === 'Events' && !IsAddPage && (
@@ -269,8 +269,8 @@ const BidPage = () => {
                         {renderEvents('Опубликовано')}
                         <h2>Отклоненные заявки</h2>
                         {renderEvents('Отклонено')}
-                        <h2>Заявки из архива</h2>
-                        {renderEvents('Архив')}
+                       {/*  <h2>Заявки из архива</h2>
+                        {renderEvents('Архив')} */}
                     </>
                 )}
                 {BidCurrentTab === 'News' && IsAddPage && (

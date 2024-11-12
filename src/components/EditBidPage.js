@@ -47,8 +47,8 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
             setIsAdsChecked(bid.formats?.includes('Объявления'));
             setIsImportant(bid.fixed);
             setComponentsCarousel(
-                bid?.image?.slice(1).map((image, index) => (
-                  <CustomPhotoBox key={index} width="380px" name='bid-cover' defaultValue={image} />
+                bid?.images?.slice(1).map((image, index) => (
+                  <CustomPhotoBox key={index} width="380px" name='bid-image' defaultValue={image} />
                 ))
               );
             setIsAdsChecked(bid?.elementType?.includes('Объявления'));
@@ -99,7 +99,7 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
         }
 
         try {
-            const newCoverImage = document?.getElementById('bid-cover')?.files[0] || bidData?.image[0];
+            const newCoverImage = document?.getElementById('bid-cover')?.files[0] || bidData?.images[0];
             await bidContentStore.updateBid(bidData?.id, {
                 title: document?.getElementById('bid-title')?.value,
                 tags: document?.getElementById('bid-tags')?.value.split(', '),
@@ -112,7 +112,7 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
                 organizer_phone: document?.getElementById('organizer-phone')?.value,
                 organizer_email: document?.getElementById('organizer-email')?.value,
                 status: "В процессе",
-                image: [newCoverImage, ...n_images],
+                images: [newCoverImage, ...n_images],
                 files: n_files,
                 links: n_links,
                 display_up_to: document?.getElementById('display_up_to')?.value,
@@ -207,14 +207,16 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
                     <div className="bid-form-cover-wrapper">
                         <p>Обложка</p>
                         {photoLoading && <Loader />} {/* Спиннер загрузки фотографий */}
-                        <CustomPhotoBox width="380px" id='bid-cover' name='bid-cover' defaultValue={bidData?.image[0]} onChange={handlePhotoUpload} />
+                        <CustomPhotoBox width="380px" id='bid-cover' name='bid-cover' defaultValue={bidData?.images[0]} onChange={handlePhotoUpload} />
                     </div>
                     <div className="bid-form-carousel-wrapper">
                         <p>Другие фотографии</p>
                         {photoLoading && <Loader />} {/* Спиннер загрузки фотографий */}
                         <div className="bid-form-carousel">
                             <div className="bid-form-carousel-inner custom-scrollbar" style={{ left: `${CarouselPosition}px` }}>
-                                {componentsCarousel}
+                                {bidData?.images?.slice(1).map((image, index) => (
+                                    <CustomPhotoBox key={index} width="380px" name='bid-image' defaultValue={image} />
+                                ))}
                                 <img src={imgAddIcon} alt="" className='add-filefield' onClick={addPhotoFiledHandler} />
                             </div>
                         </div>
