@@ -10,6 +10,7 @@ import '../styles/Profile.css';
 const Profile = () => {
     const [currentTab, setCurrentTab] = useState('PersonalData');
     const [loading, setLoading] = useState(true);
+    const [loadingImage, setLoadingImage] = useState(false); // Новый стейт для загрузки фото
     const [userData, setUserData] = useState({});
     const [roleName, setRoleName] = useState('');
     const [offices, setOffices] = useState({});
@@ -28,7 +29,7 @@ const Profile = () => {
                     const userData = userSnapshot.val();
                     setUserData(userData);
                     setInputData(userData);
-                    setImageUrl(userData.image || 'src/images/man.png'); // Placeholder image if not exists
+                    setImageUrl(userData.image || null); // Placeholder image if not exists
 
                     if (userData.role) {
                         const roleRef = databaseRef(database, `Roles/${userData.role}`);
@@ -86,16 +87,17 @@ const Profile = () => {
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setLoading(true);
+            setLoadingImage(true); // Включение загрузочного индикатора для фото
             try {
                 const imgRef = storageRef(storage, `employee-photos/${file.name}`);
                 await uploadBytes(imgRef, file);
                 const url = await getDownloadURL(imgRef);
                 setImageUrl(url);
+                setIsFormChanged(true); // Обозначение, что форма изменилась
             } catch (error) {
                 console.error('Error uploading image:', error);
             } finally {
-                setLoading(false);
+                setLoadingImage(false); // Выключение загрузочного индикатора для фото
             }
         }
     };
@@ -130,15 +132,13 @@ const Profile = () => {
                     <div className="personal-data-form">
                         <div className="column photo-column">
                             <div className="photo-container" onClick={() => document.getElementById('file-input').click()}>
-                                {imageUrl ? <img src={imageUrl} alt="Фото пользователя" /> : null}
-                                {loading && <Loader />}
+                                {loadingImage && <Loader />}
+                                {!imageUrl && !loadingImage && <p>Добавьте пожалуйста Ваше фото</p>}
+                                {imageUrl && !loadingImage && <img src={imageUrl} alt="Фото пользователя" />}
                             </div>
-                            <input
-                                id="file-input"
-                                type="file"
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                            />
+                            <div className="role-label">
+                                Роль: {roleName}
+                            </div>
                         </div>
                         <div className="column fields-column">
                             <label>Фамилия</label>
@@ -194,7 +194,7 @@ const Profile = () => {
                                 placeholder="+7 (***) ***-**-**"
                             />
                         </div>
-                        <div className="column extra-fields-column">
+                        <div className="column fields-column">
                             <label>Выберите офис</label>
                             <select
                                 name="office"
@@ -226,9 +226,6 @@ const Profile = () => {
                                 onChange={handleInputChange}
                                 className="custom-input"
                             />
-                            <div className="role-label">
-                                Роль: {roleName}
-                            </div>
                             {isFormChanged && (
                                 <button
                                     className="save-button"
@@ -236,10 +233,16 @@ const Profile = () => {
                                     disabled={loading}
                                     style={{ margin: '20px auto', display: 'block' }}
                                 >
-                                    Сохранить изменения
+                                    Применить изменения
                                 </button>
                             )}
                         </div>
+                        <input
+                            id="file-input"
+                            type="file"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
                     </div>
                 )}
                 {currentTab === 'Settings' && (
