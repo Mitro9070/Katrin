@@ -46,6 +46,38 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
     return re.test(String(email).toLowerCase());
   };
 
+  // Функция для имитации отправки email
+  const sendEmail = (recipientEmail, tempPassword) => {
+    const emailContent = `
+      Приветствуем тебя на портале Катюша. Данные для входа на портал:\n
+      Логин: ${recipientEmail}\n
+      Пароль: ${tempPassword}\n
+      Пароль можно будет сменить в личном кабинете (кнопка Профиль).\n
+      С уважением. Администратор портала Катюша.
+    `;
+
+    // Имитация отправки письма
+    console.log("Отправка письма на email:");
+    console.log(emailContent);
+
+    // Отображение сообщения
+    setMessage(`Письмо для пользователя ${recipientEmail} успешно сымитировано:\n${emailContent}`);
+  };
+
+  // Функция для очистки полей формы после успешной регистрации
+  const clearFields = () => {
+    setSurname('');
+    setName('');
+    setLastname('');
+    setBirthday('');
+    setEmail('');
+    setOffice('');
+    setPosition('');
+    setRole('');
+    setImageUrl(null);
+    setImageFile(null);
+  };
+
   // Функция для обработки сохранения нового сотрудника
   const handleSave = async () => {
     setLoading(true);
@@ -75,6 +107,7 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
       await set(userRef, newUser);
 
       refreshUsers();
+      clearFields();  // Очистка полей формы после успешной регистрации
     } catch (error) {
       console.error('Ошибка при добавлении пользователя:', error);
       setError('Ошибка при добавлении пользователя.');
@@ -83,30 +116,13 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
     }
   };
 
-  // Функция для имитации отправки email
-  const sendEmail = (recipientEmail, tempPassword) => {
-    const emailContent = `
-      Приветствуем тебя на портале Катюша. Данные для входа на портал:\n
-      Логин: ${recipientEmail}\n
-      Пароль: ${tempPassword}\n
-      Пароль можно будет сменить в личном кабинете (кнопка Профиль).\n
-      С уважением. Администратор портала Катюша.
-    `;
-
-    // Имитация отправки письма
-    console.log("Отправка письма на email:");
-    console.log(emailContent);
-
-    // Отображение сообщения
-    setMessage(`Письмо для пользователя ${recipientEmail} успешно сымитировано:\n${emailContent}`);
-  };
-
   return (
     <div className="add-employee">
       <h2>Добавление нового сотрудника</h2>
       <div className="add-employee-form">
         <div className="photo-container" onClick={() => document.getElementById('file-input').click()}>
           {imageUrl ? <img src={imageUrl} alt="Фото сотрудника" /> : 'Загрузить фото'}
+          {loading && <Loader />}
         </div>
         <input
           id="file-input"

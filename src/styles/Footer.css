@@ -1,21 +1,27 @@
-.footer{
-    width: 1095px;
+.footer {
+    width: 100%;
     display: grid;
-    grid-template-columns: auto auto auto;
-    grid-template-rows: auto auto auto;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 10px;
     font-size: 14px;
     font-weight: 500;
-    /* position: absolute; */
-    left: 285px;
-    bottom: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border-top: 1px solid #e5e5e5;
+    position: static;
+    bottom: 0;
+    left: 0;
     margin-top: 30px;
-    margin-bottom: 30px;
 }
 
-.center-column-footer{
-    text-align: center;
+.footer p {
+    margin: 0;
 }
 
-.last-column-footer{
-    text-align: end;
+.center-column-footer {
+    text-align: left
+}
+
+.last-column-footer {
+    text-align: left
 }
