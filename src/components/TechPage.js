@@ -168,7 +168,7 @@ const TechPage = () => {
                     </div>
                 </>
             )}
-            <Footer />
+           
         </div>
     );
 };

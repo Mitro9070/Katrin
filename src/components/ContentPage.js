@@ -251,7 +251,7 @@ const ContentPage = () => {
                     </div>
                 </>
             )}
-            <Footer />
+            
         </div>
     );
 };

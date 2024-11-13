@@ -51,9 +51,9 @@ function Header({ setShowAuthPush }) {
             Cookies.remove('userId');
             Cookies.remove('roleId');
             Cookies.remove('roleName');
-            navigate(0); // Перезагрузка страницы
+            navigate(0); // Refresh the page
         }).catch((error) => {
-            console.error('Ошибка при выходе из системы:', error);
+            console.error('Error signing out:', error);
         });
     };
 
