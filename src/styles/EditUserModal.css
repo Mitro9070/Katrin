@@ -1,0 +1,85 @@
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px 20px 40px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 400px; /* или нужная ширина */
+    max-width: 90%; /* чтобы модальное окно было адаптивным */
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.custom-select {
+    display: flex;
+    width: 307px;
+    height: 40px;
+    padding: 7px 40px 7px 20px;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    border: 1px solid #A9A9A9;
+    margin-bottom: 15px;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    margin-top: 50px; /* Отодвигаем кнопки вниз на 30px */
+}
+
+.save-changes-button, .reset-password-button {
+    display: flex;
+    width: 200px;
+    height: 40px;
+    padding: 7px 40px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'PF DinText Pro';
+    font-size: 14px;
+}
+
+.save-changes-button {
+    background: #0C8CE9;
+    margin-right: 5px; /* Добавляем отступ справа */
+}
+
+.reset-password-button {
+    background: #FF6666;  /* Светло-красный */
+    margin-left: 5px; /* Добавляем отступ слева */
+}
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

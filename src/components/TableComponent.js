@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import BidFormEdit from './BidFormEdit'; // Импорт BidFormEdit
+import EditBidForm from './EditBidPage'; // Импорт EditBidForm
 
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
@@ -135,7 +135,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
     return (
         <>
             {isEditPage ? (
-                <BidFormEdit setIsAddPage={setIsEditPage} typeForm={currentTab} bidId={editBidId} />
+                <EditBidForm setIsAddPage={setIsEditPage} typeForm={currentTab} bidId={editBidId} />
             ) : (
                 renderItemsAsTable(items)
             )}

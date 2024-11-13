@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ref, get, set } from 'firebase/database';
+import { database, storage } from '../firebaseConfig';
+import { getDownloadURL, ref as storageRef } from 'firebase/storage';
 
 import '../styles/BidForm.css';
 
@@ -16,14 +19,10 @@ import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 import Loader from './Loader'; // Импортируем компонент Loader
 
-import { bidContentStore } from '../stores/BidContentStore';
-import { navigationStore } from '../stores/NavigationStore';
-
 function EditBidForm({ maxPhotoCnt = 6 }) {
     const { typeForm, id } = useParams();  // Получаем id и typeForm из URL
     const navigate = useNavigate();  // Хук для перенаправления после сохранения
     const [bidData, setBidData] = useState(null);
-    const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([]);
     const [linksList, setLinksList] = useState([]);
     const [isAdsChecked, setIsAdsChecked] = useState(false);
@@ -31,41 +30,55 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
     const [CarouselPosition, setCarouselPosition] = useState(0);
     const [loading, setLoading] = useState(false); // Состояние для отслеживания загрузки
     const [photoLoading, setPhotoLoading] = useState(false); // Состояние для отслеживания загрузки фотографий
+    const [currentImage, setCurrentImage] = useState(0);
+    const [imageUrls, setImageUrls] = useState([]);
 
     // Получаем данные заявки по ID при загрузке формы
     useEffect(() => {
         const fetchBidData = async () => {
-            await bidContentStore.fetchData();
-            const bid = bidContentStore.getWithId(typeForm, id)[0];
-            console.log('_----___-----____----____----____---___---')
-            console.log(bid)
-            console.log(id)
-            console.log('_----___-----____----____----____---___---')
-            setBidData(bid);
-            setFilesList(bid?.files?.map((file, index) => <CustomFileSelect key={index} name='bid-file' defaultValue={file}/>));
-            setLinksList(bid?.links?.map((link, index) => <CustomInput key={index} width='308px' placeholder='Ссылка' name='bid-link' defaultValue={link} />));
-            setIsAdsChecked(bid.formats?.includes('Объявления'));
-            setIsImportant(bid.fixed);
-            setComponentsCarousel(
-                bid?.images?.slice(1).map((image, index) => (
-                  <CustomPhotoBox key={index} width="380px" name='bid-image' defaultValue={image} />
-                ))
-              );
-            setIsAdsChecked(bid?.elementType?.includes('Объявления'));
-            navigationStore.setCurrentBidText(bid?.text);
+            try {
+                const bidRef = ref(database, `${typeForm}/${id}`);
+                const bidSnapshot = await get(bidRef);
+                if (bidSnapshot.exists()) {
+                    const bid = bidSnapshot.val();
+                    console.log("Fetched bid data:", bid);
+                    setBidData(bid);
+                    setFilesList(bid?.files?.map((file, index) => <CustomFileSelect key={index} name='bid-file' defaultValue={file}/>));
+                    setLinksList(bid?.links?.map((link, index) => <CustomInput key={index} width='308px' placeholder='Ссылка' name='bid-link' defaultValue={link} />));
+                    setIsAdsChecked(bid.formats?.includes('Объявления'));
+                    setIsImportant(bid.fixed);
+
+                    const fetchImageUrls = async () => {
+                        if (bid?.images) {
+                            const urls = await Promise.all(bid.images.map(async (image) => {
+                                const cachedImage = localStorage.getItem(image);
+                                if (cachedImage) {
+                                    return cachedImage;
+                                } else {
+                                    const fileRef = storageRef(storage, image);
+                                    const url = await getDownloadURL(fileRef);
+                                    localStorage.setItem(image, url);
+                                    return url;
+                                }
+                            }));
+                            console.log("Fetched image URLs:", urls);
+                            setImageUrls(urls);
+                        }
+                    };
+
+                    await fetchImageUrls();
+                } else {
+                    console.error("Bid not found");
+                }
+            } catch (error) {
+                console.error("Error fetching bid data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchBidData();
-    }, [id]);
-
-    const carouselMoveHandler = (direction) => {
-        let position = CarouselPosition - ((195 + 2 + 30) * direction);
-        if (position <= 0 && position >= (195 + 2 + 30) * -(maxPhotoCnt - 3)) {
-            setCarouselPosition(() => position);
-            direction > 0 && componentsCarousel.length < (maxPhotoCnt - 4) &&
-                setComponentsCarousel([...componentsCarousel, <CustomPhotoBox key={componentsCarousel.length} name='bid-image' />]);
-        }
-    };
+    }, [id, typeForm]);
 
     const handleAdsCheckboxChange = (e) => {
         setIsAdsChecked(e.target.checked);
@@ -80,14 +93,12 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
     };
 
     const addPhotoFiledHandler = () => {
-        setComponentsCarousel([...componentsCarousel, <CustomPhotoBox key={componentsCarousel.length} width="380px" name='bid-image' /> ])
-    }
+        setImageUrls([...imageUrls, '']); // Добавляем пустую строку для нового изображения
+    };
 
     const updateBidHandler = async () => {
         setLoading(true); // Начало загрузки
-        let n_images = Array.from(document?.getElementsByName('bid-image'))?.map((e) => {
-            return e?.files[0];
-        });
+        let n_images = Array.from(document?.getElementsByName('bid-image'))?.map((e) => e?.files[0]);
         let n_files = Array.from(document?.getElementsByName('bid-file'))?.map((e) => e?.files[0]);
         let n_links = Array.from(document?.getElementsByName('bid-link'))?.map((e) => e?.value);
         let format;
@@ -100,11 +111,11 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
 
         try {
             const newCoverImage = document?.getElementById('bid-cover')?.files[0] || bidData?.images[0];
-            await bidContentStore.updateBid(bidData?.id, {
+            const updatedBidData = {
                 title: document?.getElementById('bid-title')?.value,
                 tags: document?.getElementById('bid-tags')?.value.split(', '),
                 elementType: format,
-                text: navigationStore.currentBidText,
+                text: document?.getElementById('editor')?.innerHTML,
                 place: document?.getElementById('bid-place')?.value,
                 start_date: document?.getElementById('bid-start-date')?.value,
                 end_date: document?.getElementById('bid-end-date')?.value,
@@ -117,7 +128,10 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
                 links: n_links,
                 display_up_to: document?.getElementById('display_up_to')?.value,
                 fixed: isImportant,
-            });
+            };
+
+            const bidRef = ref(database, `${typeForm}/${id}`);
+            await set(bidRef, updatedBidData);
 
             navigate("/bid");  // Перенаправляем на страницу "/bid" после успешного обновления
         } catch (error) {
@@ -133,7 +147,19 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
         setPhotoLoading(false); // Остановка загрузки фотографий
     };
 
-    if (!bidData) return <p>Загрузка...</p>;
+    const prevImage = () => {
+        currentImage > 0 && setCurrentImage(currentImage - 1);
+    };
+
+    const nextImage = () => {
+        if (currentImage < imageUrls.length - 1) {
+            setCurrentImage(currentImage + 1);
+        }
+    };
+
+    if (loading) return <Loader />;
+
+    if (!bidData) return <p>Заявка не найдена</p>;
 
     return (
         <div className="bid-form-container noselect page-content">
@@ -214,7 +240,7 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
                         {photoLoading && <Loader />} {/* Спиннер загрузки фотографий */}
                         <div className="bid-form-carousel">
                             <div className="bid-form-carousel-inner custom-scrollbar" style={{ left: `${CarouselPosition}px` }}>
-                                {bidData?.images?.slice(1).map((image, index) => (
+                                {imageUrls.slice(1).map((image, index) => (
                                     <CustomPhotoBox key={index} width="380px" name='bid-image' defaultValue={image} />
                                 ))}
                                 <img src={imgAddIcon} alt="" className='add-filefield' onClick={addPhotoFiledHandler} />
@@ -223,12 +249,12 @@ function EditBidForm({ maxPhotoCnt = 6 }) {
                     </div>
                 </div>
                 <CKEditorRedaktor className='ckeditor' data={bidData.text}/>
-                <p className='title-bid-form'>Файлы</p>
+                <p className='title-бид-form'>Файлы</p>
                 <div className='files-row'>
                     {filesList}
                     <img src={imgAddIcon} alt="" className='add-filefield' onClick={addFileFieldHandler} />
                 </div>
-                <p className='title-bid-form'>Ссылки</p>
+                <p className='title-бид-form'>Ссылки</p>
                 <div className='links-row'>
                     {linksList}
                     <img src={imgAddIcon} alt="" className='add-linkfield' onClick={addLinkFieldHandler} />

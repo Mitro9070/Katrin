@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import imgEditIcon from '../images/edit.png';  // Импорт иконки редактирования
 import imgTrashIcon from '../images/trash-delete.png';  // Импорт иконки удаления
 import imgDefaultUserIcon from '../images/photo_person.png'; // Импорт иконки по умолчанию
+import EditUserModal from './EditUserModal'; // Импорт компонента EditUserModal
 
-const UserTableComponent = ({ users, roles, onEditUser, onDeleteUser }) => {
+const UserTableComponent = ({ users, roles, onEditUser, onDeleteUser, refreshUsers }) => {
+    const [selectedUser, setSelectedUser] = useState(null);
+
     const renderUsersAsTable = (users) => {
         return (
             <table>
@@ -83,7 +86,7 @@ const UserTableComponent = ({ users, roles, onEditUser, onDeleteUser }) => {
                                 }}>
                                     <button 
                                         style={{ width: '40px', height: '40px', margin: '10px 5px' }}
-                                        onClick={() => onEditUser(user.id)}
+                                        onClick={() => setSelectedUser(user)}
                                     >
                                         <img src={imgEditIcon} alt="Редактировать" />
                                     </button>
@@ -102,7 +105,19 @@ const UserTableComponent = ({ users, roles, onEditUser, onDeleteUser }) => {
         );
     };
 
-    return renderUsersAsTable(users);
+    return (
+        <>
+            {renderUsersAsTable(users)}
+            {selectedUser && (
+                <EditUserModal 
+                    user={selectedUser} 
+                    roles={roles} 
+                    closeModal={() => setSelectedUser(null)} 
+                    refreshUsers={refreshUsers}
+                />
+            )}
+        </>
+    );
 };
 
 export default UserTableComponent;
