@@ -73,16 +73,17 @@
 
 .save-button {
     display: flex;
-    width: 200px;
+    width: 300px;
     height: 40px;
     padding: 7px 20px;
-    justify-content: center;
-    align-items: center;
+    justify-content: center !important;
+    align-items: center !important;
     background: #0C8CE9;
     color: white;
-    border-radius: 20px;
+    border-radius: 20px !important;
     border: none;
     cursor: pointer;
+    margin-left: 450px;
 }
 
 .save-button:disabled {

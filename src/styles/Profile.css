@@ -1,0 +1,86 @@
+/* Profile.css */
+
+.personal-data-form {
+    display: flex;
+    justify-content: space-between;
+}
+
+.column {
+    flex: 1;
+    padding: 10px;
+}
+
+.photo-column {
+    text-align: center;
+}
+
+.fields-column, .extra-fields-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-input {
+    width: 307px;
+    height: 40px;
+    padding: 7px 20px;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    outline: none;
+    color: #2C2C2C;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.input-error {
+    border-color: red;
+}
+
+.photo-container {
+    flex: 0 0 420px;
+    width: 420px;
+    height: 420px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f2f2f2;
+    border: 1px dashed #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.photo-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    object-fit: cover;
+}
+
+.save-button {
+    background: #007BFF;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.save-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.role-label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.three-columns {
+    display: flex;
+    justify-content: space-between;
+}
+
