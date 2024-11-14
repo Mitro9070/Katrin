@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import EditBidForm from './EditBidPage'; // Импорт EditBidForm
 
+import EditBidForm from './EditBidPage';
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
 import imgCheckIcon from '../images/checkmark.png';

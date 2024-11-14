@@ -1,0 +1,97 @@
+/* EditBidPage.css */
+
+/* Основные стили для формы */
+.modal-form-container {
+    padding: 20px;
+    background-color: #fff; /* Убираем серый фон */
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Заголовок формы */
+.form-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.form-head .close-button {
+    position: absolute;
+    right: 10px; /* Перемещаем кнопку удаления вправо */
+    top: 10px;
+}
+
+.close-button img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Основное тело формы */
+.form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Добавляем расстояние между элементами */
+    overflow-y: auto; /* Добавляем скроллирование */
+    max-height: 600px; /* Ограничиваем максимальную высоту */
+}
+
+.form-input {
+    margin-bottom: 10px;
+}
+
+/* Стили для блока фотографий */
+.form-photos {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Добавлено расстояние между элементами */
+}
+
+.form-photos img {
+    cursor: pointer;
+}
+
+.save-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* Стили для изменения размеров и положения заголовков */
+.title-files, .title-links {
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.files-row, .links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px; /* Добавлено расстояние между элементами */
+}
+
+.files-row img, .links-row img {
+    cursor: pointer;
+    width: 20px; /* Уменьшены размеры иконок */
+    height: 20px;
+}
+
+/* Новый классы для радио кнопок */
+.bid-form-format-element {
+    display: flex;
+    align-items: center;
+}
+
+.bid-form-format-element p {
+    margin-left: 5px;
+}
+
+.title-files,
+.title-links {
+    padding-top: 5px;
+    margin-bottom: 5px;
+}
