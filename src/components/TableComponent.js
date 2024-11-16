@@ -1,6 +1,7 @@
+// src/components/TableComponent.js
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
 import EditBidForm from './EditBidPage';
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
@@ -18,7 +19,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
 
         const [date, time] = dateString.split(', ');
         const [day, month, year] = date.split('.');
-
+        
         const formattedDateString = `${year}-${month}-${day}T${time}`;
         console.log('Форматированная строка даты:', formattedDateString);
 
@@ -85,18 +86,30 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                 }}>
                                     {item.organizerName !== 'Неизвестно' && item.organizerName}
                                 </td>
-                                <td style={{ padding: '10px' }}>
-                                    {item.status === 'Одобрено' && (
-                                        <button title="Опубликовать" className="custom-publish-btn" onClick={() => onStatusChange(item.id, 'Опубликовано')}>
-                                            <img src={imgLocationIcon} alt="Опубликовать" />
-                                        </button>
-                                    )}
-                                    {item.status === 'Опубликовано' && (
-                                        <button title="Снять с публикации" className="custom-unpublish-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
-                                            <img src={imgRefreshRepeatIcon} alt="Снять с публикации" />
-                                        </button>
-                                    )}
-                                </td>
+                                {subTab !== 'Archive' && (
+                                    <td style={{ padding: '10px' }}>
+                                        {item.status === 'На модерации' && (
+                                            <div className="custom-approve-reject-buttons">
+                                                <button title="Одобрить" className="custom-approve-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
+                                                    <img src={imgCheckIcon} alt="Одобрить" />
+                                                </button>
+                                                <button title="Отклонить" className="custom-reject-btn" onClick={() => onStatusChange(item.id, 'Отклонено')}>
+                                                    <img src={imgCloseCancelIcon} alt="Отклонить" />
+                                                </button>
+                                            </div>
+                                        )}
+                                        {item.status === 'Одобрено' && (
+                                            <button title="Опубликовать" className="custom-publish-btn" onClick={() => onStatusChange(item.id, 'Опубликовано')}>
+                                                <img src={imgLocationIcon} alt="Опубликовать" />
+                                            </button>
+                                        )}
+                                        {item.status === 'Опубликовано' && (
+                                            <button title="Снять с публикации" className="custom-unpublish-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
+                                                <img src={imgRefreshRepeatIcon} alt="Снять с публикации" />
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
                                 <td style={{ padding: '10px', position: 'relative' }}>
                                     <div className="comments-menu-buttons">
                                         <button className="comments-btn">
@@ -108,14 +121,26 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                     </div>
                                     {showMenuId === item.id && (
                                         <div className="comments-menu">
-                                            <div className="comments-menu-item">
-                                                <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                    Посмотреть
-                                                </Link>
-                                            </div>
-                                            <div className="comments-menu-item" onClick={() => { setIsEditPage(true); setEditBidId(item.id); }}>
-                                                Редактировать
-                                            </div>
+                                            {currentTab === 'News' || item.elementType === 'Технические новости' || item.elementType === 'Тех. новости' ? (
+                                                <div className="comments-menu-item">
+                                                    {/* Ссылка на SingleNewsPage для новостей */}
+                                                    <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                                        Посмотреть
+                                                    </Link>
+                                                </div>
+                                            ) : (
+                                                <div className="comments-menu-item">
+                                                    {/* Ссылка на SingleEventsPage для событий */}
+                                                    <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                                        Посмотреть
+                                                    </Link>
+                                                </div>
+                                            )}
+                                            {subTab !== 'Archive' && (
+                                                <div className="comments-menu-item" onClick={() => { setIsEditPage(true); setEditBidId(item.id); }}>
+                                                    Редактировать
+                                                </div>
+                                            )}
                                             {subTab === 'Archive' ? (
                                                 <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
                                             ) : (

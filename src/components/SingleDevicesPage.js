@@ -8,6 +8,7 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
+import { connectToWebDAV } from '../utils/webdavUtils'; // Импорт функции подключения к WebDAV
 
 const SingleDevicesPage = () => {
     const { id } = useParams();
@@ -140,6 +141,15 @@ const SingleDevicesPage = () => {
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
     ];
 
+    const handleConnectToWebDAV = async () => {
+        try {
+            const files = await connectToWebDAV();
+            console.log('Полученные файлы:', files);
+        } catch (error) {
+            console.error('Ошибка при подключении к WebDAV:', error);
+        }
+    };
+
     return (
         <div className='page-content devices-single-page'>
             <Link to={'/devices'}>
@@ -204,6 +214,9 @@ const SingleDevicesPage = () => {
                 <div className="devices-info-btn">
                     <img src={imgSaveIcon} alt="" />
                     <p>Информация</p>
+                </div>
+                <div className="devices-info-btn">
+                    <button onClick={handleConnectToWebDAV}>Подключиться к диску</button>
                 </div>
             </div>
             <div className="devices-info-table">
