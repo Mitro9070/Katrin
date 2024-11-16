@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, get, set, update } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
@@ -27,90 +27,90 @@ const ContentPage = () => {
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                if (!userId) {
-                    navigate('/');
-                    return;
-                }
-
-                switch (roleId) {
-                    case '1': // Администратор
-                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '3': // Авторизованный пользователь
-                    case '6': // Техник
-                        if (!permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '4': // Контент менеджер
-                        if (!permissions.processingNews) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '5': // Менеджер событий
-                        if (!permissions.processingEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                }
-
-                const newsRef = ref(database, 'News');
-                const eventsRef = ref(database, 'Events');
-                const usersRef = ref(database, 'Users');
-
-                const [newsSnapshot, eventsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(eventsRef), get(usersRef)]);
-                const users = usersSnapshot.val();
-
-                const filteredNewsData = [];
-                const filteredEventsData = [];
-
-                if (newsSnapshot.exists()) {
-                    newsSnapshot.forEach((childSnapshot) => {
-                        const item = childSnapshot.val();
-                        const organizer = users[item.organizer];
-                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                        if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
-                        filteredNewsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    });
-                }
-
-                if (eventsSnapshot.exists()) {
-                    eventsSnapshot.forEach((childSnapshot) => {
-                        const item = childSnapshot.val();
-                        const organizer = users[item.organizer];
-                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
-                        filteredEventsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    });
-                }
-
-                setNewsData(filteredNewsData);
-                setEventsData(filteredEventsData);
-            } catch (err) {
-                console.error('Ошибка при загрузке данных:', err);
-                setError('Не удалось загрузить данные');
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            if (!userId) {
+                navigate('/');
+                return;
             }
-        };
 
+            switch (roleId) {
+                case '1': // Администратор
+                    if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                case '3': // Авторизованный пользователь
+                case '6': // Техник
+                    if (!permissions.submissionNews && !permissions.submissionEvents) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                case '4': // Контент менеджер
+                    if (!permissions.processingNews) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                case '5': // Менеджер событий
+                    if (!permissions.processingEvents) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                default:
+                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+            }
+
+            const newsRef = ref(database, 'News');
+            const eventsRef = ref(database, 'Events');
+            const usersRef = ref(database, 'Users');
+
+            const [newsSnapshot, eventsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(eventsRef), get(usersRef)]);
+            const users = usersSnapshot.val();
+
+            const filteredNewsData = [];
+            const filteredEventsData = [];
+
+            if (newsSnapshot.exists()) {
+                newsSnapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const organizer = users[item.organizer];
+                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
+                    if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
+                    filteredNewsData.push({
+                        ...item,
+                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                        id: childSnapshot.key
+                    });
+                });
+    }
+
+            if (eventsSnapshot.exists()) {
+                eventsSnapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const organizer = users[item.organizer];
+                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
+                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
+                    filteredEventsData.push({
+                        ...item,
+                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                        id: childSnapshot.key
+                    });
+                });
+            }
+
+            setNewsData(filteredNewsData);
+            setEventsData(filteredEventsData);
+        } catch (err) {
+            console.error('Ошибка при загрузке данных:', err);
+            setError('Не удалось загрузить данные');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
         Cookies.set('currentPage', 'content');
     }, [navigate, roleId, permissions, userId]);
@@ -134,18 +134,6 @@ const ContentPage = () => {
                     const newsItem = newsSnapshot.val();
                     newsItem.status = newStatus;
                     await set(newsRef, newsItem);
-
-                    const updatedNewsData = newsData.map(news => {
-                        if (news.id === id) {
-                            return {
-                                ...newsItem,
-                                id: news.id
-                            };
-                        }
-                        return news;
-                    });
-
-                    setNewsData(updatedNewsData.filter(news => subTab !== 'Archive' || news.status === 'Архив'));
                 }
             } else if (currentTab === 'Events') {
                 const eventRef = ref(database, `Events/${id}`);
@@ -154,20 +142,12 @@ const ContentPage = () => {
                     const eventItem = eventSnapshot.val();
                     eventItem.status = newStatus;
                     await set(eventRef, eventItem);
-
-                    const updatedEventsData = eventsData.map(event => {
-                        if (event.id === id) {
-                            return {
-                                ...eventItem,
-                                id: event.id
-                            };
-                        }
-                        return event;
-                    });
-
-                    setEventsData(updatedEventsData.filter(event => subTab !== 'Archive' || event.status === 'Архив'));
                 }
             }
+
+            // Перезагружаем данные
+            await fetchData();
+
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
         }

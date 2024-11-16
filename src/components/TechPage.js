@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, get, set, update } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
@@ -27,70 +27,70 @@ const TechPage = () => {
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                if (!userId) {
-                    navigate('/');
-                    return;
-                }
-
-                switch (roleId) {
-                    case '1': // Администратор
-                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    
-                    case '6': // Техник
-                        if (!permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    
-                    default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                }
-
-                const newsRef = ref(database, 'News');
-                const usersRef = ref(database, 'Users');
-
-                const [newsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(usersRef)]);
-                const users = usersSnapshot.val();
-
-                const filteredNewsData = [];
-
-                if (newsSnapshot.exists()) {
-                    newsSnapshot.forEach((childSnapshot) => {
-                        const item = childSnapshot.val();
-                        const organizer = users[item.organizer];
-                        const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                        if (item.status === 'Архив') {
-                            filteredNewsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        } else if (roleId !== '5' || item.organizer === userId) {
-                            filteredNewsData.push({
-                                ...item,
-                                organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                                id: childSnapshot.key
-                            });
-                        }
-                    });
-                }
-
-                setNewsData(filteredNewsData);
-            } catch (err) {
-                console.error('Ошибка при загрузке данных:', err);
-                setError('Не удалось загрузить данные');
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            if (!userId) {
+                navigate('/');
+                return;
             }
-        };
 
+            switch (roleId) {
+                case '1': // Администратор
+                    if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                case '6': // Техник
+                    if (!permissions.submissionNews && !permissions.submissionEvents) {
+                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                    }
+                    break;
+                default:
+                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+            }
+
+            const newsRef = ref(database, 'News');
+            const usersRef = ref(database, 'Users');
+
+            const [newsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(usersRef)]);
+            const users = usersSnapshot.val();
+
+            const filteredNewsData = [];
+
+            if (newsSnapshot.exists()) {
+                newsSnapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const organizer = users[item.organizer];
+                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
+                    if (item.status === 'Архив') {
+                        // Технические новости в архиве
+                        filteredNewsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
+                    } else if (roleId !== '5' || item.organizer === userId) {
+                        // Технические новости не в архиве
+                        filteredNewsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
+                    }
+                });
+            }
+
+            setNewsData(filteredNewsData);
+        } catch (err) {
+            console.error('Ошибка при загрузке данных:', err);
+            setError('Не удалось загрузить данные');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
         Cookies.set('currentPage', 'tech-news');
     }, [navigate, roleId, permissions, userId]);
@@ -114,17 +114,8 @@ const TechPage = () => {
                 newsItem.status = newStatus;
                 await set(newsRef, newsItem);
 
-                const updatedNewsData = newsData.map(news => {
-                    if (news.id === id) {
-                        return {
-                            ...newsItem,
-                            id: news.id
-                        };
-                    }
-                    return news;
-                });
-
-                setNewsData(updatedNewsData.filter(news => subTab !== 'Archive' || news.status === 'Архив'));
+                // Перезагружаем данные после изменения статуса
+                await fetchData();
             }
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
@@ -168,7 +159,6 @@ const TechPage = () => {
                     </div>
                 </>
             )}
-           
         </div>
     );
 };
