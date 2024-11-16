@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { database, storage } from '../firebaseConfig';
-import { ref as databaseRef, set, get } from "firebase/database";
+import { ref as databaseRef, set } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid'; // Для генерации UID
 
@@ -21,7 +21,6 @@ import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 
 import { navigationStore } from '../stores/NavigationStore';
-import Cookies from 'js-cookie';
 
 function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     let datetime = '15 Июня, 12:00';
@@ -29,31 +28,11 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' />]);
     const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' />]);
-    const [isAdsChecked, setIsAdsChecked] = useState(true); // По умолчанию выбран чекбокс "Объявления"
+    const [isAdsChecked, setIsAdsChecked] = useState(false); // Состояние для отслеживания чекбокса "Объявления"
     const [isImportant, setIsImportant] = useState(false);
     const [loading, setLoading] = useState(false); // Состояние для отслеживания загрузки
-    const [userEmail, setUserEmail] = useState(''); // Состояние для хранения email пользователя
 
     const [CarouselPosition, setCarouselPosition] = useState(0);
-
-    const userId = Cookies.get('userId');
-
-    useEffect(() => {
-        const fetchUserEmail = async () => {
-            try {
-                const userRef = databaseRef(database, `Users/${userId}`);
-                const userSnapshot = await get(userRef);
-                if (userSnapshot.exists()) {
-                    const userData = userSnapshot.val();
-                    setUserEmail(userData.email);
-                }
-            } catch (error) {
-                console.error("Ошибка при получении email пользователя:", error);
-            }
-        };
-
-        fetchUserEmail();
-    }, [userId]);
 
     const changeAddPageHandler = () => {
         setIsAddPage && setIsAddPage(() => false);
@@ -91,22 +70,20 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         let format;
 
         // Проверка формата
-        if (typeForm !== 'Events' && typeForm !== 'TechNews') {
+        if (typeForm !== 'Events') {
             format = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
             if (format.length === 0) {
                 alert("Пожалуйста, выберите хотя бы один формат: Объявления, Устройства и ПО или Мероприятия.");
                 setLoading(false); // Остановка загрузки
                 return; // Прерывание выполнения, если ничего не выбрано
             }
-        } else if (typeForm === 'Events') {
+        } else {
             format = [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value];
             if (!format[0]) {
                 alert("Пожалуйста, выберите хотя бы один формат: Внешнее событие или Внутреннее событие.");
                 setLoading(false); // Остановка загрузки
                 return; // Прерывание выполнения, если ничего не выбрано
             }
-        } else {
-            format = ['Тех. новости'];
         }
 
         try {
@@ -136,20 +113,19 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 place: document?.getElementById('bid-place')?.value || '',
                 start_date: document?.getElementById('bid-start-date')?.value || '',
                 end_date: document?.getElementById('bid-end-date')?.value || '',
-                event_date: document?.getElementById('display_up_to')?.value || '', // Дата из CustomInput Дата Объявления
-                organizer: document?.getElementById('bid-organizer')?.value || userId,
+                organizer: document?.getElementById('bid-organizer')?.value || '',
                 organizer_phone: document?.getElementById('organizer-phone')?.value || '',
-                organizer_email: document?.getElementById('organizer-email')?.value || userEmail,
-                status: typeForm === 'TechNews' ? 'Одобрено' : 'На модерации',
+                organizer_email: document?.getElementById('organizer-email')?.value || '',
+                status: "На модерации",
                 images: photosUrls || [],
                 files: filesUrls || [],
                 links: n_links || [],
                 display_up_to: document?.getElementById('display_up_to')?.value || '',
-                fixed: typeForm === 'TechNews' ? false : isImportant,
+                fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU')
             };
 
-            const newBidRef = databaseRef(database, `${typeForm === 'Events' ? 'Events' : 'News'}/${newBidKey}`);
+            const newBidRef = databaseRef(database, `${format[0] === 'Объявления' ? 'News' : 'Events'}/${newBidKey}`);
             await set(newBidRef, newBidData);
 
             setLoading(false); // Остановка загрузки
@@ -181,10 +157,10 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 <div className="bid-form-body-oneline">
                     <CustomInput width='50%' placeholder='Теги' img={imgCheckIcon} id='bid-tags' />
                     <div className="bid-form-format-container">
-                        {typeForm !== 'Events' && typeForm !== 'TechNews' && (
+                        {typeForm !== 'Events' && (
                             <>
                                 <label className='bid-form-format-element'>
-                                    <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} checked={isAdsChecked} />
+                                    <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} />
                                     <p><img src={imgCheckmark} alt="" />Объявления</p>
                                 </label>
                                 <label className='bid-form-format-element'>
@@ -211,7 +187,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         )}
                     </div>
                 </div>
-                {isAdsChecked && typeForm !== 'TechNews' && (
+                {isAdsChecked && (
                     <div className='bid-form-body-oneline'>
                         <p>Дата</p>
                         <CustomInput width='217px' placeholder='Дата объявления' type='date' id='display_up_to' />

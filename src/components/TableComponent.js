@@ -1,16 +1,14 @@
-// src/components/TableComponent.js
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import EditBidForm from './EditBidPage';
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
 import imgCheckIcon from '../images/checkmark.png';
 import imgCloseCancelIcon from '../images/close cancel x.png';
 import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
+import EditBidForm from './EditBidPage';
 
-const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId }) => {
+const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId, handleEdit }) => {
     const [isEditPage, setIsEditPage] = useState(false);
     const [editBidId, setEditBidId] = useState(null);
 
@@ -137,7 +135,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                                 </div>
                                             )}
                                             {subTab !== 'Archive' && (
-                                                <div className="comments-menu-item" onClick={() => { setIsEditPage(true); setEditBidId(item.id); }}>
+                                                <div className="comments-menu-item" onClick={() => handleEdit(currentTab, item.id)}>
                                                     Редактировать
                                                 </div>
                                             )}

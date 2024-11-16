@@ -1,196 +1,73 @@
-/* EditBidPage.css */
-
-/* Основные стили для формы */
-.modal-form-container {
-    padding: 20px;
-    background-color: #fff; /* Убираем серый фон */
-    border-radius: 8px;
-    position: relative;
-}
-
-/* Заголовок формы */
-.form-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.form-head .back-button {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-}
-
-.back-button img, .close-button img {
-    width: 24px;
-    height: 24px;
-}
-
-/* Основное тело формы */
-.form-body {
-    display: flex;
-    flex-direction: column;
-    gap: 5px; /* Добавляем расстояние между элементами */
-    overflow-y: auto; /* Добавляем скроллирование */
-    max-height: 600px; /* Ограничиваем максимальную высоту */
-}
-
-.form-input {
-    margin-bottom: 10px;
-}
-
-/* Стили для блока фотографий */
-.form-photos {
-    margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px; /* Добавлено расстояние между элементами */
-}
-
-.form-photos img {
-    cursor: pointer;
-}
-
-.save-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-}
-
-/* Стили для изменения размеров и положения заголовков */
-.title-files, .title-links {
-    margin: 10px 0;
-    font-weight: bold;
-}
-
-.files-row, .links-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px; /* Добавлено расстояние между элементами */
-}
-
-.files-row img, .links-row img {
-    cursor: pointer;
-    width: 20px; /* Уменьшены размеры иконок */
-    height: 20px;
-}
-
-/* Новый классы для радио кнопок */
-.bid-form-format-element {
-    display: flex;
-    align-items: center;
-}
-
-.bid-form-format-element p {
-    margin-left: 5px;
-}
-
-.title-files,
-.title-links {
-    padding-top: 5px;
-    margin-bottom: 5px;
-}
-
-/* Стиль для уведомления об успешном сохранении */
-.alert {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    background-color: #dff0d8;
-    border: 1px solid #d6e9c6;
-    border-radius: 4px;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.close-alert {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-/* Стили из BidForm.css */
-.bid-form-head {
+.bid-form-head{
     display: flex;
     align-items: center;
     gap: 15px;
     margin-bottom: 30px;
 }
 
-.bid-form-btn-delete {
+.bid-form-head{
+   font-size: 20px; 
+}
+
+.bid-form-btn-delete{
     margin-left: auto;
 }
 
-.bid-form-body {
+.bid-form-body{
     display: grid;
     gap: 15px;
 }
 
-.bid-form-body-oneline {
+.bid-form-body-oneline{
     display: flex;
     gap: 30px;
     font-size: 20px;
     line-height: 40px;
 }
 
-.bid-form-body-oneline-2 {
+.bid-form-body-oneline-2{
     gap: 10px;
 }
 
-.bid-form-text-date {
+.bid-form-text-date{
     margin-left: 20px;
     margin-right: 5px;
 }
 
-.bid-form-body-oneline-photo {
+.bid-form-body-oneline-photo{
     line-height: 24px;
     gap: 48px;
     align-items: center;
 }
 
-.bid-form-cover,
-.bid-form-photoes {
+.bid-form-cover, .bid-form-photoes{
     display: grid;
     gap: 5px;
 }
 
-.bid-form-photoes-carousel {
+.bid-form-photoes-carousel{
     overflow: hidden;
     width: 651px;
 }
 
-.bid-form-photoes-carousel-wrapper {
+.bid-form-photoes-carousel-wrapper{
     display: flex;
     gap: 30px;
     width: 3000px;
     transition: 0.4s;
 }
 
-.wrapper-bid-form {
+.wrapper-bid-form{
     display: flex;
     gap: 43px;
     align-items: center;
 }
 
-.title-бид-форма {
+.title-bid-form{
     font-size: 20px;
 }
 
-.files-row,
-.links-row {
+.files-row, .links-row {
     display: flex;
     width: 1095px; /* Ширина контейнера */
     height: 120px; /* Высота контейнера */
@@ -201,61 +78,52 @@
 }
 
 @-moz-document url-prefix() {
-    .files-row,
-    .links-row {
+    .files-row, .links-row {
         scrollbar-width: thin;
         scrollbar-color: #A9A9A9 transparent;
         scrollbar-arrow-color: transparent;
     }
 }
 
-.files-row::-webkit-scrollbar,
-.links-row::-webkit-scrollbar {
+.files-row::-webkit-scrollbar, .links-row::-webkit-scrollbar {
     height: 5px;
 }
-
-.files-row::-webkit-scrollbar-track,
-.links-row::-webkit-scrollbar-track {
-    background: transparent;
-    border: 1px solid #A9A9A9;
-    border-radius: 20px;
+.files-row::-webkit-scrollbar-track, .links-row::-webkit-scrollbar-track {
+background: transparent;
+border: 1px solid #A9A9A9;
+border-radius: 20px;
+}
+.files-row::-webkit-scrollbar-thumb, .links-row::-webkit-scrollbar-thumb {
+background-color: #A9A9A9;
+border-radius: 20px;
+border: 3px solid #A9A9A9;
 }
 
-.files-row::-webkit-scrollbar-thumb,
-.links-row::-webkit-scrollbar-thumb {
-    background-color: #A9A9A9;
-    border-radius: 20px;
-    border: 3px solid #A9A9A9;
-}
-
-.links-row {
+.links-row{
     height: 45px;
 }
 
-.files-row > *,
-.links-row > *,
-.bid-form-carousel-inner > * {
+.files-row > *, .links-row > *, .bid-form-carousel-inner > * {
     flex-shrink: 0; /* Запрещаем уменьшение элементов */
     width: 100px; /* Фиксированная ширина для элементов (можно настроить) */
     margin-right: 30px; /* Отступ между элементами */
 }
 
-.files-row > *,
-.bid-form-carousel-inner > * {
+.files-row > *, .bid-form-carousel-inner > * {
     height: 100px; /*Фиксированная высота для элементов (можно настроить) */
 }
 
-.add-filefield,. add-linkfield {
+.add-filefield, .add-linkfield {
     cursor: pointer; /* Курсор при наведении */
     width: 24px;
     height: auto;
 }
 
-.add-filefield {
+.add-filefield{
     transform: translateY(-11px);
 }
 
-.bid-form-send-btn {
+.bid-form-send-btn{
     width: 307px;
     height: 40px;
     display: flex;
@@ -267,33 +135,59 @@
     cursor: pointer;
 }
 
-.bid-form-format-container {
+.bid-form-format-container{
     display: flex;
 }
 
-.bid-form-format-element {
+.bid-form-format-element{
     display: flex;
     gap: 20px;
     font-size: 16px;
 }
 
-.bid-form-format-element input {
+.bid-form-format-element input{
     height: 1px;
     width: 1px;
     opacity: 0;
 }
 
-.bid-form-format-element p {
+.bid-form-format-element p{
     position: relative;
     margin-left: 20px;
     cursor: pointer;
 }
 
-.bid-form-format-element p::before {
+.bid-form-format-element p::before{
     position: absolute;
     left: -30px;
     top: 7px;
     display: inline-block;
     height: 22px;
-    width: 22px
+    width: 22px;
+    border: 2px black solid;
+    border-radius: 20px;
+    content: " ";
+}
+
+.bid-form-format-element img{
+    position: absolute;
+    left: -27px;
+    top: 11px;
+    height: 19px;
+    width: 19px;
+    display: none;
+}
+
+.bid-form-format-element input:checked + p img{
+    display: block;
+}
+
+.bid-form-carousel-inner{
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 930px;
+    white-space: nowrap; /* Отключаем перенос строк */
+    align-items: center;
 }

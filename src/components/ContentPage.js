@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ref, get, set } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
@@ -8,12 +8,16 @@ import Loader from './Loader';
 import Footer from './Footer';
 import BidForm from './BidForm';
 import TableComponent from './TableComponent'; // Импорт TableComponent
+import EditBidForm from './EditBidPage'; // Импорт EditBidForm
 
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
 const ContentPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
+    const [editMode, setEditMode] = useState(false); // Режим редактирования
+    const [editTypeForm, setEditTypeForm] = useState(''); // Тип формы для редактирования
+    const [editBidId, setEditBidId] = useState(null); // ID редактируемой заявки
     const [currentTab, setCurrentTab] = useState('News');
     const [newsData, setNewsData] = useState([]);
     const [eventsData, setEventsData] = useState([]);
@@ -23,6 +27,7 @@ const ContentPage = () => {
     const [showMenuId, setShowMenuId] = useState(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const roleId = Cookies.get('roleId');
     const permissions = getPermissions(roleId);
     const userId = Cookies.get('userId');
@@ -33,6 +38,8 @@ const ContentPage = () => {
                 navigate('/');
                 return;
             }
+
+            setLoading(true);
 
             switch (roleId) {
                 case '1': // Администратор
@@ -83,7 +90,7 @@ const ContentPage = () => {
                         id: childSnapshot.key
                     });
                 });
-    }
+            }
 
             if (eventsSnapshot.exists()) {
                 eventsSnapshot.forEach((childSnapshot) => {
@@ -147,17 +154,28 @@ const ContentPage = () => {
 
             // Перезагружаем данные
             await fetchData();
-
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
         }
     };
 
+    const handleEdit = (typeForm, id) => {
+        setEditMode(true);
+        setEditTypeForm(typeForm);
+        setEditBidId(id);
+    };
+
+    const handleCloseEdit = () => {
+        setEditMode(false);
+        setEditTypeForm('');
+        setEditBidId(null);
+    }
+
     return (
         <div className="content-page page-content">
-            {isAddPage ? (
-                <BidForm setIsAddPage={setIsAddPage} typeForm={currentTab === 'News' ? 'News' : 'Events'} />
-            ) : (
+            {isAddPage && <BidForm setIsAddPage={setIsAddPage} typeForm={currentTab === 'News' ? 'News' : 'Events'} />}
+            {editMode && <EditBidForm typeForm={editTypeForm} id={editBidId} />}
+            {!isAddPage && !editMode && (
                 <>
                     <div className="content-page-head noselect">
                         {(roleId === '1' || roleId === '4') && (
@@ -169,7 +187,7 @@ const ContentPage = () => {
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
-                            <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
+                            <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Все</p>
                             <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Архив</p>
                             <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Корзина</p>
                             <div className="filter" style={{ marginRight: '20px' }}>
@@ -188,27 +206,27 @@ const ContentPage = () => {
                             <>
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Объявления</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.elementType === 'Объявления')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Устройства и ПО</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.elementType === 'Устройства и ПО')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Мероприятия</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.elementType === 'Мероприятия')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                             </>
                         )}
@@ -216,22 +234,21 @@ const ContentPage = () => {
                             <>
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Внутренние события</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внутреннее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                                 <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Внешние события</h2>
                                 {subTab === 'Archive' ? (
-                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={eventsData.filter(item => item.status === 'Архив' && item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 ) : (
-                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                                    <TableComponent items={eventsData.filter(item => item.elementType === 'Внешнее событие')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} handleEdit={handleEdit} />
                                 )}
                             </>
                         )}
                     </div>
                 </>
             )}
-            
         </div>
     );
 };
