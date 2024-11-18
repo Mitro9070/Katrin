@@ -1,5 +1,7 @@
+// src/components/TableComponent.js
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
 import imgCheckIcon from '../images/checkmark.png';
@@ -9,6 +11,7 @@ import imgRefreshRepeatIcon from '../images/refresh repeat.png';
 import EditBidForm from './EditBidPage';
 
 const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId, handleEdit }) => {
+    const location = useLocation();
     const [isEditPage, setIsEditPage] = useState(false);
     const [editBidId, setEditBidId] = useState(null);
 
@@ -17,7 +20,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
 
         const [date, time] = dateString.split(', ');
         const [day, month, year] = date.split('.');
-        
+
         const formattedDateString = `${year}-${month}-${day}T${time}`;
         console.log('Форматированная строка даты:', formattedDateString);
 
@@ -135,7 +138,11 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                                 </div>
                                             )}
                                             {subTab !== 'Archive' && (
-                                                <div className="comments-menu-item" onClick={() => handleEdit(currentTab, item.id)}>
+                                                <div className="comments-menu-item" onClick={() => {
+                                                    setIsEditPage(true);
+                                                    setEditBidId(item.id);
+                                                    handleEdit(currentTab, item.id, location.pathname + location.search);
+                                                }}>
                                                     Редактировать
                                                 </div>
                                             )}
@@ -158,7 +165,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
     return (
         <>
             {isEditPage ? (
-                <EditBidForm setIsAddPage={setIsEditPage} typeForm={currentTab} bidId={editBidId} />
+                <EditBidForm setIsEditPage={setIsEditPage} typeForm={currentTab} id={editBidId} />
             ) : (
                 renderItemsAsTable(items)
             )}

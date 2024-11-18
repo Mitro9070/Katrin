@@ -98,7 +98,7 @@ const ContentPage = () => {
                     const organizer = users[item.organizer];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
-                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
+                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
                     filteredEventsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
@@ -187,7 +187,7 @@ const ContentPage = () => {
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
-                            <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Все</p>
+                            <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
                             <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Архив</p>
                             <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Корзина</p>
                             <div className="filter" style={{ marginRight: '20px' }}>
