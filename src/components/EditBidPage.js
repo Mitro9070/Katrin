@@ -22,7 +22,6 @@ import { eventsStore } from '../stores/EventsStore';
 import { ref as storageRef, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid'; // Импортируем uuid для генерации уникальных идентификаторов
 
-// Инициализация хранилища
 const storage = getStorage();
 
 function EditBidForm({ typeForm, id, setIsEditPage = null }) {
@@ -57,8 +56,9 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     throw new Error('Заявка не найдена');
                 }
 
-                // Лог для проверки начального значения title
                 console.log("Initial bidData.title:", bid?.title);
+
+                navigationStore.setCurrentBidText(bid.text || '');
 
                 setBidData(bid);
                 setFilesList(
@@ -147,7 +147,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const updateBidHandler = async () => {
         setLoading(true);
 
-        console.log("Before save bidData.title:", bidData?.title); // Лог для проверки перед сохранением
+        console.log("Before save bidData.title:", bidData?.title);
 
         const n_images = Array.from(document.getElementsByName('bid-image')).map((e) => e.files[0]).filter(Boolean);
         const n_files = Array.from(document.getElementsByName('bid-file')).map((e) => e.files[0]).filter(Boolean);
@@ -167,14 +167,14 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             const newBidKey = bidData?.id || uuidv4();
             const newCoverImage = document.getElementById('bid-cover')?.files[0] || bidData?.images?.[0];
 
-            const photosUrls = await handlePhotoUpload([newCoverImage, ...n_images], 'images', newBidKey);
-            const filesUrls = await handlePhotoUpload(n_files, 'files', newBidKey);
+            const photosUrls = n_images.length > 0 ? await handlePhotoUpload([newCoverImage, ...n_images], 'images', newBidKey) : bidData.images || [];
+            const filesUrls = n_files.length > 0 ? await handlePhotoUpload(n_files, 'files', newBidKey) : bidData.files || [];
 
             const updatedBidData = {
                 title: bidData.title || '',
                 tags: bidData.tags || [],
                 elementType: format[0],
-                text: navigationStore.currentBidText || '',
+                text: navigationStore.currentBidText || bidData.text || '',
                 place: bidData.place || '',
                 start_date: bidData.start_date || '',
                 end_date: bidData.end_date || '',
@@ -184,13 +184,12 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 status: bidData.status || 'На модерации',
                 images: photosUrls.filter(Boolean),
                 files: filesUrls.filter(Boolean),
-                links: n_links,
-                display_up_to: isAdsChecked ? (bidData.display_up_to || '') : '',
+                links: n_links.length > 0 ? n_links : bidData.links || [],
+                display_up_to: isAdsChecked ? (document.getElementById('display_up_to')?.value || bidData.display_up_to || '') : '',
                 fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU'),
             };
 
-            // Лог для проверки данных перед записью в БД
             console.log("Updated bidData for save:", updatedBidData);
 
             if (typeForm === 'News' || typeForm === 'TechNews') {
@@ -233,7 +232,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     placeholder="Название"
                     value={bidData?.title || ''}
                     onChange={(e) => {
-                        console.log("On change bidData.title:", e.target.value); // Лог для проверки при изменении
+                        console.log("On change bidData.title:", e.target.value);
                         setBidData({ ...bidData, title: e.target.value });
                     }}
                     style={{ width: '100%' }}
@@ -446,7 +445,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     </div>
                 </div>
                 <CKEditorRedaktor className='ckeditor' data={bidData?.text} />
-                <p className='title-бid-form'>Файлы</p>
+                <p className='title-бид-form'>Файлы</p>
                 <div className="files-row">
                     {filesList}
                     <img
@@ -456,7 +455,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         onClick={addFileFieldHandler}
                     />
                 </div>
-                <p className='title-бid-form'>Ссылки</p>
+                <p className='title-бид-form'>Ссылки</p>
                 <div className="links-row">
                     {linksList}
                     <img
@@ -473,5 +472,4 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         </div>
     );
 }
-
 export default EditBidForm;
