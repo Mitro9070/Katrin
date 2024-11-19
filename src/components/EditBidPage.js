@@ -25,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid'; // Импортируем uuid для ге�
 const storage = getStorage();
 
 function EditBidForm({ typeForm, id, setIsEditPage = null }) {
-    const [bidData, setBidData] = useState(null);
+    const [bidData, setBidData] = useState({});
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([]);
     const [linksList, setLinksList] = useState([]);
@@ -33,51 +33,58 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const [isImportant, setIsImportant] = useState(false);
     const [CarouselPosition, setCarouselPosition] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const maxPhotoCnt = 6;
 
     useEffect(() => {
         const fetchBidData = async () => {
             setLoading(true);
+            setError(null);
             let bid;
 
-            if (typeForm === 'News' || typeForm === 'TechNews') {
-                await newsContentStore.fetchData();
-                bid = newsContentStore.getNewsById(id);
-            } else if (typeForm === 'Events') {
-                await eventsStore.fetchData();
-                bid = eventsStore.getEventById(id);
-            }
+            try {
+                if (typeForm === 'News' || typeForm === 'TechNews') {
+                    await newsContentStore.fetchData();
+                    bid = newsContentStore.getNewsById(id);
+                } else if (typeForm === 'Events') {
+                    await eventsStore.fetchData();
+                    bid = eventsStore.getEventById(id);
+                }
 
-            if (!bid) {
-                console.error('Заявка не найдена');
+                if (!bid) {
+                    throw new Error('Заявка не найдена');
+                }
+
+                // Лог для проверки начального значения title
+                console.log("Initial bidData.title:", bid?.title);
+
+                setBidData(bid);
+                setFilesList(
+                    bid?.files?.map((file, index) => (
+                        <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
+                    ))
+                );
+
+                setLinksList(
+                    bid?.links?.map((link, index) => (
+                        <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
+                    ))
+                );
+
+                setIsAdsChecked(bid?.elementType?.includes('Объявления'));
+                setIsImportant(bid?.fixed);
+
+                setComponentsCarousel(
+                    bid?.images?.slice(1).map((image, index) => (
+                        <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} />
+                    ))
+                );
+            } catch (err) {
+                setError(err.message);
+            } finally {
                 setLoading(false);
-                return;
             }
-
-            setBidData(bid);
-            setFilesList(
-                bid?.files?.map((file, index) => (
-                    <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
-                ))
-            );
-
-            setLinksList(
-                bid?.links?.map((link, index) => (
-                    <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
-                ))
-            );
-
-            setIsAdsChecked(bid?.elementType?.includes('Объявления'));
-            setIsImportant(bid?.fixed);
-
-            setComponentsCarousel(
-                bid?.images?.slice(1).map((image, index) => (
-                    <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} />
-                ))
-            );
-
-            setLoading(false);
         };
 
         fetchBidData();
@@ -139,22 +146,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const updateBidHandler = async () => {
         setLoading(true);
 
-        // Debugging statements
-        console.log('Updating the bid');
+        console.log("Before save bidData.title:", bidData?.title); // Лог для проверки перед сохранением
 
-        const n_images = Array.from(document.getElementsByName('bid-image')).map((e) => e?.files[0]).filter(Boolean);
-        console.log('n_images:', n_images);
-
-        const n_files = Array.from(document.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
-        console.log('n_files:', n_files);
-
-        const n_links = Array.from(document.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
-        console.log('n_links:', n_links);
+        const n_images = Array.from(document.getElementsByName('bid-image')).map((e) => e.files[0]).filter(Boolean);
+        const n_files = Array.from(document.getElementsByName('bid-file')).map((e) => e.files[0]).filter(Boolean);
+        const n_links = Array.from(document.getElementsByName('bid-link')).map((e) => e.value).filter((value) => value !== "");
 
         const format = typeForm === 'Events'
             ? [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value]
-            : Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
-        console.log('format:', format);
+            : Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb.value);
 
         if (format.length === 0 || (typeForm === 'Events' && !format[0])) {
             alert("Пожалуйста, выберите корректный формат.");
@@ -164,36 +164,33 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
 
         try {
             const newBidKey = bidData?.id || uuidv4();
-            const newCoverImage = document.getElementById('bid-cover')?.files[0] || bidData?.images[0];
-            console.log('newCoverImage:', newCoverImage);
+            const newCoverImage = document.getElementById('bid-cover')?.files[0] || bidData?.images?.[0];
 
             const photosUrls = await handlePhotoUpload([newCoverImage, ...n_images], 'images', newBidKey);
-            console.log('photosUrls:', photosUrls);
-
             const filesUrls = await handlePhotoUpload(n_files, 'files', newBidKey);
-            console.log('filesUrls:', filesUrls);
 
             const updatedBidData = {
-                title: document.getElementById('bid-title')?.value || '',
-                tags: document.getElementById('bid-tags')?.value ? document.getElementById('bid-tags').value.split(', ') : [],
+                title: bidData.title || '',
+                tags: bidData.tags || [],
                 elementType: format[0],
-                text: document.querySelector('.ckeditor .ck-content')?.innerHTML || '',
-                place: document.getElementById('bid-place')?.value || '',
-                start_date: document.getElementById('bid-start-date')?.value || '',
-                end_date: document.getElementById('bid-end-date')?.value || '',
-                organizer: document.getElementById('bid-organizer')?.value || '',
-                organizer_phone: document.getElementById('organizer-phone')?.value || '',
-                organizer_email: document.getElementById('organizer-email')?.value || '',
-                status: bidData?.status || 'На модерации',
+                text: bidData.text || '',
+                place: bidData.place || '',
+                start_date: bidData.start_date || '',
+                end_date: bidData.end_date || '',
+                organizer: bidData.organizer || '',
+                organizer_phone: bidData.organizer_phone || '',
+                organizer_email: bidData.organizer_email || '',
+                status: bidData.status || 'На модерации',
                 images: photosUrls.filter(Boolean),
                 files: filesUrls.filter(Boolean),
                 links: n_links,
-                display_up_to: isAdsChecked ? (document.getElementById('display_up_to')?.value || '') : '',
+                display_up_to: isAdsChecked ? (bidData.display_up_to || '') : '',
                 fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU'),
             };
 
-            console.log('updatedBidData:', updatedBidData);
+            // Лог для проверки данных перед записью в БД
+            console.log("Updated bidData for save:", updatedBidData);
 
             if (typeForm === 'News' || typeForm === 'TechNews') {
                 await newsContentStore.updateNews(bidData.id, updatedBidData);
@@ -216,6 +213,8 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
 
     if (loading) return <Loader />;
 
+    if (error) return <div className="error-message">{error}</div>;
+
     return (
         <div className="bid-form-container noselect">
             <div className="bid-form-head">
@@ -227,19 +226,25 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 </p>
             </div>
             <div className="bid-form-body">
-                <CustomInput
-                    width="100%"
-                    placeholder="Название"
+                <input
+                    type="text"
                     id="bid-title"
-                    defaultValue={bidData?.title}
+                    placeholder="Название"
+                    value={bidData?.title || ''}
+                    onChange={(e) => {
+                        console.log("On change bidData.title:", e.target.value); // Лог для проверки при изменении
+                        setBidData({ ...bidData, title: e.target.value });
+                    }}
+                    style={{ width: '100%' }}
                 />
                 <div className="bid-form-body-oneline">
-                    <CustomInput
-                        width="50%"
-                        placeholder="Теги"
-                        img={imgCheckIcon}
+                    <input
+                        type="text"
                         id="bid-tags"
-                        defaultValue={bidData?.tags?.join(', ')}
+                        placeholder="Теги"
+                        value={bidData?.tags ? bidData.tags.join(', ') : ''}
+                        onChange={(e) => setBidData({ ...bidData, tags: e.target.value.split(', ') })}
+                        style={{ width: '50%' }}
                     />
                     <div className="bid-form-format-container">
                         {typeForm !== 'TechNews' && (
@@ -331,12 +336,12 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 {isAdsChecked && (
                     <div className='bid-form-body-oneline'>
                         <p>Дата</p>
-                        <CustomInput
-                            width='217px'
-                            placeholder='Дата объявления'
+                        <input
                             type='datetime-local'
                             id='display_up_to'
-                            defaultValue={bidData?.display_up_to}
+                            value={bidData?.display_up_to || ''}
+                            onChange={(e) => setBidData({ ...bidData, display_up_to: e.target.value })}
+                            style={{ width: '217px' }}
                         />
                         <label className="bid-form-format-element" style={{ marginLeft: '60px' }}>
                             <input
@@ -355,51 +360,57 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 {typeForm === 'Events' && (
                     <>
                         <div className="bid-form-body-oneline bid-form-body-oneline-2">
-                            <CustomInput
-                                width='calc(35% - 15px)'
-                                placeholder='Место'
-                                img={imgLocationIcon}
+                            <input
+                                type='text'
                                 id='bid-place'
-                                defaultValue={bidData?.place}
+                                placeholder='Место'
+                                value={bidData?.place || ''}
+                                onChange={(e) => setBidData({ ...bidData, place: e.target.value })}
+                                style={{ width: 'calc(35% - 15px)' }}
                             />
                             <p className='bid-form-text-date'>Дата</p>
-                            <CustomInput
-                                width='120px'
-                                placeholder='Дата начала'
+                            <input
                                 type='datetime-local'
                                 id='bid-start-date'
-                                defaultValue={bidData?.start_date}
+                                placeholder='Дата начала'
+                                value={bidData?.start_date || ''}
+                                onChange={(e) => setBidData({ ...bidData, start_date: e.target.value })}
+                                style={{ width: '120px' }}
                             />
                             <p style={{ marginLeft: '180px' }}>до</p>
-                            <CustomInput
-                                width='120px'
-                                placeholder='Дата окончания'
+                            <input
                                 type='datetime-local'
                                 id='bid-end-date'
-                                defaultValue={bidData?.end_date}
+                                placeholder='Дата окончания'
+                                value={bidData?.end_date || ''}
+                                onChange={(e) => setBidData({ ...bidData, end_date: e.target.value })}
+                                style={{ width: '120px' }}
                             />
                         </div>
                         <div className="bid-form-body-oneline">
-                            <CustomInput
-                                width='420px'
-                                placeholder='Организатор мероприятия'
+                            <input
                                 type='text'
                                 id='bid-organizer'
-                                defaultValue={bidData?.organizer}
+                                placeholder='Организатор мероприятия'
+                                value={bidData?.organizer || ''}
+                                onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
+                                style={{ width: '420px' }}
                             />
-                            <CustomInput
-                                width='308px'
-                                placeholder='Телефон'
+                            <input
                                 type='phone'
                                 id='organizer-phone'
-                                defaultValue={bidData?.organizer_phone}
+                                placeholder='Телефон'
+                                value={bidData?.organizer_phone || ''}
+                                onChange={(e) => setBidData({ ...bidData, organizer_phone: e.target.value })}
+                                style={{ width: '308px' }}
                             />
-                            <CustomInput
-                                width='307px'
-                                placeholder='Почта'
+                            <input
                                 type='email'
                                 id='organizer-email'
-                                defaultValue={bidData?.organizer_email}
+                                placeholder='Почта'
+                                value={bidData?.organizer_email || ''}
+                                onChange={(e) => setBidData({ ...bidData, organizer_email: e.target.value })}
+                                style={{ width: '307px' }}
                             />
                         </div>
                     </>
@@ -409,7 +420,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         <p>Обложка</p>
                         <CustomPhotoBox
                             id='bid-cover'
-                            defaultValue={bidData?.images[0]}
+                            defaultValue={bidData?.images?.[0]}
                         />
                     </div>
                     <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
