@@ -16,6 +16,7 @@ import CustomFileSelect from './CustomFileSelect';
 import Loader from './Loader';
 
 import { newsContentStore } from '../stores/NewsContentStore';
+import { navigationStore } from '../stores/NavigationStore';
 import { eventsStore } from '../stores/EventsStore';
 
 import { ref as storageRef, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
@@ -173,7 +174,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 title: bidData.title || '',
                 tags: bidData.tags || [],
                 elementType: format[0],
-                text: bidData.text || '',
+                text: navigationStore.currentBidText || '',
                 place: bidData.place || '',
                 start_date: bidData.start_date || '',
                 end_date: bidData.end_date || '',
