@@ -19,7 +19,6 @@ class NewsContentStore {
             const snapshot = await get(newsRef);
 
             runInAction(() => {
-                // Здесь происходит распределение данных
                 this.News = [];
                 console.log("Полученные данные из Firebase:", snapshot.val());
 
@@ -29,18 +28,18 @@ class NewsContentStore {
                         console.log("Элемент:", item);
                         const displayUpTo = item.display_up_to ? new Date(item.display_up_to) : null;
                         this.News.push({
-                            title: item.title,
-                            text: item.text,
+                            title: item.title || '',
+                            text: item.text || '',
                             images: item.images || [],
-                            status: item.status,
-                            postData: item.postData,
+                            status: item.status || '',
+                            postData: item.postData || '',
                             comment: '',
-                            elementType: item.elementType,
+                            elementType: item.elementType || '',
                             id: childSnapshot.key,
-                            tags: Array.isArray(item.tags) ? item.tags : item.tags.split(', '),
-                            files: item.files,
-                            links: item.links,
-                            fixed: item.fixed,
+                            tags: item.tags ? (Array.isArray(item.tags) ? item.tags : item.tags.split(', ')) : [],
+                            files: item.files || [],
+                            links: item.links || [],
+                            fixed: item.fixed || false,
                             displayUpTo: displayUpTo,
                             manager: item.manager || '',
                             phoneManager: item.phoneManager || '',
@@ -72,7 +71,7 @@ class NewsContentStore {
     }
 
     getNewsById(id){
-        return this.News.filter(e => e.id === id)[0]
+        return this.News.find(e => e.id === id)
     }
 
     async updateNews(id, data) {

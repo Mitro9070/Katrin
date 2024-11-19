@@ -16,16 +16,16 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
     const [editBidId, setEditBidId] = useState(null);
 
     const parseDate = (dateString) => {
-        console.log('Исходная строка даты:', dateString);
+        
 
         const [date, time] = dateString.split(', ');
         const [day, month, year] = date.split('.');
 
         const formattedDateString = `${year}-${month}-${day}T${time}`;
-        console.log('Форматированная строка даты:', formattedDateString);
+       
 
         const parsedDate = new Date(formattedDateString);
-        console.log('Объект Date:', parsedDate);
+       
 
         return parsedDate;
     };
