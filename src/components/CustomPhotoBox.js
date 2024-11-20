@@ -4,7 +4,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage
 import '../styles/CustomPhotoBox.css';
 
 import imgAddIcon from '../images/add.svg';
-import imgTrashIcon from '../images/trash.svg';
+import imgTrashIcon from '../images/edit.png';
 
 function CustomPhotoBox({ name = '', id = '', defaultValue = '' }) {
     const [ImagePath, setImagePath] = useState(defaultValue ? defaultValue : '');

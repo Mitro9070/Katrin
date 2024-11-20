@@ -8,6 +8,7 @@ import imgAddIcon from '../images/add.svg';
 import imgCheckmark from '../images/checkmark.png';
 import imgCalendarIcon from '../images/calendar.svg';
 import imgArrowIcon from '../images/go-arrow.svg';
+import imgTrashDelete from '../images/trash-delete.png';
 
 import CustomInput from './CustomInput';
 import CustomPhotoBox from './CustomPhotoBox';
@@ -61,6 +62,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 navigationStore.setCurrentBidText(bid.text || '');
 
                 setBidData(bid);
+
                 setFilesList(
                     bid?.files?.map((file, index) => (
                         <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
@@ -76,11 +78,16 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 setIsAdsChecked(bid?.elementType?.includes('Объявления'));
                 setIsImportant(bid?.fixed);
 
-                setComponentsCarousel(
-                    bid?.images?.slice(1).map((image, index) => (
-                        <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} />
-                    ))
-                );
+                const carouselImages = bid?.images?.slice(1).map((image, index) => (
+                    <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => setComponentsCarousel(prevState => {
+                        const newState = [...prevState];
+                        newState[index] = <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => handlePhotoChange(index)} />;
+                        return newState;
+                    })} />
+                ));
+
+                setComponentsCarousel(carouselImages);
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -111,7 +118,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             if (direction > 0 && componentsCarousel.length < (maxPhotoCnt - 4)) {
                 setComponentsCarousel([
                     ...componentsCarousel,
-                    <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" defaultValue="" />
+                    <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onChange={() => handlePhotoChange(componentsCarousel.length)} />
                 ]);
             }
         }
@@ -131,6 +138,13 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         ]);
     };
 
+    const addPhotoFieldHandler = () => {
+        setComponentsCarousel([
+            ...componentsCarousel,
+            <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onChange={() => handlePhotoChange(componentsCarousel.length)} />
+        ]);
+    };
+
     const handlePhotoUpload = async (files, folder, newBidKey) => {
         const urls = [];
         for (const file of files) {
@@ -144,16 +158,70 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         return urls;
     };
 
+    const handlePhotoChange = (index) => {
+        setComponentsCarousel(prevState => {
+            const newState = [...prevState];
+            const photoElement = newState[index];
+            const inputFile = photoElement?.props?.defaultValue;
+            if(inputFile){
+                newState[index] = <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={inputFile} onChange={() => handlePhotoChange(index)} />;
+            }
+            return newState;
+        });
+    }
+
+   // Функция для обработки удаления фото
+        const handlePhotoDelete = (index) => {
+            setComponentsCarousel(prevState => {
+                const newState = [...prevState];
+                newState[index] = null; // Помечаем фото как удаленное
+                return newState;
+            });
+        }; 
+
+    const handleCoverPhotoUpload = async (coverImage, newBidKey) => {
+        const fileRef = storageRef(storage, `images/${newBidKey}/${coverImage.name}`);
+        await uploadBytes(fileRef, coverImage);
+        const url = await getDownloadURL(fileRef);
+        return url;
+    };
+
+    // Функция для подачи в handlePhotoUpload отдельно для каждого фото.
+    const handleSinglePhotoUpload = async (file, folder, newBidKey) => {
+        const fileRef = storageRef(storage, `${folder}/${newBidKey}/${file.name}`);
+        await uploadBytes(fileRef, file);
+        return await getDownloadURL(fileRef);
+    };
+
+    const addNewPhotoFields = async (files, folder, currentImages, newBidKey) => {
+        const uploadedUrls = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file) {
+                const url = await handleSinglePhotoUpload(file, folder, newBidKey);
+                uploadedUrls.push(url);
+            } else {
+                // Если файла нет, берем соответствующее изображение из текущих данных
+                uploadedUrls.push(currentImages[i]);
+            }
+        }
+
+        return uploadedUrls;
+    };
+
     const updateBidHandler = async () => {
         setLoading(true);
 
         console.log("Before save bidData.title:", bidData?.title);
 
-        const n_images = Array.from(document.getElementsByName('bid-image')).map((e) => e.files[0]).filter(Boolean);
-        const n_files = Array.from(document.getElementsByName('bid-file')).map((e) => e.files[0]).filter(Boolean);
-        const n_links = Array.from(document.getElementsByName('bid-link')).map((e) => e.value).filter((value) => value !== "");
+        let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
+        let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
 
-        const format = typeForm === 'Events'
+        const currentImages = bidData.images || [];
+        const otherImages = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]);
+
+        let format = typeForm === 'Events'
             ? [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value]
             : Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb.value);
 
@@ -165,9 +233,18 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
 
         try {
             const newBidKey = bidData?.id || uuidv4();
-            const newCoverImage = document.getElementById('bid-cover')?.files[0] || bidData?.images?.[0];
+            const newCoverImage = document.getElementById('bid-cover')?.files[0];
+            const coverImageURL = newCoverImage ? await handleCoverPhotoUpload(newCoverImage, newBidKey) : bidData?.images?.[0];
 
-            const photosUrls = n_images.length > 0 ? await handlePhotoUpload([newCoverImage, ...n_images], 'images', newBidKey) : bidData.images || [];
+            // Фильтруем удаленные фотографии
+            const currentImagesFiltered = currentImages.slice(1).filter((img, index) => componentsCarousel[index] !== null);
+            const otherPhotosUrls = await addNewPhotoFields(
+                otherImages, 
+                'images', 
+                currentImagesFiltered, // Фильтрация
+                newBidKey
+            );
+
             const filesUrls = n_files.length > 0 ? await handlePhotoUpload(n_files, 'files', newBidKey) : bidData.files || [];
 
             const updatedBidData = {
@@ -182,10 +259,10 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 organizer_phone: bidData.organizer_phone || '',
                 organizer_email: bidData.organizer_email || '',
                 status: bidData.status || 'На модерации',
-                images: photosUrls.filter(Boolean),
+                images: [coverImageURL, ...otherPhotosUrls].filter(Boolean),
                 files: filesUrls.filter(Boolean),
                 links: n_links.length > 0 ? n_links : bidData.links || [],
-                display_up_to: isAdsChecked ? (document.getElementById('display_up_to')?.value || bidData.display_up_to || '') : '',
+                display_up_to: isAdsChecked ? (document.getElementById('display_up_to')?.value || bidData.display_up_to || '') : (bidData.display_up_to || ''),
                 fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU'),
             };
@@ -210,6 +287,27 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             setLoading(false);
         }
     };
+
+    const styles = {
+        photoWrapper: {
+            position: 'relative'
+        },
+        coverPhotoDeleteContainer: {
+            position: 'absolute',
+            right: '0',
+            top: '0',
+            zIndex: '50',
+            borderRadius: '20px',
+            backgroundColor: '#FFFFFF',
+            filter: 'sepia(1) saturate(10000%) brightness(1.5) hue-rotate(-10deg)',
+            cursor: 'pointer'
+        },
+        coverPhotoDelete: {
+            width: '20px',
+            height: '20px'
+        }
+    };
+
 
     if (loading) return <Loader />;
 
@@ -415,35 +513,43 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         </div>
                     </>
                 )}
+                
                 <div className="bid-form-body-oneline bid-form-body-oneline-photo">
-                    <div className="bid-form-cover">
-                        <p>Обложка</p>
-                        <CustomPhotoBox
-                            id='bid-cover'
-                            defaultValue={bidData?.images?.[0]}
-                        />
-                    </div>
-                    <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
-                        <img src={imgArrowIcon} alt="" style={{ transform: 'rotate(180deg)' }} className={`${CarouselPosition >= 0 ? 'non-active-img' : ''}`} />
-                    </div>
-                    <div className="bid-form-photoes">
-                        <p>Другие фотографии</p>
-                        <div className="wrapper-bid-form">
-                            <div className="bid-form-photoes-carousel">
-                                <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
-                                    {componentsCarousel.map((component) => component)}
-                                </div>
-                            </div>
-                            <div className={`icon-container ${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(1)}>
-                                <img src={imgArrowIcon} alt="" className={`${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img' : ''}`} />
-                            </div>
+            <div className="bid-form-cover">
+                <p>Обложка</p>
+                <CustomPhotoBox
+                    id='bid-cover'
+                    defaultValue={bidData?.images?.[0]}
+                />
+            </div>
+            <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
+                <img src={imgArrowIcon} alt="" style={{ transform: 'rotate(180deg)' }} className={`${CarouselPosition >= 0 ? 'non-active-img' : ''}`} />
+            </div>
+            <div className="bid-form-photoes">
+                <p>Другие фотографии</p>
+                <div className="wrapper-bid-form">
+                    <div className="bid-form-photoes-carousel">
+                        <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
+                            {componentsCarousel.map((component, index) => (
+                                component && (
+                                    <div key={index} className="photo-wrapper" style={{ position: 'relative' }}>
+                                        {component}
+                                        <div className="cover-photo-delete-container" onClick={() => handlePhotoDelete(index)}>
+                                            <img src={imgTrashDelete} className="cover-photo-delete" alt="Удалить" />
+                                        </div>
+                                    </div>
+                                )
+                            ))}
                         </div>
                     </div>
+                    <div className={`icon-container ${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(1)}>
+                        <img src={imgArrowIcon} alt="" className={`${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img' : ''}`} />
+                    </div>
+                    <img src={imgAddIcon} alt="" className="add-photofield" onClick={addPhotoFieldHandler} />
                 </div>
+            </div>
+        </div>
+
                 <CKEditorRedaktor className='ckeditor' data={bidData?.text} />
                 <p className='title-бид-form'>Файлы</p>
                 <div className="files-row">
