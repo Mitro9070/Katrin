@@ -1,5 +1,3 @@
-// src/components/TableComponent.js
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import imgChatGroupIcon from '../images/chat-group.png';
@@ -8,7 +6,7 @@ import imgCheckIcon from '../images/checkmark.png';
 import imgCloseCancelIcon from '../images/close cancel x.png';
 import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
-import EditBidForm from './EditBidPage';
+import EditBidForm from './EditBidPage'; // Обратите внимание на путь, он правильный
 
 const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId, handleEdit }) => {
     const location = useLocation();
@@ -16,17 +14,11 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
     const [editBidId, setEditBidId] = useState(null);
 
     const parseDate = (dateString) => {
-        
-
         const [date, time] = dateString.split(', ');
         const [day, month, year] = date.split('.');
 
         const formattedDateString = `${year}-${month}-${day}T${time}`;
-       
-
         const parsedDate = new Date(formattedDateString);
-       
-
         return parsedDate;
     };
 

@@ -8,6 +8,7 @@ import Loader from './Loader';
 import Footer from './Footer';
 import BidForm from './BidForm';
 import TableComponent from './TableComponent'; // Импорт TableComponent
+import EditBidForm from './EditBidPage';
 
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
@@ -20,6 +21,8 @@ const TechPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showMenuId, setShowMenuId] = useState(null);
+    const [editBidId, setEditBidId] = useState(null); // Добавлено состояние для хранения идентификатора редактируемой заявки
+    const [isEditPage, setIsEditPage] = useState(false); // Добавлено состояние для отображения страницы редактирования
 
     const navigate = useNavigate();
 
@@ -122,10 +125,18 @@ const TechPage = () => {
         }
     };
 
+    // Добавляем функцию handleEdit
+    const handleEdit = (currentTab, id, referrer) => {
+        setIsEditPage(true);
+        setEditBidId(id);
+    };
+
     return (
         <div className="content-page page-content">
             {isAddPage ? (
                 <BidForm setIsAddPage={setIsAddPage} typeForm="TechNews" />
+            ) : isEditPage ? ( // Отображаем EditBidForm на основании состояния isEditPage
+                <EditBidForm setIsEditPage={setIsEditPage} typeForm="TechNews" id={editBidId} />
             ) : (
                 <>
                     <div className="content-page-head noselect">
@@ -151,10 +162,26 @@ const TechPage = () => {
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
                         {subTab === 'Archive' ? (
                             // Отображение таблицы с новостями в статусе "Архив"
-                            <TableComponent items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                            <TableComponent
+                                items={newsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))}
+                                onStatusChange={handleStatusChange}
+                                currentTab={currentTab}
+                                subTab={subTab}
+                                setShowMenuId={setShowMenuId}
+                                showMenuId={showMenuId}
+                                handleEdit={handleEdit} // Передаем handleEdit
+                            />
                         ) : (
                             // Отображение таблицы с новостями, которые не находятся в статусе "Архив"
-                            <TableComponent items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')} onStatusChange={handleStatusChange} currentTab={currentTab} subTab={subTab} setShowMenuId={setShowMenuId} showMenuId={showMenuId} />
+                            <TableComponent
+                                items={newsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')}
+                                onStatusChange={handleStatusChange}
+                                currentTab={currentTab}
+                                subTab={subTab}
+                                setShowMenuId={setShowMenuId}
+                                showMenuId={showMenuId}
+                                handleEdit={handleEdit} // Передаем handleEdit
+                            />
                         )}
                     </div>
                 </>
