@@ -324,7 +324,8 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 </p>
             </div>
             <div className="bid-form-body">
-                <input
+            
+                <CustomInput
                     type="text"
                     id="bid-title"
                     placeholder="Название"
@@ -336,7 +337,8 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     style={{ width: '100%' }}
                 />
                 <div className="bid-form-body-oneline">
-                    <input
+               
+                    <CustomInput
                         type="text"
                         id="bid-tags"
                         placeholder="Теги"
@@ -433,15 +435,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 </div>
                 {isAdsChecked && (
                     <div className='bid-form-body-oneline'>
-                        <p>Дата</p>
-                        <input
+                       
+                        <CustomInput
                             type='datetime-local'
                             id='display_up_to'
                             value={bidData?.display_up_to || ''}
                             onChange={(e) => setBidData({ ...bidData, display_up_to: e.target.value })}
                             style={{ width: '217px' }}
                         />
-                        <label className="bid-form-format-element" style={{ marginLeft: '60px' }}>
+                        <label className="bid-form-format-element" >
                             <input
                                 type="checkbox"
                                 name="important"
