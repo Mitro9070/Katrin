@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import '../styles/BidForm.css';
 import '../styles/CustomInput.css'; 
 
+import { database } from '../firebaseConfig';
+import { ref, get } from 'firebase/database';
+
 import imgBackIcon from '../images/back.svg';
 import imgCheckIcon from '../images/seal-check.svg';
 import imgLocationIcon from '../images/location.svg';
@@ -35,6 +38,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const [isImportant, setIsImportant] = useState(false);
     const [CarouselPosition, setCarouselPosition] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [organizerName, setOrganizerName] = useState('');
     const [error, setError] = useState(null);
 
     const maxPhotoCnt = 6;
@@ -44,15 +48,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             setLoading(true);
             setError(null);
             let bid;
-
+    
             try {
                 if (typeForm === 'News' || typeForm === 'TechNews') {
                     await newsContentStore.fetchData();
                     bid = newsContentStore.getNewsById(id);
-
+    
                     // Временная проверка печати bid для отладки
                     console.log("Fetched bid for TechNews:", bid);
-
+    
                     if (typeForm === 'TechNews' && bid) {
                         setBidData(bid);
                     }
@@ -60,32 +64,36 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     await eventsStore.fetchData();
                     bid = eventsStore.getEventById(id);
                 }
-
+    
                 if (!bid) {
                     throw new Error('Заявка не найдена');
                 }
-
+    
                 console.log("Initial bidData.title:", bid?.title);
-
+    
                 navigationStore.setCurrentBidText(bid.text || '');
-
+    
                 setBidData(bid);
-
-                setFilesList(
-                    bid?.files?.map((file, index) => (
-                        <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
-                    ))
-                );
-
+    
                 setLinksList(
+                    Array.isArray(bid?.links) ? // Проверка на массив
                     bid?.links?.map((link, index) => (
                         <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
-                    ))
+                    )) : []
                 );
 
+                setFilesList(
+                    Array.isArray(bid?.files) ? // Проверка на массив
+                    bid?.files?.map((file, index) => (
+                        <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
+                    )) : []
+                );
+    
+                
+    
                 setIsAdsChecked(bid?.elementType?.includes('Объявления'));
                 setIsImportant(bid?.fixed);
-
+    
                 const carouselImages = bid?.images?.slice(1).map((image, index) => (
                     <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => setComponentsCarousel(prevState => {
                         const newState = [...prevState];
@@ -93,18 +101,41 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         return newState;
                     })} />
                 ));
-
+    
                 setComponentsCarousel(carouselImages);
-
+    
+                if (bid.organizer) {
+                    const name = await fetchOrganizerName(bid.organizer);
+                    setOrganizerName(name);
+                }
+    
             } catch (err) {
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
-
+    
         fetchBidData();
     }, [id, typeForm]);
+
+    const fetchOrganizerName = async (organizerId) => {
+        try {
+            const userRef = ref(database, `Users/${organizerId}`);
+            const snapshot = await get(userRef);
+    
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                return `${userData.surname} ${userData.Name}`;
+            } else {
+                console.error('Пользователь не найден');
+                return '';
+            }
+        } catch (error) {
+            console.error('Ошибка при получении данных пользователя:', error);
+            return '';
+        }
+    };
 
     const handleBackClick = () => {
         if (typeof setIsEditPage === 'function') {
@@ -489,15 +520,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                             />
                         </div>
                         <div className="bid-form-body-oneline">
-                            <input
-                                type='text'
-                                id='bid-organizer'
-                                className="custom-input"
-                                placeholder='Организатор мероприятия'
-                                value={bidData?.organizer || ''}
-                                onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
-                                style={{ width: '308px' }}
-                            />
+                        <input
+                            type='text'
+                            id='bid-organizer'
+                            className="custom-input"
+                            placeholder='Организатор мероприятия'
+                            value={organizerName || bidData?.organizer || ''}
+                            onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
+                            style={{ width: '308px' }}
+                        />
                             <input
                                 type='phone'
                                 id='organizer-phone'

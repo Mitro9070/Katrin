@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { database } from "../firebaseConfig";
-import { ref, get } from "firebase/database";
+import { ref, get, update } from "firebase/database"; // Добавим метод update для Firebase Database
 
 class EventsStore {
     Events = [];
@@ -45,12 +45,31 @@ class EventsStore {
         }
     }
 
-    appendEvent(Event){
-        this.Events.push(Event)
+    async updateEvent(id, updatedEventData) {
+        try {
+            const eventRef = ref(database, `Events/${id}`);
+            await update(eventRef, updatedEventData);
+
+            runInAction(() => {
+                const eventIndex = this.Events.findIndex(event => event.id === id);
+                if (eventIndex !== -1) {
+                    this.Events[eventIndex] = { ...this.Events[eventIndex], ...updatedEventData };
+                }
+            });
+
+            console.log("Событие обновлено успешно:", updatedEventData);
+        } catch (error) {
+            console.error("Ошибка при обновлении события:", error);
+            throw error;
+        }
     }
 
-    getEventById(id){
-        return this.Events.filter(e => e.id === id)[0]
+    appendEvent(Event) {
+        this.Events.push(Event);
+    }
+
+    getEventById(id) {
+        return this.Events.filter(e => e.id === id)[0];
     }
 
     getEventsDates() {
