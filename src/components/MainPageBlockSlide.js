@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import '../styles/MainPageBlockSlide.css';
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
+import formatDate from '../utils/formatDate';
 
 function MainPageBlockSlide({ name, data, className = '' }) {
     const [currentInfo, setcurrentInfo] = useState(0);
@@ -16,12 +17,6 @@ function MainPageBlockSlide({ name, data, className = '' }) {
     if (loading) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><Loader /><p className="name-block-list">{name}</p></div>; // Состояние загрузки
     if (error) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{error}</p><p className="name-block-list">{name}</p></div>; // Обработка ошибок
     if (data.length === 0) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{name} отсутствуют</p><p className="name-block-list">{name}</p></div>;
-
-    const extractTextFromHTML = (htmlString) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlString, 'text/html');
-        return doc.body.innerText;
-    };
 
     const snapToCard = () => {
         const wrapper = slideWrapperRef.current;
@@ -78,16 +73,18 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                                 }}
                             >
                                 {isNews && item.images && item.images[0] && (
-                                    <div className="block-slide-img-container" style={{ flex: '1', marginRight: '20px' }}>
-                                        <img src={item.images[0]} alt={item.title} style={{ width: '310px', height: '310px', flexShrink: 0, borderRadius: '20px', background: `url(${item.images[0]}) lightgray 50% / cover no-repeat` }} />
+                                    <div className="block-slide-img-container" style={{ flex: '1', marginRight: '20px', backgroundImage: `url(${item.images[0]})` }}>
+                                        <img src={item.images[0]} alt={item.title} className="block-slide-img" />
                                     </div>
                                 )}
                                 <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
-                                    <p className="datatime-slide">{isNews ? item.postData : item.start_date}</p>
+                                    <p className="datatime-slide">{formatDate(item.postData)}</p>
                                     <p className={`title-slide title-slide-${isNews ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                    <p className="description-slide" style={{ marginTop: item.text ? '10px' : '0', width: isNews ? 'auto' : '262px' }}>
-                                        {item.text ? extractTextFromHTML(item.text) : ''}
-                                    </p>
+                                    <div
+                                        className="description-slide"
+                                        style={{ marginTop: item.text ? '10px' : '0', width: isNews ? 'auto' : '262px' }}
+                                        dangerouslySetInnerHTML={{ __html: item.text }}
+                                    />
                                     {!isNews && item.tags && (
                                         <p className="tags-slide">
                                             {item.tags.join(', ')}

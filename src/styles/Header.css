@@ -84,6 +84,7 @@
     align-items: center;
     font-size: 18px;
     font-weight: 500;
+    object-fit: cover;
     color: white;
     background-color: #0C8CE9;
 }

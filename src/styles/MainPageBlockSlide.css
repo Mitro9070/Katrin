@@ -153,12 +153,16 @@
     overflow: hidden;
     left: 59px;
     top: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: lightgray 30% / contain no-repeat;
 }
 
 .block-slide-img-container img {
     height: 100%;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
 }
 
