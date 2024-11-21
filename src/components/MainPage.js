@@ -6,7 +6,8 @@ import Cookies from 'js-cookie';
 
 import '../styles/MainPage.css';
 import MainPageBlockList from './MainPageBlockList';
-import MainPageBlockSlide from './MainPageBlockSlide';
+import NewsBlockSlide from './NewsBlockSlide';
+import EventsBlockSlide from './EventsBlockSlide';
 
 import iconHintImg from '../images/hint-ring.svg';
 import iconMainInImg from '../images/mail-in.svg';
@@ -148,10 +149,10 @@ const MainPage = observer(() => {
             <div className="main-page-content">
                 <MainPageBlockAds />
                 {publishedNews.length > 0 && (
-                    <MainPageBlockSlide name={'Новости'} data={publishedNews} className="news" />
+                    <NewsBlockSlide name={'Новости'} data={publishedNews} className="news" />
                 )}
                 {publishedEvents.length > 0 && (
-                    <MainPageBlockSlide name={'События'} data={publishedEvents} />
+                    <EventsBlockSlide name={'События'} data={publishedEvents} />
                 )}
                 <MainPageBlockList name={'Дни рождения'} list={[]} />
                 <MainPageBlockList name={'Новые сотрудники'} list={[]} />

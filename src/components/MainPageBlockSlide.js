@@ -28,10 +28,10 @@ function MainPageBlockSlide({ name, data, className = '' }) {
         setcurrentInfo(newCurrentInfo);
 
         // Прокручиваем до ближайшей карточки
-        wrapper.scrollTo({
-            top: newCurrentInfo * cardHeight,
-            behavior: 'smooth',
-        });
+        const element = document.querySelector(`#item-${newCurrentInfo}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     };
 
     const handleScroll = () => {
@@ -45,6 +45,7 @@ function MainPageBlockSlide({ name, data, className = '' }) {
     return (
         <div className={"block-slide " + className} style={{ width: isNews ? '1095px' : '345px', height: '237px' }}>
             <div
+                id="slide-wrapper"
                 className="wrapper"
                 ref={slideWrapperRef}
                 onScroll={handleScroll}
@@ -53,6 +54,7 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                     flexDirection: 'column', // Для вертикального скролла
                     overflowY: 'auto', // Вертикальный скролл
                     scrollSnapType: 'y mandatory', // Скролл с "магнитом" по вертикали
+                    scrollBehavior: 'smooth', // Плавный скролл
                     height: isNews ? '217px' : '',
                     width: isNews ? '1037px' : '',
                     gap: '37px',
@@ -61,38 +63,48 @@ function MainPageBlockSlide({ name, data, className = '' }) {
                 {data
                     .sort((a, b) => new Date(b.postData) - new Date(a.postData))
                     .map((item, index) => (
-                        <Link to={`/${isNews ? 'news' : 'events'}/${item.id}`} key={index}>
-                            <div
-                                className="content"
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: isNews ? 'row' : 'column', // Изменение направления при наличии фото
-                                    flex: '0 0 auto',
-                                    height: 'auto', // Высота каждой карточки
-                                    scrollSnapAlign: 'start', // Притягивание к началу блока
-                                }}
-                            >
-                                {isNews && item.images && item.images[0] && (
-                                    <div className="block-slide-img-container" style={{ flex: '1', marginRight: '20px', backgroundImage: `url(${item.images[0]})` }}>
-                                        <img src={item.images[0]} alt={item.title} className="block-slide-img" />
-                                    </div>
-                                )}
-                                <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
-                                    <p className="datatime-slide">{formatDate(item.postData)}</p>
-                                    <p className={`title-slide title-slide-${isNews ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                    <div
-                                        className="description-slide"
-                                        style={{ marginTop: item.text ? '10px' : '0', width: isNews ? 'auto' : '262px' }}
-                                        dangerouslySetInnerHTML={{ __html: item.text }}
-                                    />
-                                    {!isNews && item.tags && (
-                                        <p className="tags-slide">
-                                            {item.tags.join(', ')}
-                                        </p>
+                        <div id={`item-${index}`} key={index}>
+                            <Link to={`/${isNews ? 'news' : 'events'}/${item.id}`}>
+                                <div
+                                    className="content"
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: isNews ? 'row' : 'column', // Изменение направления при наличии фото
+                                        flex: '0 0 auto',
+                                        height: 'auto', // Высота каждой карточки
+                                        scrollSnapAlign: 'start', // Притягивание к началу блока
+                                    }}
+                                >
+                                    {isNews && item.images && item.images[0] && (
+                                        <div className="block-slide-img-container" style={{ flex: '1', marginRight: '20px', backgroundImage: `url(${item.images[0]})` }}>
+                                            <img src={item.images[0]} alt={item.title} className="block-slide-img" />
+                                        </div>
                                     )}
+                                    <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
+                                        <p className="datatime-slide">{formatDate(isNews ? item.postData : item.start_date)}</p>
+                                        <p className={`title-slide title-slide-${isNews ? 'news' : 'events'}`} style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
+                                        <div
+                                            className="description-slide"
+                                            style={{ marginTop: item.text ? '10px' : '0', width: isNews ? 'auto' : '262px' }}
+                                            dangerouslySetInnerHTML={{ __html: item.text }}
+                                        />
+                                        {!isNews && item.tags && (
+                                            <p className="tags-slide">
+                                                {item.tags.map(tag => `#${tag}`).join(', ')}
+                                            </p>
+                                        )}
+                                        {!isNews && item.elementType && (
+                                            <p className="event-type-slide">
+                                                {item.elementType}
+                                            </p>
+                                        )}
+                                        {!isNews && index < data.length - 1 && (
+                                            <div className="event-separator"></div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </Link>
+                            </Link>
+                        </div>
                     ))}
             </div>
             <p className="name-block-list">{name}</p>

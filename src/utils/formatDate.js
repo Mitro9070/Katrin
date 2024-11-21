@@ -1,5 +1,15 @@
-const formatDate = (dateString) => {
-    const date = new Date(dateString.replace(/(\d+).(\d+).(\d+)/, '$3-$2-$1'));
+const formatDate = (dateString, isEvent = false) => {
+    let date;
+    if (isEvent) {
+        // Формат даты для событий: "2024-11-22T16:05"
+        date = new Date(dateString);
+    } else {
+        // Формат даты для новостей: "21.11.2024, 10:56:05"
+        const [day, month, yearAndTime] = dateString.split('.');
+        const [year, time] = yearAndTime.split(', ');
+        date = new Date(`${year}-${month}-${day}T${time}`);
+    }
+
     const now = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);

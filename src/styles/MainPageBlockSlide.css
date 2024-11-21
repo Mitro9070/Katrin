@@ -36,6 +36,7 @@
     overflow: auto;
     height: 207px;
     width: 287px;
+    scroll-behavior: smooth; /* Плавный скролл */
 }
 
 .block-slide.news-block .wrapper {
@@ -131,9 +132,20 @@
 }
 
 .event-type-slide {
-    margin-top: 48px;
+    color: #2C2C2C;
+    font-family: "PF DinText Pro";
+    font-size: 14px;
     font-style: italic;
-    bottom: -5px;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 5px;
+}
+
+.event-separator {
+    width: 271px;
+    height: 1px;
+    background: #A9A9A9;
+    margin-top: 10px;
 }
 
 .slide-btns {
