@@ -153,3 +153,30 @@
 .approve-btn img, .reject-btn img, .publish-btn img, .view-btn img {
   margin-right: 5px !important;
 }
+
+/* Добавляем стили для иконки глаза */
+.news-card-eye-link {
+  position: relative;
+  top: 3px;  /* Adjust the positioning as needed */
+  margin-right: 5px;  /* Add a little margin */
+}
+
+.news-card-eye-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  filter: invert(54%) sepia(94%) saturate(2151%) hue-rotate(198deg) brightness(88%) contrast(101%);   /* Blue color */
+}
+
+.news-card-edit-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  filter: brightness(1.5) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(200deg) brightness(100%) contrast(97%);
+  margin-top: 5px;
+}
+
+/* Дополнительные стили, которые могут пригодиться */
+.view-btn img {
+  display: none;  /* Hide default view icon */
+}

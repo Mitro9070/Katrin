@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ref, get, set, push } from 'firebase/database';
 import { database } from '../firebaseConfig';
@@ -7,16 +7,22 @@ import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import StandartCard from '../components/StandartCard';
+import EditBidPage from './EditBidPage';
 
 import imgFilterIcon from '../images/filter.svg';
-import imgViewIcon from '../images/view.png';  // Import the image for view button
+import imgEyeOpened from '../images/eye-opened.svg';
+import imgEdit from '../images/edit.png';
 
 import '../styles/BidPage.css';
 import BidForm from './BidForm';
 
 const BidPage = () => {
-    const [IsAddPage, setIsAddPage] = useState(false);
     const [BidCurrentTab, setBidCurrentTab] = useState('News');
+    const [IsAddPage, setIsAddPage] = useState(false);
+    const [isEditPage, setIsEditPage] = useState(false); 
+    const [editMode, setEditMode] = useState(false);
+    const [editTypeForm, setEditTypeForm] = useState('');
+    const [editBidId, setEditBidId] = useState(null);
     const [newsData, setNewsData] = useState([]);
     const [eventsData, setEventsData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,6 +34,7 @@ const BidPage = () => {
     const userId = Cookies.get('userId');
     const userEmail = Cookies.get('userEmail');
 
+    // useEffect для загрузки данных по приему ролей и прав
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -62,6 +69,7 @@ const BidPage = () => {
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
                 }
 
+                // References to Firebase Database
                 const newsRef = ref(database, 'News');
                 const eventsRef = ref(database, 'Events');
 
@@ -73,6 +81,7 @@ const BidPage = () => {
                 const newsData = [];
                 const eventsData = [];
 
+                // Основной цикл для создания набора новостей и событий
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
@@ -166,6 +175,18 @@ const BidPage = () => {
         }
     };
 
+    const handleEdit = (typeForm, id) => {
+        setEditMode(true);
+        setEditTypeForm(typeForm);
+        setEditBidId(id);
+    };
+
+    const handleCloseEdit = () => {
+        setEditMode(false);
+        setEditTypeForm('');
+        setEditBidId(null);
+    };
+
     const renderNews = (status) => {
         return newsData.filter(news => news.status === status).map(news => (
             <div key={news.id} className="news-card-container">
@@ -177,15 +198,19 @@ const BidPage = () => {
                     images={news.images}
                 />
                 <div className="news-card-actions">
-                    <button className="view-btn">
-                        <Link to={`/news/${news.id}`}>
-                            <img src={imgViewIcon} alt="Посмотреть" />
-                            <span>Посмотреть новость</span>
-                        </Link>
-                    </button>
+                    <Link to={`/news/${news.id}`} className="news-card-eye-link" title="Посмотреть новость">
+                        <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
+                    </Link>
+                    <img 
+                        src={imgEdit} 
+                        alt="Редактировать" 
+                        className="news-card-edit-icon" 
+                        title="Редактировать новость" 
+                        onClick={() => handleEdit('News', news.id)} 
+                    />
                     {status === 'Архив' && (
                         <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено', 'News')}>
-                            <img src={imgViewIcon} alt="Из архива" />
+                            <img src={imgEyeOpened} alt="Из архива" />
                             <span>Из архива</span>
                         </button>
                     )}
@@ -205,15 +230,19 @@ const BidPage = () => {
                     images={event.images}
                 />
                 <div className="news-card-actions">
-                    <button className="view-btn">
-                        <Link to={`/events/${event.id}`}>
-                            <img src={imgViewIcon} alt="Посмотреть"/>
-                            <span>Посмотреть событие</span>
-                        </Link>
-                    </button>
+                    <Link to={`/events/${event.id}`} className="news-card-eye-link" title="Посмотреть событие">
+                        <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
+                    </Link>
+                    <img 
+                        src={imgEdit} 
+                        alt="Редактировать" 
+                        className="news-card-edit-icon" 
+                        title="Редактировать событие" 
+                        onClick={() => handleEdit('Events', event.id)} 
+                    />
                     {status === 'Архив' && (
                         <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено', 'Events')}>
-                            <img src={imgViewIcon} alt="Из архива" />
+                            <img src={imgEyeOpened} alt="Из архива" />
                             <span>Из архива</span>
                         </button>
                     )}
@@ -225,62 +254,68 @@ const BidPage = () => {
     if (loading) return <Loader/>;
     if (error) return <p>{error}</p>;
 
+    if (isEditPage) {
+        return <EditBidPage setIsEditPage={setIsEditPage} typeForm={BidCurrentTab} id={editBidId} />;
+    }
+
     return (
         <div className="bid-page page-content">
-            <div className="bid-page-head noselect">
-                <p className={`bid-page-head-tab ${BidCurrentTab === 'News' ? 'bid-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentBidTabHandler}>Новости</p>
-                <p className={`bid-page-head-tab ${BidCurrentTab === 'Events' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentBidTabHandler}>События</p>
-                {!IsAddPage && (
-                    <div className="bid-page-btn-add" onClick={() => setIsAddPage(true)}>
-                        <p>Предложить {BidCurrentTab === 'News' ? 'новость' : 'событие'}</p>
+            {editMode ? (
+                <EditBidPage 
+                    setIsEditPage={handleCloseEdit} 
+                    typeForm={editTypeForm} 
+                    id={editBidId} 
+                />
+            ) : IsAddPage ? (
+                <BidForm 
+                    setIsAddPage={setIsAddPage} 
+                    typeForm={BidCurrentTab} 
+                    onAdd={BidCurrentTab === 'News' ? handleAddNews : handleAddEvent} 
+                />
+            ) : (
+                <>
+                    <div className="bid-page-head noselect">
+                        <p className={`bid-page-head-tab ${BidCurrentTab === 'News' ? 'bid-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentBidTabHandler}>Новости</p>
+                        <p className={`bid-page-head-tab ${BidCurrentTab === 'Events' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentBidTabHandler}>События</p>
+                        <div className="bid-page-btn-add" onClick={() => setIsAddPage(true)}>
+                            <p>Предложить {BidCurrentTab === 'News' ? 'новость' : 'событие'}</p>
+                        </div>
                     </div>
-                )}
-            </div>
-            {!IsAddPage && (
-                <div className="bid-page-head-2 noselect">
-                    <div className="filter">
-                        <img src={imgFilterIcon} alt="" />
-                        <p>Фильтр</p>
+                    <div className="bid-page-head-2 noselect">
+                        <div className="filter">
+                            <img src={imgFilterIcon} alt="" />
+                            <p>Фильтр</p>
+                        </div>
                     </div>
-                </div>
+                    <div className="bid-page-content">
+                        {BidCurrentTab === 'News' && (
+                            <>
+                                <h2>Новые заявки</h2>
+                                {renderNews('На модерации')}
+                                <h2>Одобренные заявки</h2>
+                                {renderNews('Одобрено')}
+                                <h2>Опубликованные новости</h2>
+                                {renderNews('Опубликовано')}
+                                <h2>Отклоненные заявки</h2>
+                                {renderNews('Отклонено')}
+                            </>
+                        )}
+                        {BidCurrentTab === 'Events' && (
+                            <>
+                                <h2>Новые заявки</h2>
+                                {renderEvents('На модерации')}
+                                <h2>Одобренные заявки</h2>
+                                {renderEvents('Одобрено')}
+                                <h2>Опубликованные события</h2>
+                                {renderEvents('Опубликовано')}
+                                <h2>Отклоненные заявки</h2>
+                                {renderEvents('Отклонено')}
+                            </>
+                        )}
+                    </div>
+                    <Footer />
+                </>
             )}
-            <div className="bid-page-content">
-                {BidCurrentTab === 'News' && !IsAddPage && (
-                    <>
-                        <h2>Новые заявки</h2>
-                        {renderNews('На модерации')}
-                        <h2>Одобренные заявки</h2>
-                        {renderNews('Одобрено')}
-                        <h2>Опубликованные новости</h2>
-                        {renderNews('Опубликовано')}
-                        <h2>Отклоненные заявки</h2>
-                        {renderNews('Отклонено')}
-                       {/*  <h2>Заявки из архива</h2>
-                        {renderNews('Архив')} */}
-                    </>
-                )}
-                {BidCurrentTab === 'Events' && !IsAddPage && (
-                    <>
-                        <h2>Новые заявки</h2>
-                        {renderEvents('На модерации')}
-                        <h2>Одобренные заявки</h2>
-                        {renderEvents('Одобрено')}
-                        <h2>Опубликованные события</h2>
-                        {renderEvents('Опубликовано')}
-                        <h2>Отклоненные заявки</h2>
-                        {renderEvents('Отклонено')}
-                       {/*  <h2>Заявки из архива</h2>
-                        {renderEvents('Архив')} */}
-                    </>
-                )}
-                {BidCurrentTab === 'News' && IsAddPage && (
-                    <BidForm setIsAddPage={setIsAddPage} typeForm={'News'} onAdd={handleAddNews} />
-                )}
-                {BidCurrentTab === 'Events' && IsAddPage && (
-                    <BidForm setIsAddPage={setIsAddPage} typeForm={'Events'} onAdd={handleAddEvent} />
-                )}
-            </div>
-            <Footer />
         </div>
     );
 };
