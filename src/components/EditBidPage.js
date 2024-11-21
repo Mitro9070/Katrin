@@ -54,11 +54,13 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     await newsContentStore.fetchData();
                     bid = newsContentStore.getNewsById(id);
     
-                    // Временная проверка печати bid для отладки
                     console.log("Fetched bid for TechNews:", bid);
     
                     if (typeForm === 'TechNews' && bid) {
-                        setBidData(bid);
+                        setBidData({
+                            ...bid,
+                            display_up_to: bid.display_up_to || ''
+                        });
                     }
                 } else if (typeForm === 'Events') {
                     await eventsStore.fetchData();
@@ -69,27 +71,39 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     throw new Error('Заявка не найдена');
                 }
     
-                console.log("Initial bidData.title:", bid?.title);
-    
+                
                 navigationStore.setCurrentBidText(bid.text || '');
     
-                setBidData(bid);
+                
+                if (bid.display_up_to) {
+                    // Форматируем значение даты в нужный формат 'YYYY-MM-DDTHH:mm'
+                    const formattedDisplayUpTo = new Date(bid.display_up_to).toISOString().slice(0, 16);
+                    console.log("Formatted display_up_to:", formattedDisplayUpTo);
     
-                setLinksList(
-                    Array.isArray(bid?.links) ? // Проверка на массив
-                    bid?.links?.map((link, index) => (
-                        <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
-                    )) : []
-                );
-
+                    setBidData({
+                        ...bid,
+                        display_up_to: formattedDisplayUpTo 
+                    });
+                } else {
+                    setBidData({
+                        ...bid,
+                        display_up_to: ''
+                    });
+                }
+    
                 setFilesList(
-                    Array.isArray(bid?.files) ? // Проверка на массив
+                    Array.isArray(bid?.files) ? 
                     bid?.files?.map((file, index) => (
                         <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
                     )) : []
                 );
     
-                
+                setLinksList(
+                    Array.isArray(bid?.links) ? 
+                    bid?.links?.map((link, index) => (
+                        <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
+                    )) : []
+                );
     
                 setIsAdsChecked(bid?.elementType?.includes('Объявления'));
                 setIsImportant(bid?.fixed);
@@ -118,6 +132,8 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     
         fetchBidData();
     }, [id, typeForm]);
+
+    
 
     const fetchOrganizerName = async (organizerId) => {
         try {
@@ -249,38 +265,48 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         return uploadedUrls;
     };
 
+    function getCookie(name) {
+        let matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    }
+
     const updateBidHandler = async () => {
         setLoading(true);
-
+    
         console.log("Before save bidData.title:", bidData?.title);
-
+    
+        // Получаем id пользователя из cookies
+        const userId = getCookie('userId');  // Предположим, у вас есть функция getCookie
+    
         let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
         let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
-
+    
         const currentImages = bidData.images || [];
         const otherImages = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]);
-
+    
         // Проверка форматов для разных типов форм.
         let format = typeForm === 'Events'
             ? [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value]
             : Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb.value);
-
+    
         // Если формат не выбран, устанавливаем "Тех. новости" по умолчанию для `TechNews`.
         if (typeForm === 'TechNews' && format.length === 0) {
             format = ['Тех. новости'];
         }
-
+    
         if (format.length === 0 || (typeForm === 'Events' && !format[0])) {
             alert("Пожалуйста, выберите корректный формат.");
             setLoading(false);
             return;
         }
-
+    
         try {
             const newBidKey = bidData?.id || uuidv4();
             const newCoverImage = document.getElementById('bid-cover')?.files[0];
             const coverImageURL = newCoverImage ? await handleCoverPhotoUpload(newCoverImage, newBidKey) : bidData?.images?.[0];
-
+    
             // Фильтруем удаленные фотографии
             const currentImagesFiltered = currentImages.slice(1).filter((img, index) => componentsCarousel[index] !== null);
             const otherPhotosUrls = await addNewPhotoFields(
@@ -289,9 +315,12 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 currentImagesFiltered, // Фильтрация
                 newBidKey
             );
-
+    
             const filesUrls = n_files.length > 0 ? await handlePhotoUpload(n_files, 'files', newBidKey) : bidData.files || [];
-
+    
+            // Если organizer не введен вручную, используем id из cookies
+            const organizer = bidData.organizer || userId;
+    
             const updatedBidData = {
                 title: bidData.title || '',
                 tags: bidData.tags || [],
@@ -300,7 +329,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 place: bidData.place || '',
                 start_date: bidData.start_date || '',
                 end_date: bidData.end_date || '',
-                organizer: bidData.organizer || '',
+                organizer: organizer,
                 organizer_phone: bidData.organizer_phone || '',
                 organizer_email: bidData.organizer_email || '',
                 status: bidData.status || 'На модерации',
@@ -311,15 +340,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU'),
             };
-
+    
             console.log("Updated bidData for save:", updatedBidData);
-
+    
             if (typeForm === 'News' || typeForm === 'TechNews') {
                 await newsContentStore.updateNews(bidData.id, updatedBidData);
             } else if (typeForm === 'Events') {
                 await eventsStore.updateEvent(bidData.id, updatedBidData);
             }
-
+    
             setLoading(false);
             alert('Заявка успешно обновлена!');
             if (typeof setIsEditPage === 'function') {

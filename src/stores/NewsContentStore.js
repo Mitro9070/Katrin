@@ -40,7 +40,7 @@ class NewsContentStore {
                             files: item.files || [],
                             links: item.links || [],
                             fixed: item.fixed || false,
-                            displayUpTo: displayUpTo,
+                            display_up_to: item.display_up_to,
                             manager: item.manager || '',
                             phoneManager: item.phoneManager || '',
                             mailManager: item.mailManager || '',
@@ -51,7 +51,7 @@ class NewsContentStore {
                     console.log("Данные отсутствуют.");
                 }
 
-                console.log("Сформированный массив новостей:", this.News);
+                
                 this.loading = false;
             });
         } catch (error) {
