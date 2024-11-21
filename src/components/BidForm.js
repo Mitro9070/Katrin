@@ -23,7 +23,7 @@ import CustomFileSelect from './CustomFileSelect';
 import { navigationStore } from '../stores/NavigationStore';
 
 function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
-    let datetime = '15 Июня, 12:00';
+    let datetime = new Date().toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' />]);
@@ -145,12 +145,12 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     <img src={imgBackIcon} alt="" className="bid-form-btn-back" />
                 </div>
                 <p className="bid-form-datetime">{datetime}</p>
-                <div className="icon-container">
+                {/* <div className="icon-container">
                     <img src={imgCalendarIcon} alt="" className="bid-form-btn-calendar" />
                 </div>
                 <div className="icon-container bid-form-btn-delete">
                     <img src={imgTrashIcon} alt="" />
-                </div>
+                </div> */}
             </div>
             <div className="bid-form-body">
                 <CustomInput width='100%' placeholder='Название' id='bid-title' />
@@ -191,9 +191,9 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     <div className='bid-form-body-oneline'>
                         <p>Дата</p>
                         <CustomInput width='217px' placeholder='Дата объявления' type='date' id='display_up_to' />
-                        <label className="bid-form-format-element">
-                            <input type="checkbox" name="important" onChange={(e) => setIsImportant(e.target.checked)} />
-                            <p><img src={imgCheckmark} alt="" />Закрепить объявление</p>
+                        <label className="bid-form-format-element" >
+                            <input type="checkbox"  name="important" onChange={(e) => setIsImportant(e.target.checked)} />
+                            <p style={{ marginLeft:'100px' }}><img src={imgCheckmark} alt="" />Закрепить объявление</p>
                         </label>
                     </div>
                 )}
