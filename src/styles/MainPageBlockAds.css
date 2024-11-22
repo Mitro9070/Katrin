@@ -1,11 +1,28 @@
 .main-page-block-ads {
     width: 100%;
-    max-height: 114px;
+    max-height: 114px; /* Высота для отображения трех новостей */
     overflow-x: hidden;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px; /* Устанавливаем отступ между блоками новостей */
+    scrollbar-width: thin; /* Firefox */
+}
+
+.main-page-block-ads::-webkit-scrollbar {
+    width: 5px; /* Chrome, Safari, Opera */
+}
+
+.main-page-block-ads::-webkit-scrollbar-track {
+    background: transparent;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+}
+
+.main-page-block-ads::-webkit-scrollbar-thumb {
+    background-color: #A9A9A9;
+    border-radius: 20px;
+    border: 3px solid #A9A9A9;
 }
 
 .main-page-block-ads-loader {
@@ -33,4 +50,10 @@
 
 .important-ad-string .main-page-block-ad {
     width: 100%;
+}
+
+.ads-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Устанавливаем отступ между блоками новостей */
 }
