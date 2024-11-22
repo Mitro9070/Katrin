@@ -28,4 +28,17 @@ const formatDate = (dateString, isEvent = false) => {
     }
 };
 
-export default formatDate;
+const formatBirthday = (dateString) => {
+    if (typeof dateString === 'string') {
+        if (dateString.includes('-')) {
+            return new Date(dateString);
+        } else {
+            const [day, month, year] = dateString.split('.');
+            return new Date(`${year}-${month}-${day}`);
+        }
+    } else {
+        return new Date(dateString);
+    }
+};
+
+export { formatDate as default, formatBirthday };

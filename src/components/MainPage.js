@@ -25,6 +25,7 @@ import { getPermissions } from '../utils/Permissions';
 const MainPage = observer(() => {
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
+    const [birthdays, setBirthdays] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [permissions, setPermissions] = useState({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
@@ -73,14 +74,17 @@ const MainPage = observer(() => {
 
                 const newsRef = ref(database, 'News');
                 const eventsRef = ref(database, 'Events');
+                const usersRef = ref(database, 'Users');
 
-                const [newsSnapshot, eventsSnapshot] = await Promise.all([
+                const [newsSnapshot, eventsSnapshot, usersSnapshot] = await Promise.all([
                     get(newsRef),
-                    get(eventsRef)
+                    get(eventsRef),
+                    get(usersRef)
                 ]);
 
                 const newsData = [];
                 const eventsData = [];
+                const birthdaysData = [];
 
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
@@ -106,10 +110,33 @@ const MainPage = observer(() => {
                     });
                 }
 
+                if (usersSnapshot.exists()) {
+                    const today = new Date();
+                    const nextMonth = new Date();
+                    nextMonth.setDate(today.getDate() + 30);
+
+                    usersSnapshot.forEach((childSnapshot) => {
+                        const user = childSnapshot.val();
+                        const birthday = new Date(user.birthday.includes('-') ? user.birthday : user.birthday.split('.').reverse().join('-'));
+                        birthday.setFullYear(today.getFullYear());
+
+                        if (birthday >= today && birthday <= nextMonth) {
+                            birthdaysData.push({
+                                name: user.Name,
+                                surname: user.surname,
+                                lastname: user.lastname,
+                                position: user.position,
+                                birthday: birthday.toISOString().split('T')[0]
+                            });
+                        }
+                    });
+                }
+
                 newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
                 setPublishedNews(newsData);
                 setPublishedEvents(eventsData);
+                setBirthdays(birthdaysData);
             } catch (err) {
                 setError('Не удалось загрузить данные');
             } finally {
@@ -154,7 +181,7 @@ const MainPage = observer(() => {
                 {publishedEvents.length > 0 && (
                     <EventsBlockSlide name={'События'} data={publishedEvents} />
                 )}
-                <MainPageBlockList name={'Дни рождения'} list={[]} />
+                <MainPageBlockList name={'Дни рождения'} list={birthdays} />
                 <MainPageBlockList name={'Новые сотрудники'} list={[]} />
                 <div className="main-page-btn main-page-btn-red" onClick={setShowQuestionPushHandler}>
                     <img src={iconHintImg} alt="" />

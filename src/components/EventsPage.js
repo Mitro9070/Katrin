@@ -30,42 +30,21 @@ const EventsPage = () => {
                 const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
                 const permissions = getPermissions(roleId);
 
+                // Проверка прав доступа
                 switch (roleId) {
                     case '1': // Администратор
-                        if (!permissions.calendarevents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
                     case '3': // Авторизованный пользователь
                         if (!permissions.calendarevents) {
                             throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                         }
                         break;
                     case '2': // Гость
+                    case '4': // Контент-менеджер
+                    case '5': // Менеджер событий
+                    case '6': // Техник
                         if (!permissions.calendarevents) {
                             setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '4': // Контент-менеджер
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '5': // Менеджер событий
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '6': // Техник
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
+                            setShowModal(true);
                             return;
                         }
                         break;
@@ -79,10 +58,13 @@ const EventsPage = () => {
                     const eventsData = [];
                     snapshot.forEach(childSnapshot => {
                         const item = childSnapshot.val();
-                        eventsData.push({
-                            ...item,
-                            id: childSnapshot.key
-                        });
+                        // Добавляем только опубликованные события
+                        if (item.status === "Опубликовано") {
+                            eventsData.push({
+                                ...item,
+                                id: childSnapshot.key
+                            });
+                        }
                     });
                     setEventsData(eventsData);
                 }
@@ -136,20 +118,19 @@ const EventsPage = () => {
             return false;
         }
 
-        // Если нет фильтров, отображаем все события
         return true;
     });
 
     if (loading) return <Loader />;
     if (error) return <p>{error}</p>;
 
-    const eventsToCalendar = eventsData.filter(e => e.status === 'Опубликовано');
+    // Используем отфильтрованные события для календаря
+    const eventsToCalendar = filteredEvents;
     console.log("Это мы передаем в календарь:", eventsToCalendar);
 
     return (
         <div className="page-content events-page">
             <div className="events-content-calendar">
-                {/* Передача событий в компонент Calendar */}
                 <Calendar events={eventsToCalendar} />
                 <div className="events-content-calendar-legend">
                     <div className="events-external-legend">
@@ -196,21 +177,18 @@ const EventsPage = () => {
                             </div>
                         </div>
                     )}
-                    {filteredEvents.map(e => {
-                        console.log("Отображение события в карточке:", e);
-                        return (
-                            <Link to={`/events/${e.id}`} key={e.id}>
-                                <StandartCard
-                                    title={e.title}
-                                    text={e.text}
-                                    publicDate={e.postData}
-                                    isEvents={true}
-                                    eventType={e.elementType} // Передача типа события в карточку
-                                    images={e.images}
-                                />
-                            </Link>
-                        );
-                    })}
+                    {filteredEvents.map(e => (
+                        <Link to={`/events/${e.id}`} key={e.id}>
+                            <StandartCard
+                                title={e.title}
+                                text={e.text}
+                                publicDate={e.postData}
+                                isEvents={true}
+                                eventType={e.elementType}
+                                images={e.images}
+                            />
+                        </Link>
+                    ))}
                 </>
             </div>
         </div>
