@@ -18,9 +18,11 @@ function EventsBlockSlide({ name, data, className = '' }) {
     if (error) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{error}</p><p className="name-block-list">{name}</p></div>; // Обработка ошибок
     if (data.length === 0) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{name} отсутствуют</p><p className="name-block-list">{name}</p></div>;
 
+    const sortedData = [...data].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+
     const snapToCard = () => {
         const wrapper = slideWrapperRef.current;
-        const cardHeight = wrapper.scrollHeight / data.length;
+        const cardHeight = wrapper.scrollHeight / sortedData.length;
         const currentScrollPosition = wrapper.scrollTop;
 
         // Вычисляем ближайшую карточку
@@ -58,47 +60,45 @@ function EventsBlockSlide({ name, data, className = '' }) {
                     gap: '37px',
                 }}
             >
-                {data
-                    .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
-                    .map((item, index) => (
-                        <div id={`event-item-${index}`} key={index}>
-                            <Link to={`/events/${item.id}`}>
-                                <div
-                                    className="content"
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column', // Изменение направления при наличии фото
-                                        flex: '0 0 auto',
-                                        height: 'auto', // Высота каждой карточки
-                                        scrollSnapAlign: 'start', // Притягивание к началу блока
-                                    }}
-                                >
-                                    <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
-                                        <p className="datatime-slide">{formatDate(item.start_date, true)}</p>
-                                        <p className="title-slide title-slide-events" style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                        <div
-                                            className="description-slide"
-                                            style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}
-                                            dangerouslySetInnerHTML={{ __html: item.text }}
-                                        />
-                                        {item.tags && (
-                                            <p className="tags-slide">
-                                                {item.tags.map(tag => `#${tag}`).join(', ')}
-                                            </p>
-                                        )}
-                                        {item.elementType && (
-                                            <p className="event-type-slide">
-                                                {item.elementType}
-                                            </p>
-                                        )}
-                                        {index < data.length - 1 && (
-                                            <div className="event-separator"></div>
-                                        )}
-                                    </div>
+                {sortedData.map((item, index) => (
+                    <div id={`event-item-${index}`} key={index}>
+                        <Link to={`/events/${item.id}`}>
+                            <div
+                                className="content"
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column', // Изменение направления при наличии фото
+                                    flex: '0 0 auto',
+                                    height: 'auto', // Высота каждой карточки
+                                    scrollSnapAlign: 'start', // Притягивание к началу блока
+                                }}
+                            >
+                                <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
+                                    <p className="datatime-slide">{formatDate(item.start_date, true)}</p>
+                                    <p className="title-slide title-slide-events" style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
+                                    <div
+                                        className="description-slide"
+                                        style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}
+                                        dangerouslySetInnerHTML={{ __html: item.text }}
+                                    />
+                                    {item.tags && (
+                                        <p className="tags-slide">
+                                            {item.tags.map(tag => `#${tag}`).join(', ')}
+                                        </p>
+                                    )}
+                                    {item.elementType && (
+                                        <p className="event-type-slide">
+                                            {item.elementType}
+                                        </p>
+                                    )}
+                                    {index < sortedData.length - 1 && (
+                                        <div className="event-separator"></div>
+                                    )}
                                 </div>
-                            </Link>
-                        </div>
-                    ))}
+                            </div>
+                        </Link>
+                    </div>
+                ))}
             </div>
             <p className="name-block-list">{name}</p>
         </div>
