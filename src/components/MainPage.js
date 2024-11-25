@@ -117,11 +117,11 @@ const MainPage = observer(() => {
                     const nextMonth = new Date(today);
                     nextMonth.setDate(today.getDate() + 30);
 
-                    today.setHours(0, 0, 0, 0); // Сбрасываем время
-                    nextMonth.setHours(23, 59, 59, 999); // Устанавливаем конец текущего дня
+                    today.setHours(0, 0, 0, 0); 
+                    nextMonth.setHours(23, 59, 59, 999); 
 
                     const lastMonth = new Date(today);
-                    lastMonth.setDate(today.getDate() - 30); // Дата месяц назад
+                    lastMonth.setDate(today.getDate() - 30);
 
                     usersSnapshot.forEach((childSnapshot) => {
                         const user = childSnapshot.val();
@@ -132,6 +132,7 @@ const MainPage = observer(() => {
 
                         if (birthday >= today && birthday <= nextMonth) {
                             birthdaysData.push({
+                                id: childSnapshot.key, // Добавляем userId
                                 name: user.Name,
                                 surname: user.surname,
                                 lastname: user.lastname,
@@ -142,6 +143,7 @@ const MainPage = observer(() => {
 
                         if (createdAt >= lastMonth && createdAt <= today) {
                             newEmployeesData.push({
+                                id: childSnapshot.key, // Добавляем userId
                                 name: user.Name,
                                 surname: user.surname,
                                 lastname: user.lastname,

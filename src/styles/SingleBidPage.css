@@ -1,38 +1,38 @@
-.single-bid-page-head{
+.single-bid-page-head {
     display: flex;
     align-items: center;
     font-size: 20px;
 }
 
-.single-bid-public-date{
+.single-bid-public-date {
     margin-left: 15px;
     margin-right: 44px;
 }
 
-.event-color-line-2{
+.event-color-line-2 {
     height: 10px;
     width: 195px;
     border-radius: 10px;
     margin-right: 30px;
 }
 
-.single-bid-public-status{
+.single-bid-public-status {
     color: #0C8CE9;
 }
 
-.single-bid-page-content{
+.single-bid-page-content {
     display: flex;
-    gap: 30px;
-    margin-top: 30px;
+    gap: 30px !important;
+    margin-top: 35px !important;
 }
 
-.single-bid-content-column-1{
+.single-bid-content-column-1 {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px; /* Увеличен отступ с 4px на 6px */
 }
 
-.single-bid-content-image-container{
+.single-bid-content-image-container {
     display: flex;
     width: 420px;
     height: 420px;
@@ -40,56 +40,56 @@
     overflow: hidden;
 }
 
-.single-bid-content-image-container img{
+.single-bid-content-image-container img {
     height: 100%;
     width: 100%;
     object-fit: contain;
     object-position: center;
 }
 
-.single-bid-tags-carousel-container{
+.single-bid-tags-carousel-container {
     display: flex;
     justify-content: space-between;
     font-weight: 500;
 }
 
-.single-bid-tags{
+.single-bid-tags {
     display: flex;
-    flex-wrap: wrap; /* Позволяет переносить элементы на новую строку */
+    flex-wrap: wrap;
     gap: 15px;
 }
 
 .tag {
-    white-space: nowrap; /* Предотвращает перенос содержимого тега на новую строку */
+    white-space: nowrap;
 }
 
-.single-bid-carousel{
+.single-bid-carousel {
     display: flex;
     align-items: center;
     gap: 15px;
     align-self: flex-start;
 }
 
-.single-bid-content-column-2{
+.single-bid-content-column-2 {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 17px; /* Увеличен отступ с 15px на 17px */
 }
 
-.single-bid-title{
+.single-bid-title {
     font-size: 24px;
 }
 
 .page-files-container,
-.page-links-container{
+.page-links-container {
     display: flex;
     width: 645px;
-    overflow-x: scroll;
+    overflow-x: auto; /* Изменено с scroll на auto */
     overflow-y: hidden;
     gap: 30px;
 }
 
-.page-file-container{
+.page-file-container {
     height: 80px;
     width: 195px;
     background-color: #F2F3F4;
@@ -117,10 +117,10 @@
 }
 
 .page-link-container p {
-    width: 270px;              /* Ограничение ширины для текста */
+    width: 270px;
     line-height: 19.2px;
-    white-space: nowrap;        /* Отключаем перенос строк */
-    overflow: hidden;           /* Скрываем текст, выходящий за пределы контейнера */
-    text-overflow: ellipsis;    /* Добавляем многоточие */
-    margin: 0;                 /* Убираем возможные отступы для корректного отображения */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
 }

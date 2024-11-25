@@ -8,14 +8,14 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
-import { connectToWebDAV } from '../utils/webdavUtils'; // Импорт функции подключения к WebDAV
+import { connectToWebDAV } from '../utils/webdavUtils';
 
 const SingleDevicesPage = () => {
     const { id } = useParams();
 
     const [currentTab, setCurrentTab] = useState('All');
     const [device, setDevice] = useState({});
-    const [allParameters, setAllParameters] = useState(false);
+    const [allParameters, setAllParameters] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
 
     useEffect(() => {
@@ -64,13 +64,13 @@ const SingleDevicesPage = () => {
             return fields.map((field, index) => (
                 parameters[field.key] && (
                     <tr key={index}>
-                        <td style={{ paddingRight: '30px' }}><strong>{field.label}</strong></td>
+                        <td>{field.label}</td>
                         <td>{parameters[field.key]}</td>
                     </tr>
                 )
             ));
         }
-        return <p>Нет данных</p>;
+        return <tr><td colSpan="2">Нет данных</td></tr>;
     };
 
     const prevImage = () => {
@@ -235,7 +235,7 @@ const SingleDevicesPage = () => {
             </div>
             <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
                 <img src={imgOpenDownIcon} alt="" style={{transform: allParameters ? 'rotate(180deg)' : ''}}/>
-                <p>Посмотреть все параметры</p>
+                <p>{allParameters ? 'Скрыть параметры' : 'Посмотреть все параметры'}</p>
             </div>
             {allParameters && (
                 <div className="device-all-param">

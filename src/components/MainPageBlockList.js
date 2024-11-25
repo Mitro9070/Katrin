@@ -1,11 +1,13 @@
 import '../styles/MainPageBlockList.css';
 import imgSettingsIcon from '../images/settings.svg';
 import { formatBirthday, formatNewEmployee } from '../utils/formatDate';
+import { useNavigate } from 'react-router-dom';
 
 function MainPageBlockList({ name, list, isBirthday }) {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
+    const navigate = useNavigate();
 
     const formatDatePart = (date) => {
         const day = date.getDate().toString().padStart(2, '0');
@@ -19,7 +21,6 @@ function MainPageBlockList({ name, list, isBirthday }) {
     console.log("Today's date part:", todayPart);
     console.log("Tomorrow's date part:", tomorrowPart);
 
-    // Сортируем список по дате
     list.sort((a, b) => {
         const dateA = isBirthday ? formatBirthday(a.birthday) : new Date(a.createdAt);
         const dateB = isBirthday ? formatBirthday(b.birthday) : new Date(b.createdAt);
@@ -36,7 +37,16 @@ function MainPageBlockList({ name, list, isBirthday }) {
         return dateA - dateB;
     });
 
-    let content = list.map((element, index) => {
+    const handleClick = (userId) => {
+        if (!userId) {
+            console.error(`User id not available for navigation`);
+            return;
+        }
+        console.log(`Navigating to profile of user with id: ${userId}`);
+        navigate(`/profile/${userId}`);
+    };
+
+    const content = list.map((element, index) => {
         let displayDate;
         if (isBirthday) {
             const birthday = formatBirthday(element.birthday);
@@ -55,12 +65,13 @@ function MainPageBlockList({ name, list, isBirthday }) {
             displayDate = formatNewEmployee(element.createdAt);
         }
 
+        console.log(`Rendering element with id: ${element.id} and name: ${element.name}`);
+
         return (
-            <div className="content-block-list-row" key={index}>
+            <div className="content-block-list-row" key={index} onClick={() => handleClick(element.id)}>
                 <p className={`block-list-content-title ${index > 0 ? "block-list-content-title-nofirst" : ""}`}>{displayDate}</p>
                 <p className="block-list-content-subtitle">{`${element.surname} ${element.name} ${element.lastname}`}</p>
                 <p className="block-list-content-description">{element.position}</p>
-                
             </div>
         );
     });
@@ -71,7 +82,7 @@ function MainPageBlockList({ name, list, isBirthday }) {
                 <div className="content">
                     {content.length > 0 ? content : (
                         <div className="block-list-plug">
-                            <img src={imgSettingsIcon} alt="" />
+                            <img src={imgSettingsIcon} alt="settings icon" />
                             <p>Блок в разработке</p>
                         </div>
                     )}

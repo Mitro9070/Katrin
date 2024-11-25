@@ -6,20 +6,23 @@ import Cookies from 'js-cookie';
 import Loader from './Loader';
 import Footer from './Footer';
 import '../styles/Profile.css';
+import { useParams } from 'react-router-dom';
 
 const Profile = () => {
+    const { userId } = useParams();
+    const currentUserId = Cookies.get('userId');
     const [currentTab, setCurrentTab] = useState('PersonalData');
     const [loading, setLoading] = useState(true);
-    const [loadingImage, setLoadingImage] = useState(false); // Новый стейт для загрузки фото
+    const [loadingImage, setLoadingImage] = useState(false); 
     const [userData, setUserData] = useState({});
     const [roleName, setRoleName] = useState('');
     const [offices, setOffices] = useState({});
     const [inputData, setInputData] = useState({});
     const [isFormChanged, setIsFormChanged] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
-    const userId = Cookies.get('userId');
 
     useEffect(() => {
+        console.log("Profile userId:", userId); 
         const fetchData = async () => {
             try {
                 const userRef = databaseRef(database, `Users/${userId}`);
@@ -29,7 +32,7 @@ const Profile = () => {
                     const userData = userSnapshot.val();
                     setUserData(userData);
                     setInputData(userData);
-                    setImageUrl(userData.image || null); // Placeholder image if not exists
+                    setImageUrl(userData.image || null); 
 
                     if (userData.role) {
                         const roleRef = databaseRef(database, `Roles/${userData.role}`);
@@ -61,7 +64,7 @@ const Profile = () => {
         const { name, value } = e.target;
         setInputData({
             ...inputData,
-            [name]: value
+            [name]: value,
         });
         setIsFormChanged(true);
     };
@@ -73,7 +76,7 @@ const Profile = () => {
             await set(userRef, {
                 ...userData,
                 ...inputData,
-                image: imageUrl
+                image: imageUrl,
             });
             setUserData(inputData);
             setIsFormChanged(false);
@@ -87,17 +90,17 @@ const Profile = () => {
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setLoadingImage(true); // Включение загрузочного индикатора для фото
+            setLoadingImage(true); 
             try {
                 const imgRef = storageRef(storage, `employee-photos/${file.name}`);
                 await uploadBytes(imgRef, file);
                 const url = await getDownloadURL(imgRef);
                 setImageUrl(url);
-                setIsFormChanged(true); // Обозначение, что форма изменилась
+                setIsFormChanged(true); 
             } catch (error) {
                 console.error('Error uploading image:', error);
             } finally {
-                setLoadingImage(false); // Выключение загрузочного индикатора для фото
+                setLoadingImage(false); 
             }
         }
     };
@@ -109,6 +112,8 @@ const Profile = () => {
 
     if (loading) return <Loader />;
 
+    const isCurrentUser = currentUserId === userId;
+
     return (
         <div className="content-page page-content">
             <div className="content-page-head noselect">
@@ -119,21 +124,23 @@ const Profile = () => {
                 >
                     Личные данные
                 </p>
-                <p
-                    className={`content-page-head-tab ${currentTab === 'Settings' ? 'content-page-head-tab-selected' : ''}`}
-                    data-tab="Settings"
-                    onClick={changeCurrentTabHandler}
-                >
-                    Настройки
-                </p>
+                {isCurrentUser && (
+                    <p
+                        className={`content-page-head-tab ${currentTab === 'Settings' ? 'content-page-head-tab-selected' : ''}`}
+                        data-tab="Settings"
+                        onClick={changeCurrentTabHandler}
+                    >
+                        Настройки
+                    </p>
+                )}
             </div>
             <div className="content-page-content three-columns">
                 {currentTab === 'PersonalData' && (
                     <div className="personal-data-form">
                         <div className="column photo-column">
-                            <div className="photo-container" onClick={() => document.getElementById('file-input').click()}>
+                            <div className="photo-container" onClick={() => isCurrentUser && document.getElementById('file-input').click()}>
                                 {loadingImage && <Loader />}
-                                {!imageUrl && !loadingImage && <p>Добавьте пожалуйста Ваше фото</p>}
+                                {!imageUrl && !loadingImage && <p>Добавьте ваше фото</p>}
                                 {imageUrl && !loadingImage && <img src={imageUrl} alt="Фото пользователя" />}
                             </div>
                             <div className="role-label">
@@ -148,6 +155,7 @@ const Profile = () => {
                                 value={inputData.surname || ''}
                                 onChange={handleInputChange}
                                 className={`custom-input ${!inputData.surname && 'input-error'}`}
+                                readOnly={!isCurrentUser}
                             />
                             <label>Имя</label>
                             <input
@@ -156,6 +164,7 @@ const Profile = () => {
                                 value={inputData.Name || ''}
                                 onChange={handleInputChange}
                                 className={`custom-input ${!inputData.Name && 'input-error'}`}
+                                readOnly={!isCurrentUser}
                             />
                             <label>Отчество</label>
                             <input
@@ -164,6 +173,7 @@ const Profile = () => {
                                 value={inputData.lastname || ''}
                                 onChange={handleInputChange}
                                 className="custom-input"
+                                readOnly={!isCurrentUser}
                             />
                             <label>Пол</label>
                             <select
@@ -171,6 +181,7 @@ const Profile = () => {
                                 value={inputData.sex || ''}
                                 onChange={handleInputChange}
                                 className="custom-input"
+                                disabled={!isCurrentUser}
                             >
                                 <option value="" disabled>Выбрать пол</option>
                                 <option value="Мужчина">Мужчина</option>
@@ -183,6 +194,7 @@ const Profile = () => {
                                 value={inputData.email || ''}
                                 onChange={handleInputChange}
                                 className={`custom-input ${(!inputData.email || !validateEmail(inputData.email)) && 'input-error'}`}
+                                readOnly={!isCurrentUser}
                             />
                             <label>Телефон</label>
                             <input
@@ -192,6 +204,7 @@ const Profile = () => {
                                 onChange={handleInputChange}
                                 className="custom-input"
                                 placeholder="+7 (***) ***-**-**"
+                                readOnly={!isCurrentUser}
                             />
                         </div>
                         <div className="column fields-column">
@@ -201,6 +214,7 @@ const Profile = () => {
                                 value={inputData.office || ''}
                                 onChange={handleInputChange}
                                 className={`custom-input ${!inputData.office && 'input-error'}`}
+                                disabled={!isCurrentUser}
                             >
                                 <option value="" disabled>Выбрать офис</option>
                                 {Object.keys(offices).map((officeId) => (
@@ -216,7 +230,8 @@ const Profile = () => {
                                 value={inputData.position || ''}
                                 onChange={handleInputChange}
                                 className={`custom-input ${!inputData.position && 'input-error'}`}
-                                style={{ marginTop: '3px' }} // 3px margin for positioning
+                                style={{ marginTop: '3px' }}
+                                readOnly={!isCurrentUser}
                             />
                             <label>Дата рождения</label>
                             <input
@@ -225,8 +240,9 @@ const Profile = () => {
                                 value={inputData.birthday || ''}
                                 onChange={handleInputChange}
                                 className="custom-input"
+                                readOnly={!isCurrentUser}
                             />
-                            {isFormChanged && (
+                            {isCurrentUser && isFormChanged && (
                                 <button
                                     className="save-button"
                                     onClick={handleSave}
@@ -242,17 +258,18 @@ const Profile = () => {
                             type="file"
                             onChange={handleFileChange}
                             style={{ display: 'none' }}
+                            disabled={!isCurrentUser}
                         />
                     </div>
                 )}
-                {currentTab === 'Settings' && (
+                {isCurrentUser && currentTab === 'Settings' && (
                     <div>
                         <h2>Настройки</h2>
                         <p>В разработке...</p>
                     </div>
                 )}
             </div>
-            
+            <Footer />
         </div>
     );
 };

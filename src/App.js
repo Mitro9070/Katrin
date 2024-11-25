@@ -54,7 +54,7 @@ function App() {
                     <Route exact path='/red' element={<CKEditorRedaktor />} />
                     <Route exact path='/content' element={<ContentPage />} /> {/* Добавляем маршрут для ContentPage */}
                     <Route exact path='/tech-news' element={<TechPage />} /> {/* Добавляем маршрут для TechPage */}
-                    <Route exact path='/profile' element={<Profile />} /> {/* Добавляем маршрут для Profile */}
+                    <Route path="/profile/:userId" element={<Profile />} /> {/* Добавляем маршрут для Profile */}
                     <Route exact path='/admin' element={<Admin />} /> {/* Добавляем маршрут для Admin */}
                     <Route exact path='/*' element={<NotFoundPage />} />
                 </Routes>

@@ -1,7 +1,11 @@
+.devices-single-page {
+    padding: 20px;
+}
+
 .single-device-content {
     display: flex;
     gap: 30px;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .single-device-image {
@@ -34,9 +38,16 @@
     justify-content: space-between;
     align-items: center;
     position: absolute;
-    top: 100%;
+    bottom: -30px;
     width: 100%;
-    transform: translateY(-25%);
+}
+
+.icon-container {
+    cursor: pointer;
+}
+
+.icon-rotate {
+    transform: rotate(180deg);
 }
 
 .current-image-index {
@@ -52,23 +63,24 @@
 }
 
 .device-title {
-    font-family: "PF DinText Pro";
+    font-family: "PF DinText Pro", sans-serif;
     font-size: 24px;
     font-weight: 400;
     color: #2C2C2C;
 }
 
 .device-description {
-    font-family: "PF DinText Pro";
+    font-family: "PF DinText Pro", sans-serif;
     font-size: 16px;
     font-weight: 400;
     color: #2C2C2C;
 }
 
 .devices-info-btns {
-    margin-top: 40px;
     display: flex;
     gap: 30px;
+    margin-top: 40px;
+    flex-wrap: wrap;
 }
 
 .devices-info-btn {
@@ -95,72 +107,89 @@
     gap: 30px;
 }
 
-.devices-info-table .column-1 {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 308px;
-}
-
-.devices-info-table .column-2 {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 420px;
-}
-
+.devices-info-table .column-1,
+.devices-info-table .column-2,
 .devices-info-table .column-3 {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.devices-info-table .column-1,
+.devices-info-table .column-3 {
     width: 308px;
 }
 
+.devices-info-table .column-2 {
+    width: 420px;
+}
+
+.devices-info-table-title {
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
 .devices-info-table-row {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 0;
     border-top: 1px solid #A9A9A9;
 }
 
-.devices-info-table-row > :first-child, .devices-info-table-title {
+.devices-info-table-row p:first-child {
     font-weight: 500;
 }
 
-.devices-info-table-row > :first-child {
-    margin-top: 5px;
-}
-
 .device-btn-look-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 40px;
     border: 1px solid #A9A9A9;
     border-radius: 20px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
     margin-top: 30px;
 }
 
 .device-btn-look-all img {
-    margin-left: 8px;
-    margin-right: 23px;
+    margin-right: 10px;
 }
 
 .device-all-param {
-    display: flex;
-    gap: 30px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    margin-top: 20px;
+    padding: 20px;
     border: 1px solid #A9A9A9;
     border-radius: 20px;
 }
 
-.device-all-param .column-1, .device-all-param .column-2 {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.device-all-param table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
 
-.device-all-param .column-1 {
-    margin-left: 20px;
+.device-all-param td {
+    padding: 5px 10px;
+    vertical-align: top;
+}
+
+.device-all-param td:first-child {
+    color: #2C2C2C;
+    font-family: "PF DinText Pro", sans-serif;
+    font-size: 16px;
+    font-style: normal;
     font-weight: 500;
+    line-height: normal;
+    width: 40%;
+}
+
+.device-all-param td:last-child {
+    color: #2C2C2C;
+    font-family: "PF DinText Pro", sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
 }
