@@ -142,11 +142,19 @@ const SingleDevicesPage = () => {
     ];
 
     const handleConnectToWebDAV = async () => {
+        console.log('Начало процесса подключения к WebDAV...');
         try {
+            console.log('Вызов функции connectToWebDAV...');
             const files = await connectToWebDAV();
-            console.log('Полученные файлы:', files);
+            console.log('Подключение успешно. Получены файлы:', files);
+            console.log('Детальная информация о файлах:');
+            files.forEach((file, index) => {
+                console.log(`Файл ${index + 1}:`, JSON.stringify(file, null, 2));
+            });
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
+            console.error('Стек вызовов:', error.stack);
+            console.error('Детали ошибки:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
         }
     };
 
