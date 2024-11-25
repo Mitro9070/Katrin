@@ -6,7 +6,7 @@ import imgCheckIcon from '../images/checkmark.png';
 import imgCloseCancelIcon from '../images/close cancel x.png';
 import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
-import EditBidForm from './EditBidPage'; // Обратите внимание на путь, он правильный
+import EditBidForm from './EditBidPage';
 
 const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId, handleEdit }) => {
     const location = useLocation();
@@ -82,7 +82,7 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                 {subTab !== 'Archive' && (
                                     <td style={{ padding: '10px' }}>
                                         {item.status === 'На модерации' && (
-                                            <div className="custom-approve-reject-buttons">
+                                            <div className="custom-approve-reject-buttons" style={{visibility: (item.elementType === 'Технические новости' || item.elementType === 'Тех. новости') ? 'hidden' : 'visible'}}>
                                                 <button title="Одобрить" className="custom-approve-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
                                                     <img src={imgCheckIcon} alt="Одобрить" />
                                                 </button>
@@ -92,12 +92,22 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                             </div>
                                         )}
                                         {item.status === 'Одобрено' && (
-                                            <button title="Опубликовать" className="custom-publish-btn" onClick={() => onStatusChange(item.id, 'Опубликовано')}>
+                                            <button 
+                                                title="Опубликовать" 
+                                                className="custom-publish-btn" 
+                                                onClick={() => onStatusChange(item.id, 'Опубликовано')}
+                                                style={{visibility: (item.elementType === 'Технические новости' || item.elementType === 'Тех. новости') ? 'hidden' : 'visible'}}
+                                            >
                                                 <img src={imgLocationIcon} alt="Опубликовать" />
                                             </button>
                                         )}
                                         {item.status === 'Опубликовано' && (
-                                            <button title="Снять с публикации" className="custom-unpublish-btn" onClick={() => onStatusChange(item.id, 'Одобрено')}>
+                                            <button 
+                                                title="Снять с публикации" 
+                                                className="custom-unpublish-btn" 
+                                                onClick={() => onStatusChange(item.id, 'Одобрено')}
+                                                style={{visibility: (item.elementType === 'Технические новости' || item.elementType === 'Тех. новости') ? 'hidden' : 'visible'}}
+                                            >
                                                 <img src={imgRefreshRepeatIcon} alt="Снять с публикации" />
                                             </button>
                                         )}
@@ -116,14 +126,12 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                         <div className="comments-menu">
                                             {currentTab === 'News' || item.elementType === 'Технические новости' || item.elementType === 'Тех. новости' ? (
                                                 <div className="comments-menu-item">
-                                                    {/* Ссылка на SingleNewsPage для новостей */}
                                                     <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
                                                         Посмотреть
                                                     </Link>
                                                 </div>
                                             ) : (
                                                 <div className="comments-menu-item">
-                                                    {/* Ссылка на SingleEventsPage для событий */}
                                                     <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
                                                         Посмотреть
                                                     </Link>
