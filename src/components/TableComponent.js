@@ -123,36 +123,38 @@ const TableComponent = ({ items, onStatusChange, currentTab, subTab, setShowMenu
                                         </button>
                                     </div>
                                     {showMenuId === item.id && (
-                                        <div className="comments-menu">
-                                            {currentTab === 'News' || item.elementType === 'Технические новости' || item.elementType === 'Тех. новости' ? (
-                                                <div className="comments-menu-item">
-                                                    <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                </div>
-                                            ) : (
-                                                <div className="comments-menu-item">
-                                                    <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                </div>
-                                            )}
-                                            {subTab !== 'Archive' && (
-                                                <div className="comments-menu-item" onClick={() => {
-                                                    setIsEditPage(true);
-                                                    setEditBidId(item.id);
-                                                    handleEdit(currentTab, item.id, location.pathname + location.search);
-                                                }}>
-                                                    Редактировать
-                                                </div>
-                                            )}
-                                            {subTab === 'Archive' ? (
-                                                <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
-                                            ) : (
-                                                <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Архив')}>В архив</div>
-                                            )}
-                                        </div>
-                                    )}
+                        <div className="comments-menu">
+                            {currentTab === 'News' || item.elementType === 'Технические новости' || item.elementType === 'Тех. новости' ? (
+                                <div className="comments-menu-item">
+                                    <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                        Посмотреть
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="comments-menu-item">
+                                    <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                        Посмотреть
+                                    </Link>
+                                </div>
+                            )}
+                            {subTab !== 'Archive' && !(item.elementType === 'Технические новости' || item.elementType === 'Тех. новости') && (
+                                <div className="comments-menu-item" onClick={() => {
+                                    setIsEditPage(true);
+                                    setEditBidId(item.id);
+                                    handleEdit(currentTab, item.id, location.pathname + location.search);
+                                }}>
+                                    Редактировать
+                                </div>
+                            )}
+                            {subTab === 'Archive' ? (
+                                <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
+                            ) : (
+                                !(item.elementType === 'Технические новости' || item.elementType === 'Тех. новости') && (
+                                    <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Архив')}>В архив</div>
+                                )
+                            )}
+                        </div>
+                    )}
                                 </td>
                             </tr>
                         </React.Fragment>
