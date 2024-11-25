@@ -1,8 +1,8 @@
 import '../styles/MainPageBlockList.css';
 import imgSettingsIcon from '../images/settings.svg';
-import { formatBirthday } from '../utils/formatDate';
+import { formatBirthday, formatNewEmployee } from '../utils/formatDate';
 
-function MainPageBlockList({ name, list, plug = false }) {
+function MainPageBlockList({ name, list, isBirthday }) {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
@@ -21,8 +21,10 @@ function MainPageBlockList({ name, list, plug = false }) {
 
     // Сортируем список по дате
     list.sort((a, b) => {
-        const dateAPart = formatDatePart(formatBirthday(a.birthday));
-        const dateBPart = formatDatePart(formatBirthday(b.birthday));
+        const dateA = isBirthday ? formatBirthday(a.birthday) : new Date(a.createdAt);
+        const dateB = isBirthday ? formatBirthday(b.birthday) : new Date(b.createdAt);
+        const dateAPart = formatDatePart(dateA);
+        const dateBPart = formatDatePart(dateB);
 
         console.log("Comparing dates:", dateAPart, dateBPart);
 
@@ -31,21 +33,26 @@ function MainPageBlockList({ name, list, plug = false }) {
         if (dateAPart === tomorrowPart) return -1;
         if (dateBPart === tomorrowPart) return 1;
 
-        return new Date(a.birthday) - new Date(b.birthday);
+        return dateA - dateB;
     });
 
     let content = list.map((element, index) => {
-        const birthday = formatBirthday(element.birthday);
-        let displayDate = birthday.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        let displayDate;
+        if (isBirthday) {
+            const birthday = formatBirthday(element.birthday);
+            const birthdayPart = formatDatePart(birthday);
 
-        const birthdayPart = formatDatePart(birthday);
+            console.log("Processing birthday:", birthdayPart);
 
-        console.log("Processing birthday:", birthdayPart);
-
-        if (birthdayPart === todayPart) {
-            displayDate = 'Сегодня';
-        } else if (birthdayPart === tomorrowPart) {
-            displayDate = 'Завтра';
+            if (birthdayPart === todayPart) {
+                displayDate = 'Сегодня';
+            } else if (birthdayPart === tomorrowPart) {
+                displayDate = 'Завтра';
+            } else {
+                displayDate = birthday.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+            }
+        } else {
+            displayDate = formatNewEmployee(element.createdAt);
         }
 
         return (

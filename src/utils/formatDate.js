@@ -17,7 +17,7 @@ const formatDate = (dateString, isEvent = false) => {
     const isToday = date.toDateString() === now.toDateString();
     const isTomorrow = date.toDateString() === tomorrow.toDateString();
 
-    const time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
     if (isToday) {
         return `Сегодня в ${time}`;
@@ -41,4 +41,9 @@ const formatBirthday = (dateString) => {
     }
 };
 
-export { formatDate as default, formatBirthday };
+const formatNewEmployee = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+export { formatDate as default, formatBirthday, formatNewEmployee };

@@ -26,6 +26,7 @@ const MainPage = observer(() => {
     const [publishedNews, setPublishedNews] = useState([]);
     const [publishedEvents, setPublishedEvents] = useState([]);
     const [birthdays, setBirthdays] = useState([]);
+    const [newEmployees, setNewEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [permissions, setPermissions] = useState({ homepage: true, newspage: true, devicepage: true, calendarevents: true });
@@ -85,6 +86,7 @@ const MainPage = observer(() => {
                 const newsData = [];
                 const eventsData = [];
                 const birthdaysData = [];
+                const newEmployeesData = [];
 
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
@@ -112,16 +114,21 @@ const MainPage = observer(() => {
 
                 if (usersSnapshot.exists()) {
                     const today = new Date();
-                    const nextMonth = new Date();
+                    const nextMonth = new Date(today);
                     nextMonth.setDate(today.getDate() + 30);
 
                     today.setHours(0, 0, 0, 0); // Сбрасываем время
-                    nextMonth.setHours(23, 59, 59, 999); // Устанавливаем конец дня
+                    nextMonth.setHours(23, 59, 59, 999); // Устанавливаем конец текущего дня
+
+                    const lastMonth = new Date(today);
+                    lastMonth.setDate(today.getDate() - 30); // Дата месяц назад
 
                     usersSnapshot.forEach((childSnapshot) => {
                         const user = childSnapshot.val();
                         const birthday = new Date(user.birthday.includes('-') ? user.birthday : user.birthday.split('.').reverse().join('-'));
                         birthday.setFullYear(today.getFullYear());
+
+                        const createdAt = new Date(user.createdAt);
 
                         if (birthday >= today && birthday <= nextMonth) {
                             birthdaysData.push({
@@ -132,17 +139,32 @@ const MainPage = observer(() => {
                                 birthday: birthday.toISOString().split('T')[0]
                             });
                         }
+
+                        if (createdAt >= lastMonth && createdAt <= today) {
+                            newEmployeesData.push({
+                                name: user.Name,
+                                surname: user.surname,
+                                lastname: user.lastname,
+                                position: user.position,
+                                createdAt: createdAt.toISOString()
+                            });
+                        }
                     });
                 }
 
                 console.log("Birthdays data:", birthdaysData);
+                console.log("New Employees data:", newEmployeesData);
 
+                setPermissions(permissions);
+                newEmployeesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
                 setPublishedNews(newsData);
                 setPublishedEvents(eventsData);
                 setBirthdays(birthdaysData);
+                setNewEmployees(newEmployeesData);
             } catch (err) {
+                console.error('Не удалось загрузить данные:', err);
                 setError('Не удалось загрузить данные');
             } finally {
                 setLoading(false);
@@ -186,8 +208,8 @@ const MainPage = observer(() => {
                 {publishedEvents.length > 0 && (
                     <EventsBlockSlide name={'События'} data={publishedEvents} />
                 )}
-                <MainPageBlockList name={'Дни рождения'} list={birthdays} />
-                <MainPageBlockList name={'Новые сотрудники'} list={[]} />
+                <MainPageBlockList name={'Дни рождения'} list={birthdays} isBirthday />
+                <MainPageBlockList name={'Новые сотрудники'} list={newEmployees} />
                 <div className="main-page-btn main-page-btn-red" onClick={setShowQuestionPushHandler}>
                     <img src={iconHintImg} alt="" />
                     <p>Задать вопрос</p>
