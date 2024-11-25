@@ -53,7 +53,7 @@ function MainPageBlockList({ name, list, plug = false }) {
                 <p className={`block-list-content-title ${index > 0 ? "block-list-content-title-nofirst" : ""}`}>{displayDate}</p>
                 <p className="block-list-content-subtitle">{`${element.surname} ${element.name} ${element.lastname}`}</p>
                 <p className="block-list-content-description">{element.position}</p>
-                <div className="event-separator"></div>
+                
             </div>
         );
     });

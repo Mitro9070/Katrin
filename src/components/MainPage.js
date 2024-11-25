@@ -115,6 +115,9 @@ const MainPage = observer(() => {
                     const nextMonth = new Date();
                     nextMonth.setDate(today.getDate() + 30);
 
+                    today.setHours(0, 0, 0, 0); // Сбрасываем время
+                    nextMonth.setHours(23, 59, 59, 999); // Устанавливаем конец дня
+
                     usersSnapshot.forEach((childSnapshot) => {
                         const user = childSnapshot.val();
                         const birthday = new Date(user.birthday.includes('-') ? user.birthday : user.birthday.split('.').reverse().join('-'));
@@ -131,6 +134,8 @@ const MainPage = observer(() => {
                         }
                     });
                 }
+
+                console.log("Birthdays data:", birthdaysData);
 
                 newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
