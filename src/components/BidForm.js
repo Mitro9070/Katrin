@@ -127,10 +127,10 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         databasePath = 'News';
                         break;
                     case 'Устройства и ПО':
-                        databasePath = 'Devices';
+                        databasePath = 'News';
                         break;
                     case 'Мероприятия':
-                        databasePath = 'Events';
+                        databasePath = 'News';
                         break;
                     default:
                         throw new Error('Неизвестный формат');
