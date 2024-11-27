@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { getDownloadURL, ref as storageRef } from 'firebase/storage';
 import { get, ref as dbRef } from 'firebase/database';
 import { storage, database } from '../firebaseConfig';
-import formatDate from '../utils/formatDate';
 
 import imgBackIcon from '../images/back.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
@@ -11,18 +10,40 @@ import imgEyeIcon from '../images/folder.svg';
 import imgAttachIcon from '../images/attach.svg';
 
 import photo from '../images/photo-news.png';
-import imgDeviceM240T from '../images/М240Т.png';
 
-function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevice = false }) {
+function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [imageUrls, setImageUrls] = useState([]);
     const [fileUrls, setFileUrls] = useState([]);
-    const [organizer, setOrganizer] = useState('Нет данных');
+    const [creator, setCreator] = useState('Нет данных');
+    const [newsData, setNewsData] = useState(null);
+
+    useEffect(() => {
+        const fetchNewsData = async () => {
+            if (data?.id) {
+                try {
+                    const newsRef = dbRef(database, `News/${data.id}`);
+                    const newsSnapshot = await get(newsRef);
+                    if (newsSnapshot.exists()) {
+                        const fetchedNewsData = newsSnapshot.val();
+                        setNewsData(fetchedNewsData);
+                        console.log("Fetched news data:", fetchedNewsData);
+                    } else {
+                        console.log("No news data found for id:", data.id);
+                    }
+                } catch (error) {
+                    console.error("Error fetching news data:", error);
+                }
+            }
+        };
+
+        fetchNewsData();
+    }, [data]);
 
     useEffect(() => {
         const fetchImageUrls = async () => {
-            if (data?.images) {
-                const urls = await Promise.all(data.images.map(async (image) => {
+            if (newsData?.images) {
+                const urls = await Promise.all(newsData.images.map(async (image) => {
                     const cachedImage = localStorage.getItem(image);
                     if (cachedImage) {
                         return cachedImage;
@@ -38,8 +59,8 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
         };
 
         const fetchFileUrls = async () => {
-            if (data?.files) {
-                const urls = await Promise.all(data.files.map(async (file) => {
+            if (newsData?.files) {
+                const urls = await Promise.all(newsData.files.map(async (file) => {
                     const cachedFile = localStorage.getItem(file);
                     if (cachedFile) {
                         return cachedFile;
@@ -54,34 +75,47 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
             }
         };
 
-        const fetchOrganizer = async () => {
-            if (data?.organizer) {
-                if (typeof data.organizer === 'string' && data.organizer.trim() !== '') {
+        const fetchCreator = async () => {
+            console.log("newsData.organizer:", newsData?.organizer);
+
+            if (newsData?.organizer) {
+                console.log("Organizer exists:", newsData.organizer);
+                
+                if (typeof newsData.organizer === 'string' && newsData.organizer.trim() !== '') {
+                    console.log("Organizer is a non-empty string");
                     try {
-                        const userRef = dbRef(database, `Users/${data.organizer}`);
+                        const userRef = dbRef(database, `Users/${newsData.organizer}`);
+                        console.log("Fetching user data for:", newsData.organizer);
                         const userSnapshot = await get(userRef);
+                        
                         if (userSnapshot.exists()) {
                             const userData = userSnapshot.val();
-                            setOrganizer(`${userData.surname} ${userData.Name} ${userData.lastname}`);
+                            console.log("User data found:", userData);
+                            setCreator(`${userData.surname} ${userData.Name} ${userData.lastname}`);
                         } else {
-                            setOrganizer(data.organizer);
+                            console.log("User not found in database");
+                            setCreator('Пользователь не найден');
                         }
                     } catch (error) {
                         console.error("Error fetching user data:", error);
-                        setOrganizer(data.organizer);
+                        setCreator('Ошибка при загрузке данных');
                     }
                 } else {
-                    setOrganizer(data.organizer);
+                    console.log("Organizer is not a valid string:", newsData.organizer);
+                    setCreator(newsData.organizer);
                 }
             } else {
-                setOrganizer('Нет данных');
+                console.log("Organizer data is missing");
+                setCreator('Нет данных');
             }
         };
 
-        fetchImageUrls();
-        fetchFileUrls();
-        fetchOrganizer();
-    }, [data]);
+        if (newsData) {
+            fetchImageUrls();
+            fetchFileUrls();
+            fetchCreator();
+        }
+    }, [newsData]);
 
     const prevImage = () => {
         currentImage > 0 && setCurrentImage(currentImage - 1);
@@ -93,12 +127,6 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
         }
     };
 
-    const formatEventPeriod = (startDate, endDate) => {
-        const start = formatDate(startDate, true);
-        const end = formatDate(endDate, true);
-        return `с ${start} по ${end}`;
-    };
-
     return (
         <>
             <div className="single-bid-page-head">
@@ -107,30 +135,19 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                         <img src={imgBackIcon} alt="" />
                     </div>
                 </Link>
-                <p className="single-bid-public-date">{data?.postData}</p>
-                {isEvent && (
-                    <div
-                        className="event-color-line-2"
-                        style={{ backgroundColor: data?.elementType === 'Внешнее событие' ? '#9B61F9' : '#80EA77' }}
-                    ></div>
-                )}
-                <p className="single-bid-public-status"><i>{status ? status : data?.elementType}</i></p>
+                <p className="single-bid-public-date">{newsData?.postData}</p>
+                <p className="single-bid-public-status"><i>{status || newsData?.elementType}</i></p>
             </div>
             <div className="single-bid-page-content">
                 <div className="single-bid-content-column-1">
-                    {(imageUrls.length > 0 || isDevice) && (
+                    {imageUrls.length > 0 && (
                         <>
                             <div className="single-bid-content-image-container">
-                                {!isDevice && (
-                                    <img src={imageUrls[currentImage] || photo} alt="" />
-                                )}
-                                {isDevice && (
-                                    <img src={imageUrls[currentImage] || imgDeviceM240T} alt="" />
-                                )}
+                                <img src={imageUrls[currentImage] || photo} alt="" />
                             </div>
                             <div className="single-bid-tags-carousel-container">
                                 <div className="single-bid-tags">
-                                    {data?.tags?.map((tag, index) => (
+                                    {newsData?.tags?.map((tag, index) => (
                                         <p key={index} className="tag">
                                             #{tag}
                                         </p>
@@ -140,7 +157,7 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                                     <div className="icon-container icon-rotate" onClick={prevImage}>
                                         <img src={imgGoArrowIcon} alt="" className='icon-rotate' />
                                     </div>
-                                    <p className="single-bid-current-img">{imageUrls.length > 0 ? currentImage + 1 : '1'}</p>
+                                    <p className="single-bid-current-img">{currentImage + 1}</p>
                                     <div className="icon-container" onClick={nextImage}>
                                         <img src={imgGoArrowIcon} alt="" />
                                     </div>
@@ -150,38 +167,21 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                     )}
                     <div className="event-left-bottom-column">
                         <div className="event-left-bottom-row">
-                            <p>Место</p>
-                            <p>{data?.place || 'Нет данных'}</p>
-                        </div>
-                        <div className="event-left-bottom-row">
                             <p>Формат</p>
-                            <p>{data?.elementType || 'Нет данных'}</p>
+                            <p>{newsData?.elementType || 'Нет данных'}</p>
                         </div>
                         <div className="event-left-bottom-row">
-                            <p>Организатор мероприятия</p>
-                            <p>{organizer}</p>
-                        </div>
-                        <div className="event-left-bottom-row">
-                            <p>Телефон организатора</p>
-                            <p>{data?.organizer_phone || 'Нет данных'}</p>
-                        </div>
-                        <div className="event-left-bottom-row">
-                            <p>Email организатора</p>
-                            <p>{data?.organizer_email || 'Нет данных'}</p>
+                            <p>Новость создал</p>
+                            <p>{creator}</p>
                         </div>
                     </div>
                 </div>
                 <div className="single-bid-content-column-2">
-                    <p className="single-bid-title">{data?.title}</p>
-                    {isEvent && data?.start_date && data?.end_date && (
-                        <p className="event-period">
-                            {formatEventPeriod(data.start_date, data.end_date)}
-                        </p>
-                    )}
-                    <div className="single-bid-text" id="single-bid-text" dangerouslySetInnerHTML={{ __html: data?.text }}></div>
-                    {(!data?.eventType && imageUrls.length === 0 && !isDevice) && (
+                    <p className="single-bid-title">{newsData?.title}</p>
+                    <div className="single-bid-text" id="single-bid-text" dangerouslySetInnerHTML={{ __html: newsData?.text }}></div>
+                    {imageUrls.length === 0 && (
                         <div className="single-bid-tags">
-                            {data?.tags?.map((tag, index) => (
+                            {newsData?.tags?.map((tag, index) => (
                                 <p key={index} className="tag">
                                     #{tag}
                                 </p>
@@ -210,11 +210,11 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
                             </div>
                         </>
                     )}
-                    {data?.links?.[0] && (
+                    {newsData?.links?.[0] && (
                         <>
                             <p style={{ fontSize: '20px' }}>Ссылки</p>
                             <div className="page-links-container custom-scrollbar">
-                                {data?.links.map((link, index) => (
+                                {newsData.links.map((link, index) => (
                                     <a
                                         key={index}
                                         href={link}
@@ -236,4 +236,4 @@ function MainContentSinglePage({ linkTo, onClick, data, status, isEvent, isDevic
     );
 }
 
-export default MainContentSinglePage;
+export default MainContentSingleNewsPage;

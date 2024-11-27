@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { navigationStore } from '../stores/NavigationStore';
 import { newsContentStore } from '../stores/NewsContentStore';
-import MainContentSinglePage from './MainContentSinglePage';
+import MainContentSinglePage from './MainContentSingleNewsPage';
 import NotFoundPage from './NotFoundPage';
 import Loader from "./Loader";
 
