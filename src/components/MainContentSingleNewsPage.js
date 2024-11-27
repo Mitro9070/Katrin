@@ -5,7 +5,8 @@ import { get, ref as dbRef } from 'firebase/database';
 import { storage, database } from '../firebaseConfig';
 
 import imgBackIcon from '../images/back.svg';
-import imgGoArrowIcon from '../images/go-arrow.svg';
+import imgGoArrowIcon from '../images/arrow-right.png';
+import imgIconArrowIcon from '../images/arrow-left.png';
 import imgEyeIcon from '../images/folder.svg';
 import imgAttachIcon from '../images/attach.svg';
 
@@ -155,7 +156,7 @@ function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
                                 </div>
                                 <div className="single-bid-carousel">
                                     <div className="icon-container icon-rotate" onClick={prevImage}>
-                                        <img src={imgGoArrowIcon} alt="" className='icon-rotate' />
+                                        <img src={imgIconArrowIcon} alt="" className='icon-rotate' />
                                     </div>
                                     <p className="single-bid-current-img">{currentImage + 1}</p>
                                     <div className="icon-container" onClick={nextImage}>
