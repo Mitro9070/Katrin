@@ -25,8 +25,8 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     let datetime = new Date().toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
     const [componentsCarousel, setComponentsCarousel] = useState([]);
-    const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' />]);
-    const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' />]);
+    const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' key={uuidv4()} />]);
+    const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' key={uuidv4()} />]);
     const [isAdsChecked, setIsAdsChecked] = useState(false);
     const [isImportant, setIsImportant] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         if (position <= 0 && position >= (195 + 2 + 30) * -(maxPhotoCnt - 3)) {
             setCarouselPosition(() => position);
             direction > 0 && componentsCarousel.length < (maxPhotoCnt - 4) &&
-                setComponentsCarousel([...componentsCarousel, <CustomPhotoBox name='bid-image' />]);
+                setComponentsCarousel([...componentsCarousel, <CustomPhotoBox name='bid-image' key={uuidv4()} />]);
         }
     };
 
@@ -51,11 +51,11 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     };
 
     const addFileFieldHandler = () => {
-        setFilesList([...filesList, <CustomFileSelect name='bid-file' />]);
+        setFilesList([...filesList, <CustomFileSelect name='bid-file' key={uuidv4()} />]);
     };
 
     const addLinkFieldHandler = () => {
-        setLinksList([...linksList, <CustomInput width='308px' placeholder='Ссылка' name='bid-link' />]);
+        setLinksList([...linksList, <CustomInput width='308px' placeholder='Ссылка' name='bid-link' key={uuidv4()} />]);
     };
 
     const addBidHandler = async () => {
@@ -86,7 +86,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             const photosUrls = await uploadFiles([document?.getElementById('bid-cover')?.files[0], ...n_images], `images/${newBidKey}`);
             const filesUrls = await uploadFiles(n_files, `files/${newBidKey}`);
             console.log("Файлы загружены. Фото:", photosUrls, "Файлы:", filesUrls);
-    
+
             let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
             if (typeForm === 'Events') {
                 selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
@@ -99,59 +99,70 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             for (let format of selectedFormats) {
                 console.log("Обработка формата:", format);
                 
-                let status = "На модерации";
-                if (typeForm === 'TechNews') {
-                    status = "Одобрено";
-                }
+                if (typeForm === 'Events') {
+                    const startDate = document.getElementById('bid-start-date').value;
+                    const endDate = document.getElementById('bid-end-date').value;
 
-                const newBidData = {
-                    title: document?.getElementById('bid-title')?.value || '',
-                    tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
-                    elementType: format,
-                    text: navigationStore.currentBidText || '',
-                    place: document?.getElementById('bid-place')?.value || '',
-                    start_date: document?.getElementById('bid-start-date')?.value || '',
-                    end_date: document?.getElementById('bid-end-date')?.value || '',
-                    organizer: document?.getElementById('bid-organizer')?.value || '',
-                    organizer_phone: document?.getElementById('organizer-phone')?.value || '',
-                    organizer_email: document?.getElementById('organizer-email')?.value || '',
-                    status: status,
-                    images: photosUrls || [],
-                    files: filesUrls || [],
-                    links: n_links || [],
-                    display_up_to: document?.getElementById('display_up_to')?.value || '',
-                    fixed: isImportant,
-                    postData: new Date().toLocaleString('ru-RU')
-                };
-    
-                let databasePath;
-                switch (format) {
-                    case 'Объявления':
-                        databasePath = 'News';
-                        break;
-                    case 'Устройства и ПО':
-                        databasePath = 'News';
-                        break;
-                    case 'Мероприятия':
-                        databasePath = 'News';
-                        break;
-                    case 'Внешнее событие':
-                    case 'Внутреннее событие':
-                        databasePath = 'Events';
-                        break;
-                    case 'Тех. новости':
-                        databasePath = 'News';
-                        break;
-                    default:
-                        throw new Error('Неизвестный формат');
+                    if (!startDate || !endDate) {
+                        toast.error("Укажите период События.");
+                        setLoading(false);
+                        return;
+                    }
+
+                    // Преобразуем формат даты
+                    const formatDate = (date) => {
+                        return date.replace(/\..*$/, "");
+                    };
+
+                    const newBidData = {
+                        title: document?.getElementById('bid-title')?.value || '',
+                        tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
+                        elementType: format,
+                        text: navigationStore.currentBidText || '',
+                        place: document?.getElementById('bid-place')?.value || '',
+                        start_date: formatDate(startDate),
+                        end_date: formatDate(endDate),
+                        organizer: document?.getElementById('bid-organizer')?.value || '',
+                        organizer_phone: document?.getElementById('organizer-phone')?.value || '',
+                        organizer_email: document?.getElementById('organizer-email')?.value || '',
+                        status: "На модерации",
+                        images: photosUrls || [],
+                        files: filesUrls || [],
+                        links: n_links || [],
+                        display_up_to: document?.getElementById('display_up_to')?.value || '',
+                        fixed: isImportant,
+                        postData: new Date().toLocaleString('ru-RU')
+                    };
+        
+                    let databasePath;
+                    switch (format) {
+                        case 'Объявления':
+                            databasePath = 'News';
+                            break;
+                        case 'Устройства и ПО':
+                            databasePath = 'News';
+                            break;
+                        case 'Мероприятия':
+                            databasePath = 'News';
+                            break;
+                        case 'Внешнее событие':
+                        case 'Внутреннее событие':
+                            databasePath = 'Events';
+                            break;
+                        case 'Тех. новости':
+                            databasePath = 'News';
+                            break;
+                        default:
+                            throw new Error('Неизвестный формат');
+                    }
+        
+                    console.log("Сохранение в базу данных. Путь:", databasePath);
+                    const newBidRef = databaseRef(database, `${databasePath}/${newBidKey}`);
+                    await set(newBidRef, newBidData);
+                    console.log("Запись успешно сохранена в", databasePath);
                 }
-    
-                console.log("Сохранение в базу данных. Путь:", databasePath);
-                const newBidRef = databaseRef(database, `${databasePath}/${newBidKey}`);
-                await set(newBidRef, newBidData);
-                console.log("Запись успешно сохранена в", databasePath);
             }
-    
+
             setLoading(false);
             toast.success('Новость/Событие успешно добавлено!', {
                 position: "top-center",
@@ -171,7 +182,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             setLoading(false);
             toast.error('Произошла ошибка при добавлении. Пожалуйста, попробуйте еще раз.');
         }
-    };  
+    };
 
     return (
         <div className="bid-form-container noselect">
@@ -237,9 +248,19 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     <div className="bid-form-body-oneline bid-form-body-oneline-2">
                         <CustomInput width='calc(25% - 15px)' placeholder='Место' img={imgLocationIcon} id='bid-place' />
                         <p className='bid-form-text-date'>Дата</p>
-                        <CustomInput width='217px' placeholder='Дата начала' type='date' id='bid-start-date' />
+                        <input
+                            type='datetime-local'
+                            id='bid-start-date'
+                            className="custom-input"
+                            style={{ width: '217px' }}
+                        />
                         <p className='bid-form-text-date'>до</p>
-                        <CustomInput  width='217px' placeholder='Дата окончания' type='date' id='bid-end-date' />
+                        <input
+                            type='datetime-local'
+                            id='bid-end-date'
+                            className="custom-input"
+                            style={{ width: '217px' }}
+                        />
                     </div>
                 )}
                 <div className="bid-form-body-oneline bid-form-body-oneline-photo">
