@@ -58,10 +58,17 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         setLinksList([...linksList, <CustomInput width='308px' placeholder='Ссылка' name='bid-link' key={uuidv4()} />]);
     };
 
+    const getUserIdFromCookie = () => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; userId=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    };
+
     const addBidHandler = async () => {
         setLoading(true);
         try {
             const newBidKey = uuidv4();
+            const userId = getUserIdFromCookie();
             console.log("Сгенерирован новый ключ:", newBidKey);
     
             const uploadFiles = async (files, folder) => {
@@ -114,6 +121,8 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         return date.replace(/\..*$/, "");
                     };
 
+                    const organizer = document.getElementById('bid-organizer').value || userId;
+
                     const newBidData = {
                         title: document?.getElementById('bid-title')?.value || '',
                         tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
@@ -122,7 +131,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         place: document?.getElementById('bid-place')?.value || '',
                         start_date: formatDate(startDate),
                         end_date: formatDate(endDate),
-                        organizer: document?.getElementById('bid-organizer')?.value || '',
+                        organizer,
                         organizer_phone: document?.getElementById('organizer-phone')?.value || '',
                         organizer_email: document?.getElementById('organizer-email')?.value || '',
                         status: "На модерации",
@@ -148,6 +157,44 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         case 'Внешнее событие':
                         case 'Внутреннее событие':
                             databasePath = 'Events';
+                            break;
+                        case 'Тех. новости':
+                            databasePath = 'News';
+                            break;
+                        default:
+                            throw new Error('Неизвестный формат');
+                    }
+        
+                    console.log("Сохранение в базу данных. Путь:", databasePath);
+                    const newBidRef = databaseRef(database, `${databasePath}/${newBidKey}`);
+                    await set(newBidRef, newBidData);
+                    console.log("Запись успешно сохранена в", databasePath);
+                } else {
+                    // Случай, когда это новость
+                    const newBidData = {
+                        title: document?.getElementById('bid-title')?.value || '',
+                        tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
+                        elementType: format,
+                        text: navigationStore.currentBidText || '',
+                        organizer: userId,
+                        status: "На модерации",
+                        images: photosUrls || [],
+                        files: filesUrls || [],
+                        links: n_links || [],
+                        fixed: isImportant,
+                        postData: new Date().toLocaleString('ru-RU')
+                    };
+        
+                    let databasePath;
+                    switch (format) {
+                        case 'Объявления':
+                            databasePath = 'News';
+                            break;
+                        case 'Устройства и ПО':
+                            databasePath = 'News';
+                            break;
+                        case 'Мероприятия':
+                            databasePath = 'News';
                             break;
                         case 'Тех. новости':
                             databasePath = 'News';

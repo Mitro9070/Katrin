@@ -71,10 +71,8 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     throw new Error('Заявка не найдена');
                 }
     
-                
                 navigationStore.setCurrentBidText(bid.text || '');
     
-                
                 if (bid.display_up_to) {
                     // Форматируем значение даты в нужный формат 'YYYY-MM-DDTHH:mm'
                     const formattedDisplayUpTo = new Date(bid.display_up_to).toISOString().slice(0, 16);
@@ -89,6 +87,14 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         ...bid,
                         display_up_to: ''
                     });
+                }
+
+                if (bid.start_date) {
+                    bid.start_date = new Date(bid.start_date).toISOString().slice(0, 16);
+                }
+
+                if (bid.end_date) {
+                    bid.end_date = new Date(bid.end_date).toISOString().slice(0, 16);
                 }
     
                 setFilesList(
@@ -108,7 +114,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 setIsAdsChecked(bid?.elementType?.includes('Объявления'));
                 setIsImportant(bid?.fixed);
     
-                const carouselImages = bid?.images?.slice(1).map((image, index) => (
+                const carouselImages = (bid?.images?.slice(1) || []).map((image, index) => (
                     <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => setComponentsCarousel(prevState => {
                         const newState = [...prevState];
                         newState[index] = <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => handlePhotoChange(index)} />;
@@ -132,8 +138,6 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     
         fetchBidData();
     }, [id, typeForm]);
-
-    
 
     const fetchOrganizerName = async (organizerId) => {
         try {
@@ -278,7 +282,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         console.log("Before save bidData.title:", bidData?.title);
     
         // Получаем id пользователя из cookies
-        const userId = getCookie('userId');  // Предположим, у вас есть функция getCookie
+        const userId = getCookie('userId');  
     
         let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
         let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
@@ -312,7 +316,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             const otherPhotosUrls = await addNewPhotoFields(
                 otherImages,
                 'images',
-                currentImagesFiltered, // Фильтрация
+                currentImagesFiltered,
                 newBidKey
             );
     
@@ -361,8 +365,6 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             setLoading(false);
         }
     };
-
-    
 
     if (loading) return <Loader />;
 

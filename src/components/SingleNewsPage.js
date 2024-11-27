@@ -54,12 +54,12 @@ const SingleNewsPage = observer(() => {
     return (  
         <div className="page-content single-news-page">
             <Link to={referrer} className="back-button">Назад</Link>
-            <div className="bid-page-head noselect">
+            {/* <div className="bid-page-head noselect">
                 <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Ads' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Ads" onClick={onTabClickHandler}>Объявления</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Devices' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Devices" onClick={onTabClickHandler}>Устройства и ПО</p>
                 <p className={`bid-page-head-tab ${currentTab === 'Activity' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Activity" onClick={onTabClickHandler}>Мероприятия</p>
-            </div>
+            </div> */}
             <MainContentSinglePage linkTo={referrer} onClick={() => navigationStore.setCurrentNewsTab(currentTab)} data={news} />
         </div>
     );
