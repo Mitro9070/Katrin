@@ -54,7 +54,7 @@ const ContentPage = () => {
                     }
                     break;
                 case '4': // Контент менеджер
-                    if (!permissions.processingNews) {
+                    if (!permissions.processingNews && !permissions.processingEvents) {
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                     }
                     break;
@@ -181,7 +181,7 @@ const ContentPage = () => {
                         {(roleId === '1' || roleId === '4') && (
                             <p className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`} data-tab="News" onClick={changeCurrentTabHandler}>Новости</p>
                         )}
-                        {(roleId === '1' || roleId === '5') && (
+                        {(roleId === '1' || roleId === '4' || roleId === '5') && (
                             <p className={`content-page-head-tab ${currentTab === 'Events' ? 'content-page-head-tab-selected' : ''}`} data-tab="Events" onClick={changeCurrentTabHandler}>События</p>
                         )}
                     </div>
