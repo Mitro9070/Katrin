@@ -13,6 +13,7 @@ import iconHintImg from '../images/hint-ring.svg';
 import iconMainInImg from '../images/mail-in.svg';
 import iconBatchImg from '../images/batch.svg';
 import iconPencilImg from '../images/pencil.svg';
+import noNewsImage from '../images/NoNews.png';
 import EditMainMenuPush from './EditMainMenuPush';
 
 import Footer from './Footer';
@@ -132,7 +133,7 @@ const MainPage = observer(() => {
 
                         if (birthday >= today && birthday <= nextMonth) {
                             birthdaysData.push({
-                                id: childSnapshot.key, // Добавляем userId
+                                id: childSnapshot.key,
                                 name: user.Name,
                                 surname: user.surname,
                                 lastname: user.lastname,
@@ -143,7 +144,7 @@ const MainPage = observer(() => {
 
                         if (createdAt >= lastMonth && createdAt <= today) {
                             newEmployeesData.push({
-                                id: childSnapshot.key, // Добавляем userId
+                                id: childSnapshot.key,
                                 name: user.Name,
                                 surname: user.surname,
                                 lastname: user.lastname,
@@ -204,12 +205,28 @@ const MainPage = observer(() => {
             </div>
             <div className="main-page-content">
                 <MainPageBlockAds />
-                {publishedNews.length > 0 && (
-                    <NewsBlockSlide name={'Новости'} data={publishedNews} className="news" />
-                )}
-                {publishedEvents.length > 0 && (
-                    <EventsBlockSlide name={'События'} data={publishedEvents} />
-                )}
+                <NewsBlockSlide 
+                    name={'Новости'} 
+                    data={publishedNews.length > 0 ? publishedNews : [
+                        {
+                            id: 'no-news',
+                            title: 'Отсутствие новостей - уже хорошие новости!',
+                            images: [noNewsImage],
+                            postData: new Date().toISOString()
+                        }
+                    ]} 
+                    className="news" 
+                />
+                <EventsBlockSlide 
+                    name={'События'} 
+                    data={publishedEvents.length > 0 ? publishedEvents : [
+                        {
+                            id: 'no-events',
+                            title: 'Иногда отсутствие чего-то говорит о многом',
+                            start_date: new Date().toISOString()
+                        }
+                    ]} 
+                />
                 <MainPageBlockList name={'Дни рождения'} list={birthdays} isBirthday />
                 <MainPageBlockList name={'Новые сотрудники'} list={newEmployees} />
                 <div className="main-page-btn main-page-btn-red" onClick={setShowQuestionPushHandler}>

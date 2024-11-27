@@ -14,22 +14,21 @@ function EventsBlockSlide({ name, data, className = '' }) {
         setLoading(false);
     }, [data]);
 
-    if (loading) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><Loader /><p className="name-block-list">{name}</p></div>; // Состояние загрузки
-    if (error) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{error}</p><p className="name-block-list">{name}</p></div>; // Обработка ошибок
-    if (data.length === 0) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{name} отсутствуют</p><p className="name-block-list">{name}</p></div>;
+    if (loading) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><Loader /><p className="name-block-list">{name}</p></div>;
+    if (error) return <div className={"block-slide " + className + ' block-slide-loader'} style={{ width: '345px', height: '237px' }}><p>{error}</p><p className="name-block-list">{name}</p></div>;
 
-    const sortedData = [...data].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+    const sortedData = data.length > 0 ? [...data].sort((a, b) => new Date(a.start_date) - new Date(b.start_date)) : 
+        [{
+            id: 'no-events',
+            title: 'Иногда отсутствие чего-то говорит о многом'
+        }];
 
     const snapToCard = () => {
         const wrapper = slideWrapperRef.current;
         const cardHeight = wrapper.scrollHeight / sortedData.length;
         const currentScrollPosition = wrapper.scrollTop;
-
-        // Вычисляем ближайшую карточку
         const newCurrentInfo = Math.round(currentScrollPosition / cardHeight);
         setcurrentInfo(newCurrentInfo);
-
-        // Прокручиваем до ближайшей карточки
         const element = document.querySelector(`#event-item-${newCurrentInfo}`);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -37,9 +36,8 @@ function EventsBlockSlide({ name, data, className = '' }) {
     };
 
     const handleScroll = () => {
-        // Откладываем выравнивание до завершения скролла
         clearTimeout(window.snapScrollTimeout);
-        window.snapScrollTimeout = setTimeout(() => snapToCard(), 100); // 100 мс после завершения скролла
+        window.snapScrollTimeout = setTimeout(() => snapToCard(), 100);
     };
 
     return (
@@ -51,10 +49,10 @@ function EventsBlockSlide({ name, data, className = '' }) {
                 onScroll={handleScroll}
                 style={{
                     display: 'flex',
-                    flexDirection: 'column', // Для вертикального скролла
-                    overflowY: 'auto', // Вертикальный скролл
-                    scrollSnapType: 'y mandatory', // Скролл с "магнитом" по вертикали
-                    scrollBehavior: 'smooth', // Плавный скролл
+                    flexDirection: 'column',
+                    overflowY: 'auto',
+                    scrollSnapType: 'y mandatory',
+                    scrollBehavior: 'smooth',
                     height: '217px',
                     width: '287px',
                     gap: '37px',
@@ -62,41 +60,55 @@ function EventsBlockSlide({ name, data, className = '' }) {
             >
                 {sortedData.map((item, index) => (
                     <div id={`event-item-${index}`} key={index}>
-                        <Link to={`/events/${item.id}`}>
-                            <div
-                                className="content"
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column', // Изменение направления при наличии фото
-                                    flex: '0 0 auto',
-                                    height: 'auto', // Высота каждой карточки
-                                    scrollSnapAlign: 'start', // Притягивание к началу блока
-                                }}
-                            >
+                        {item.id === 'no-events' ? (
+                            <div className="content" style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                flex: '0 0 auto',
+                                height: 'auto',
+                                scrollSnapAlign: 'start',
+                            }}>
                                 <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
-                                    <p className="datatime-slide">{formatDate(item.start_date, true)}</p>
-                                    <p className="title-slide title-slide-events" style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
-                                    <div
-                                        className="description-slide"
-                                        style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}
-                                        dangerouslySetInnerHTML={{ __html: item.text }}
-                                    />
-                                    {item.tags && (
-                                        <p className="tags-slide">
-                                            {item.tags.map(tag => `#${tag}`).join(', ')}
-                                        </p>
-                                    )}
-                                    {item.elementType && (
-                                        <p className="event-type-slide">
-                                            {item.elementType}
-                                        </p>
-                                    )}
-                                    {index < sortedData.length - 1 && (
-                                        <div className="event-separator"></div>
-                                    )}
+                                    <p className="title-slide title-slide-events" style={{ marginTop: '10px' }}>{item.title}</p>
                                 </div>
                             </div>
-                        </Link>
+                        ) : (
+                            <Link to={`/events/${item.id}`}>
+                                <div
+                                    className="content"
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        flex: '0 0 auto',
+                                        height: 'auto',
+                                        scrollSnapAlign: 'start',
+                                    }}
+                                >
+                                    <div className="block-slide-text" style={{ flex: '2', padding: '0 15px', overflowY: 'auto' }}>
+                                        <p className="datatime-slide">{formatDate(item.start_date, true)}</p>
+                                        <p className="title-slide title-slide-events" style={{ marginTop: item.title ? '10px' : '0' }}>{item.title}</p>
+                                        <div
+                                            className="description-slide"
+                                            style={{ marginTop: item.text ? '10px' : '0', width: '262px' }}
+                                            dangerouslySetInnerHTML={{ __html: item.text }}
+                                        />
+                                        {item.tags && (
+                                            <p className="tags-slide">
+                                                {item.tags.map(tag => `#${tag}`).join(', ')}
+                                            </p>
+                                        )}
+                                        {item.elementType && (
+                                            <p className="event-type-slide">
+                                                {item.elementType}
+                                            </p>
+                                        )}
+                                        {index < sortedData.length - 1 && (
+                                            <div className="event-separator"></div>
+                                        )}
+                                    </div>
+                                </div>
+                            </Link>
+                        )}
                     </div>
                 ))}
             </div>
