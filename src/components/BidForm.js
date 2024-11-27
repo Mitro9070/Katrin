@@ -63,6 +63,13 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         console.log("Начало процесса добавления новости");
     
         let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
+        if (typeForm === 'Events') {
+            selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
+        }
+        // Если не выбран формат, установить формат по умолчанию для `TechNews`.
+        if (typeForm === 'TechNews' && selectedFormats.length === 0) {
+            selectedFormats = ['Тех. новости'];
+        }
         console.log("Выбранные форматы:", selectedFormats);
     
         if (selectedFormats.length === 0) {
@@ -100,7 +107,12 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     
             for (let format of selectedFormats) {
                 console.log("Обработка формата:", format);
-    
+                
+                let status = "На модерации";
+                if (typeForm === 'TechNews') {
+                    status = "Одобрено";
+                }
+
                 const newBidData = {
                     title: document?.getElementById('bid-title')?.value || '',
                     tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
@@ -112,7 +124,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     organizer: document?.getElementById('bid-organizer')?.value || '',
                     organizer_phone: document?.getElementById('organizer-phone')?.value || '',
                     organizer_email: document?.getElementById('organizer-email')?.value || '',
-                    status: "На модерации",
+                    status: status,
                     images: photosUrls || [],
                     files: filesUrls || [],
                     links: n_links || [],
@@ -130,6 +142,13 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         databasePath = 'News';
                         break;
                     case 'Мероприятия':
+                        databasePath = 'News';
+                        break;
+                    case 'Внешнее событие':
+                    case 'Внутреннее событие':
+                        databasePath = 'Events';
+                        break;
+                    case 'Тех. новости':
                         databasePath = 'News';
                         break;
                     default:
@@ -175,8 +194,8 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 <CustomInput width='100%' placeholder='Название' id='bid-title' />
                 <div className="bid-form-body-oneline">
                     <CustomInput width='50%' placeholder='Теги'  id='bid-tags' />
-                    <div className="bid-form-format-container">
-                        {typeForm !== 'Events' && (
+                    {typeForm !== 'TechNews' && typeForm !== 'Events' && (
+                        <div className="bid-form-format-container">
                             <>
                                 <label className='bid-form-format-element'>
                                     <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} />
@@ -191,8 +210,10 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                                     <p><img src={imgCheckmark} alt="" />Мероприятия</p>
                                 </label>
                             </>
-                        )}
-                        {typeForm === 'Events' && (
+                        </div>
+                    )}
+                    {typeForm === 'Events' && (
+                        <div className="bid-form-format-container">
                             <>
                                 <label className='bid-form-format-element'>
                                     <input type="radio" name="bid-format" id="bid-format-ads" value="Внешнее событие" />
@@ -203,16 +224,21 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                                     <p><img src={imgCheckmark} alt="" />Внутреннее событие</p>
                                 </label>
                             </>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
                 {isAdsChecked && (
                     <div className='bid-form-body-oneline'>
-                        <p>Дата</p>
-                        <CustomInput width='217px' placeholder='Дата объявления' type='date' id='display_up_to' />
+                        <input
+                            type='datetime-local'
+                            id='display_up_to'
+                            className="custom-input"
+                            onChange={(e) => setIsImportant(e.target.checked)}
+                            style={{ width: '308px' }}
+                        />
                         <label className="bid-form-format-element" >
                             <input type="checkbox"  name="important" onChange={(e) => setIsImportant(e.target.checked)} />
-                            <p style={{ marginLeft:'100px' }}><img src={imgCheckmark} alt="" />Закрепить объявление</p>
+                            <p style={{ marginLeft:'30px' }}><img src={imgCheckmark} alt="" />Закрепить объявление</p>
                         </label>
                     </div>
                 )}

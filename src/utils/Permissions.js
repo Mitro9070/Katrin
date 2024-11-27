@@ -56,7 +56,7 @@ const permissionsData = {
         software: true,
         submissionNews: true,
         submissionEvents: true,
-        processingEvents: false,
+        processingEvents: true,
         processingNews: true,
         publishingNews: true,
         publishingTech: false,
