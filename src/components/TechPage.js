@@ -7,7 +7,7 @@ import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import BidForm from './BidForm';
-import TableComponent from './TableComponent'; // Импорт TableComponent
+import TableComponent from './TableComponentTech'; // Импорт TableComponent
 import EditBidForm from './EditBidPage';
 
 import imgFilterIcon from '../images/filter.svg';
