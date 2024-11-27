@@ -60,24 +60,6 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
 
     const addBidHandler = async () => {
         setLoading(true);
-        console.log("Начало процесса добавления новости");
-    
-        let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
-        if (typeForm === 'Events') {
-            selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
-        }
-        // Если не выбран формат, установить формат по умолчанию для `TechNews`.
-        if (typeForm === 'TechNews' && selectedFormats.length === 0) {
-            selectedFormats = ['Тех. новости'];
-        }
-        console.log("Выбранные форматы:", selectedFormats);
-    
-        if (selectedFormats.length === 0) {
-            toast.error("Пожалуйста, выберите хотя бы один формат.");
-            setLoading(false);
-            return;
-        }
-    
         try {
             const newBidKey = uuidv4();
             console.log("Сгенерирован новый ключ:", newBidKey);
@@ -86,7 +68,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 const urls = [];
                 for (const file of files) {
                     if (file) {
-                        const fileRef = storageRef(storage, `${folder}/${newBidKey}/${file.name}`);
+                        const fileRef = storageRef(storage, `${folder}/${file.name}`);
                         await uploadBytes(fileRef, file);
                         const url = await getDownloadURL(fileRef);
                         urls.push(url);
@@ -95,16 +77,25 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 return urls;
             };
     
+            // Собираем файлы
             let n_images = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]).filter(Boolean);
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
-            let n_links = Array.from(document?.getElementsByName('bid-link'))
-                .map((e) => e?.value)
-                .filter((value) => value !== "");
-    
-            const photosUrls = await uploadFiles([document?.getElementById('bid-cover')?.files[0], ...n_images], 'images');
-            const filesUrls = await uploadFiles(n_files, 'files');
+            let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
+
+            // Загрузка изображений и файлов
+            const photosUrls = await uploadFiles([document?.getElementById('bid-cover')?.files[0], ...n_images], `images/${newBidKey}`);
+            const filesUrls = await uploadFiles(n_files, `files/${newBidKey}`);
             console.log("Файлы загружены. Фото:", photosUrls, "Файлы:", filesUrls);
     
+            let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
+            if (typeForm === 'Events') {
+                selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
+            }
+            // Если не выбран формат, установить формат по умолчанию для `TechNews`.
+            if (typeForm === 'TechNews' && selectedFormats.length === 0) {
+                selectedFormats = ['Тех. новости'];
+            }
+
             for (let format of selectedFormats) {
                 console.log("Обработка формата:", format);
                 
