@@ -4,9 +4,8 @@ class NavigationStore {
     currentBidTab = 'News'
     currentNewsTab = 'All'
     currentDevicesTab = 'All'
-
+    currentSoftwareTab = 'All'  // Добавим вкладку для ПО
     currentEventDate = ''
-
     currentBidText = ''
 
     constructor(){
@@ -15,34 +14,33 @@ class NavigationStore {
 
     setCurrentBidTab(tab){
         this.currentBidTab = tab
-        console.log('change!')
-        console.log(this.currentBidTab)
+        console.log('Bid tab changed:', this.currentBidTab)
     }
 
     setCurrentNewsTab(tab){
         this.currentNewsTab = tab
-        console.log('change!')
-        console.log(this.currentBidTab)
+        console.log('News tab changed:', this.currentNewsTab)
     }
 
     setCurrentDevicesTab(tab){
         this.currentDevicesTab = tab
-        console.log('change!')
-        console.log(this.currentBidTab)
+        console.log('Devices tab changed:', this.currentDevicesTab)
+    }
+
+    setCurrentSoftwareTab(tab){
+        this.currentSoftwareTab = tab
+        console.log('Software tab changed:', this.currentSoftwareTab)
     }
 
     setCurrentEventsDate(date){
         this.currentEventDate = date
-        console.log('change!')
-        console.log(this.currentBidTab)
+        console.log('Event date changed:', this.currentEventDate)
     }
 
     setCurrentBidText(text){
         this.currentBidText = text
-        console.log('change!')
-        console.log(this.currentBidTab)
+        console.log('Bid text changed:', this.currentBidText)
     }
-
 }
 
 export const navigationStore = new NavigationStore()

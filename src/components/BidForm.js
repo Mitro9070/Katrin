@@ -70,7 +70,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             const newBidKey = uuidv4();
             const userId = getUserIdFromCookie();
             console.log("Сгенерирован новый ключ:", newBidKey);
-    
+
             const uploadFiles = async (files, folder) => {
                 const urls = [];
                 for (const file of files) {
@@ -83,7 +83,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 }
                 return urls;
             };
-    
+
             // Собираем файлы
             let n_images = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]).filter(Boolean);
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
@@ -105,7 +105,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
 
             for (let format of selectedFormats) {
                 console.log("Обработка формата:", format);
-                
+
                 if (typeForm === 'Events') {
                     const startDate = document.getElementById('bid-start-date').value;
                     const endDate = document.getElementById('bid-end-date').value;
@@ -142,7 +142,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         fixed: isImportant,
                         postData: new Date().toLocaleString('ru-RU')
                     };
-        
+
                     let databasePath;
                     switch (format) {
                         case 'Объявления':
@@ -164,7 +164,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         default:
                             throw new Error('Неизвестный формат');
                     }
-        
+
                     console.log("Сохранение в базу данных. Путь:", databasePath);
                     const newBidRef = databaseRef(database, `${databasePath}/${newBidKey}`);
                     await set(newBidRef, newBidData);
@@ -184,7 +184,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         fixed: isImportant,
                         postData: new Date().toLocaleString('ru-RU')
                     };
-        
+
                     let databasePath;
                     switch (format) {
                         case 'Объявления':
@@ -202,7 +202,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         default:
                             throw new Error('Неизвестный формат');
                     }
-        
+
                     console.log("Сохранение в базу данных. Путь:", databasePath);
                     const newBidRef = databaseRef(database, `${databasePath}/${newBidKey}`);
                     await set(newBidRef, newBidData);

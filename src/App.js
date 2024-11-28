@@ -13,6 +13,7 @@ import NotFoundPage from './components/NotFoundPage';
 import SingleBidPage from './components/SingleBidPage';
 import NewsPage from './components/NewsPage';
 import SingleNewsPage from './components/SingleNewsPage';
+import SoftwarePage from './components/SoftwarePage';
 import DevicesPage from './components/DevicesPage';
 import SingleDevicesPage from './components/SingleDevicesPage';
 import Calendar from './components/Calendar';
@@ -44,7 +45,7 @@ function App() {
                     <Route exact path='/news/:id' element={<SingleNewsPage />} />
                     <Route exact path='/devices' element={<DevicesPage />} />
                     <Route exact path='/devices/:id' element={<SingleDevicesPage />} />
-                    <Route exact path='/software' element={<p className='plug'>Заглушка ПО</p>} />
+                    <Route exact path='/software' element={<SoftwarePage />} />
                     <Route exact path='/events' element={<EventsPage />} />
                     <Route exact path='/events/:id' element={<SingleEventsPage />} />
                     <Route exact path='/map' element={<p className='plug'>Заглушка карты</p>} />
