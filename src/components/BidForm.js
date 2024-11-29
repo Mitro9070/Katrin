@@ -84,6 +84,23 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 return urls;
             };
 
+            // Validate required fields (title and format)
+            const title = document.getElementById('bid-title').value;
+            if (!title) {
+                toast.error("Укажите название новости.");
+                setLoading(false);
+                return;
+            }
+
+            let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
+            if (typeForm === 'Events') {
+                selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
+            }
+            if (!selectedFormats.length) {
+                toast.error("Выберите тип Новости.");
+                setLoading(false);
+                return;
+            }
             // Собираем файлы
             let n_images = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]).filter(Boolean);
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
@@ -94,10 +111,6 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             const filesUrls = await uploadFiles(n_files, `files/${newBidKey}`);
             console.log("Файлы загружены. Фото:", photosUrls, "Файлы:", filesUrls);
 
-            let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
-            if (typeForm === 'Events') {
-                selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
-            }
             // Если не выбран формат, установить формат по умолчанию для `TechNews`.
             if (typeForm === 'TechNews' && selectedFormats.length === 0) {
                 selectedFormats = ['Тех. новости'];
@@ -124,7 +137,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     const organizer = document.getElementById('bid-organizer').value || userId;
 
                     const newBidData = {
-                        title: document?.getElementById('bid-title')?.value || '',
+                        title: title || '',
                         tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
                         elementType: format,
                         text: navigationStore.currentBidText || '',
@@ -172,7 +185,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 } else {
                     // Случай, когда это новость
                     const newBidData = {
-                        title: document?.getElementById('bid-title')?.value || '',
+                        title: title || '',
                         tags: document?.getElementById('bid-tags')?.value.split(', ') || [],
                         elementType: format,
                         text: navigationStore.currentBidText || '',
