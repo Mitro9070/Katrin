@@ -292,7 +292,7 @@ const BidPage = () => {
                             </>
                         )}
                     </div>
-                    <Footer />
+                   
                 </>
             )}
         </div>

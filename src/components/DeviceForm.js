@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref as databaseRef, get, set, update } from 'firebase/database';
+import { ref as databaseRef, get, update } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { database, storage } from '../firebaseConfig';
 import * as XLSX from 'xlsx';
@@ -70,44 +70,32 @@ const DeviceForm = ({ setIsAddDevice }) => {
 
         try {
             const deviceRef = databaseRef(database, `Devices/${deviceName}`);
-            const snapshot = await get(deviceRef);
-            const existingData = snapshot.exists() ? snapshot.val() : {};
 
             const imagesUrls = [];
-            let mainImageUrl = '';
-
-            if (images && images.length > 0) {
-                for (const image of images) {
-                    if (image && image.name) {
-                        const imageRef = storageRef(storage, `Devices/${deviceName}/${image.name}`);
-                        await uploadBytes(imageRef, image);
-                        const imageUrl = await getDownloadURL(imageRef);
-                        imagesUrls.push(imageUrl);
-
-                        if (image.name.startsWith('Main')) {
-                            mainImageUrl = imageUrl;
-                        }
-                    }
+            for (const image of images) {
+                if (image && image.name) {
+                    const imageRef = storageRef(storage, `Devices/${deviceName}/${image.name}`);
+                    await uploadBytes(imageRef, image);
+                    const imageUrl = await getDownloadURL(imageRef);
+                    imagesUrls.push(imageUrl);
                 }
             }
 
-            if (!mainImageUrl && imagesUrls.length > 0) {
+            let mainImageUrl = mainImage;
+            if (imagesUrls.length > 0 && !mainImageUrl) {
                 mainImageUrl = imagesUrls[0];
-            } else if (!mainImageUrl && mainImage) {
-                mainImageUrl = mainImage;
             }
 
             const updatedData = {
-                ...(existingData || {}),
-                options_all_type_of_automatic_document_feeder: deviceType,
                 description: deviceDescription,
-                images: imagesUrls.length > 0 ? imagesUrls : existingData.images || [],
-                main_image: mainImageUrl || existingData.main_image
+                options_all_type_of_automatic_document_feeder: deviceType,
+                images: imagesUrls.length > 0 ? imagesUrls : images,
+                main_image: mainImageUrl
             };
 
             await update(deviceRef, updatedData);
 
-            setIsAddDevice(false);
+            setIsAddDevice(false); // Закрываем форму после сохранения
         } catch (error) {
             console.error('Ошибка при добавлении устройства:', error);
         } finally {
