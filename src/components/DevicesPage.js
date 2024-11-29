@@ -2,12 +2,14 @@ import '../styles/DevicesPage.css'; // Импорт стилей для стра
 import { useState, useEffect } from 'react'; // Импорт хуков useState и useEffect из React
 import { Link, useNavigate } from 'react-router-dom'; // Импорт компонента Link из react-router-dom для навигации
 import StandartCard from './StandartCard'; // Импорт компонента StandartCard для отображения карточек устройств
-import { ref, get } from 'firebase/database'; // Импорт функций ref и get из firebase/database для работы с базой данных Firebase
-import { database } from '../firebaseConfig'; // Импорт конфигурации Firebase
+import { ref, get, remove } from 'firebase/database'; // Импорт функций ref, get и remove из firebase/database
+import { ref as storageRef, deleteObject } from 'firebase/storage'; // Импорт функций ref и deleteObject из firebase/storage
+import { database, storage } from '../firebaseConfig'; // Импорт конфигурации Firebase
 import Cookies from 'js-cookie'; // Импорт библиотеки js-cookie для работы с куки
 import Loader from './Loader'; // Импорт компонента Loader для отображения индикатора загрузки
 import DeviceForm from './DeviceForm'; // Импорт формы для добавления устройства
 import { getPermissions } from '../utils/Permissions'; // Импорт функции getPermissions для получения разрешений
+import trashIcon from '../images/trash-delete.png'; // Импорт иконки удаления
 
 const DevicesPage = () => {
     const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
@@ -20,6 +22,7 @@ const DevicesPage = () => {
     const [showModal, setShowModal] = useState(false); // Состояние для отображения модального окна
     const [modalMessage, setModalMessage] = useState(''); // Состояние для сообщения в модальном окне
     const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
+    const [isDeleting, setIsDeleting] = useState(false); // Состояние для индикатора удаления
     const [error, setError] = useState(null); // Состояние для обработки ошибок
     const navigate = useNavigate();
     const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
@@ -88,6 +91,31 @@ const DevicesPage = () => {
         }
     };
 
+    const deleteDevice = async (deviceId, images) => {
+        setIsDeleting(true);
+        try {
+            const deviceRef = ref(database, `Devices/${deviceId}`);
+            await remove(deviceRef);
+
+            // Удаление изображений из Storage
+            if (Array.isArray(images)) {
+                for (const image of images) {
+                    // Извлечение пути файла из URL
+                    const path = image.split('/o/')[1].split('?')[0].replace(/%2F/g, '/');
+                    const imageRef = storageRef(storage, path);
+                    await deleteObject(imageRef);
+                }
+            }
+
+            // Обновление списка устройств
+            fetchDevices();
+        } catch (error) {
+            console.error('Ошибка при удалении устройства:', error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab; // Получение выбранной вкладки
         setCurrentTab(selectedTab); // Установка текущей вкладки
@@ -110,9 +138,19 @@ const DevicesPage = () => {
         const currentDevices = filteredDevices.slice(indexOfFirstDevice, indexOfLastDevice);
 
         return currentDevices.map(e => (
-            <Link to={`/devices/${e.id}`} key={e.id}>
-                <StandartCard title={e.id} text={e.description} status={e.options_all_type_of_automatic_document_feeder} publicDate={e.postData} images={e.images} />
-            </Link>
+            <div key={e.id} className="device-card-wrapper">
+                <Link to={`/devices/${e.id}`} key={e.id}>
+                    <StandartCard title={e.id} text={e.description} status={e.options_all_type_of_automatic_document_feeder} publicDate={e.postData} images={e.images} />
+                </Link>
+                {roleId === '1' && (
+                    <img
+                        src={trashIcon}
+                        alt="Удалить устройство"
+                        className="delete-icon"
+                        onClick={() => deleteDevice(e.id, e.images)}
+                    />
+                )}
+            </div>
         ));
     };
 
@@ -144,7 +182,7 @@ const DevicesPage = () => {
 
     const devicesTypeList = { 'MFU': 'МФУ', 'Printers': 'Принтер' };
 
-    if (loading) return <Loader />;
+    if (loading || isDeleting) return <Loader />;
     if (error) return <p>{error}</p>;
 
     return (
