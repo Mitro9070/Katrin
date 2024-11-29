@@ -2,6 +2,7 @@
   "name": "katusha",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://intranet.corp.katusha-it.ru/",
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^43.0.0",
     "@ckeditor/ckeditor5-react": "^9.0.0",
@@ -13,8 +14,10 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "babel-polyfill": "^6.26.0",
+    "cors": "^2.8.5",
     "draft-js": "^0.11.7",
     "draft-js-export-html": "^1.4.1",
+    "express": "^4.21.1",
     "firebase": "^10.14.1",
     "js-cookie": "^3.0.5",
     "mobx": "^6.13.1",
@@ -35,7 +38,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node server.js"
+    
   },
   "eslintConfig": {
     "extends": [

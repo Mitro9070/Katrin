@@ -9,6 +9,7 @@ import Cookies from 'js-cookie';
 import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import { getPermissions } from '../utils/Permissions';
+import formatDate from '../utils/formatDate'; // Убедитесь, что этот импорт существует
 
 const EventsPage = () => {
     const [IsFilterBlock, setIsFilterBlock] = useState(false);
@@ -21,6 +22,7 @@ const EventsPage = () => {
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
+    const [selectedDate, setSelectedDate] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -121,17 +123,42 @@ const EventsPage = () => {
         return true;
     });
 
+    // Функция для форматирования даты
+    const formatEventDate = (dateString) => {
+        const date = new Date(dateString);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return 'Сегодня';
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return 'Завтра';
+        } else {
+            return formatDate(dateString, true); // Используем вашу функцию formatDate
+        }
+    };
+
+    // Обработчик выбора даты в календаре
+    const handleDateSelect = (date) => {
+        setSelectedDate(date);
+    };
+
+    // Фильтрация событий по выбранной дате
+    const eventsForSelectedDate = selectedDate
+        ? filteredEvents.filter(event => {
+            const eventDate = new Date(event.start_date);
+            return eventDate.toDateString() === selectedDate.toDateString();
+          })
+        : [];
+
     if (loading) return <Loader />;
     if (error) return <p>{error}</p>;
-
-    // Используем отфильтрованные события для календаря
-    const eventsToCalendar = filteredEvents;
-    console.log("Это мы передаем в календарь:", eventsToCalendar);
 
     return (
         <div className="page-content events-page">
             <div className="events-content-calendar">
-                <Calendar events={eventsToCalendar} />
+                <Calendar events={filteredEvents} onDateSelect={handleDateSelect} />
                 <div className="events-content-calendar-legend">
                     <div className="events-external-legend">
                         <div></div>
@@ -144,8 +171,8 @@ const EventsPage = () => {
                 </div>
             </div>
 
-            <div className="events-content-cards-list">
-                <>
+            {selectedDate && (
+                <div className="events-content-cards-list">
                     <div className={`filter filter-worked ${IsFilterBlock ? 'filter-worked-active' : ''} noselect`} onClick={() => setIsFilterBlock(!IsFilterBlock)}>
                         <img src={imgFilterIcon} alt="" />
                         <p>Фильтр</p>
@@ -177,20 +204,20 @@ const EventsPage = () => {
                             </div>
                         </div>
                     )}
-                    {filteredEvents.map(e => (
+                    {eventsForSelectedDate.map(e => (
                         <Link to={`/events/${e.id}`} key={e.id}>
                             <StandartCard
                                 title={e.title}
                                 text={e.text}
-                                publicDate={e.postData}
+                                publicDate={formatEventDate(e.start_date)}
                                 isEvents={true}
                                 eventType={e.elementType}
                                 images={e.images}
                             />
                         </Link>
                     ))}
-                </>
-            </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -15,6 +15,7 @@ function Header({ setShowAuthPush }) {
     const [userColor, setUserColor] = useState('');
     const [roleName, setRoleName] = useState('');
     const navigate = useNavigate();
+   
 
     useEffect(() => {
         const storedUserId = Cookies.get('userId');
@@ -51,7 +52,7 @@ function Header({ setShowAuthPush }) {
             Cookies.remove('userId');
             Cookies.remove('roleId');
             Cookies.remove('roleName');
-            navigate(0); // Refresh the page
+            navigate('/'); // Перенаправляем на главную страницу
         }).catch((error) => {
             console.error('Error signing out:', error);
         });
