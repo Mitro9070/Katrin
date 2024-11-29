@@ -43,32 +43,6 @@ const BidPage = () => {
                     return;
                 }
 
-                switch (roleId) {
-                    case '1':
-                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
-                        }
-                        break;
-                    case '3':
-                    case '6':
-                        if (!permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
-                        }
-                        break;
-                    case '4':
-                        if (!permissions.processingNews && !permissions.publishingNews) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
-                        }
-                        break;
-                    case '5':
-                        if (!permissions.processingEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
-                        }
-                        break;
-                    default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к админу.');
-                }
-
                 // References to Firebase Database
                 const newsRef = ref(database, 'News');
                 const eventsRef = ref(database, 'Events');
@@ -85,8 +59,8 @@ const BidPage = () => {
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
-                        if (roleId === '5' && item.organизатор !== userId) return;
+                        // Администратор видит все, остальные пользователи видят только свои
+                        if (roleId !== '1' && item.organizer !== userId) return;
                         newsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -97,7 +71,8 @@ const BidPage = () => {
                 if (eventsSnapshot.exists()) {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
-                        if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organизатор !== userId) return;
+                        // Администратор видит все, остальные пользователи видят только свои
+                        if (roleId !== '1' && item.organizer !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -188,7 +163,7 @@ const BidPage = () => {
     };
 
     const renderNews = (status) => {
-        return newsData.filter(news => news.status === status).map(news => (
+        return newsData.filter(news => news.status === status && (roleId === '1' || news.organizer === userId)).map(news => (
             <div key={news.id} className="news-card-container">
                 <StandartCard
                     status={news.status}
@@ -222,7 +197,7 @@ const BidPage = () => {
     };
 
     const renderEvents = (status) => {
-        return eventsData.filter(event => event.status === status).map(event => (
+        return eventsData.filter(event => event.status === status && (roleId === '1' || event.organizer === userId)).map(event => (
             <div key={event.id} className="news-card-container">
                 <StandartCard
                     status={event.status}
