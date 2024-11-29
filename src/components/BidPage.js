@@ -201,13 +201,15 @@ const BidPage = () => {
                     <Link to={`/news/${news.id}`} className="news-card-eye-link" title="Посмотреть новость">
                         <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
                     </Link>
-                    <img 
-                        src={imgEdit} 
-                        alt="Редактировать" 
-                        className="news-card-edit-icon" 
-                        title="Редактировать новость" 
-                        onClick={() => handleEdit('News', news.id)} 
-                    />
+                    {status === 'На модерации' && (
+                        <img 
+                            src={imgEdit} 
+                            alt="Редактировать" 
+                            className="news-card-edit-icon" 
+                            title="Редактировать новость" 
+                            onClick={() => handleEdit('News', news.id)} 
+                        />
+                    )}
                     {status === 'Архив' && (
                         <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено', 'News')}>
                             <img src={imgEyeOpened} alt="Из архива" />
@@ -233,13 +235,15 @@ const BidPage = () => {
                     <Link to={`/events/${event.id}`} className="news-card-eye-link" title="Посмотреть событие">
                         <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
                     </Link>
-                    <img 
-                        src={imgEdit} 
-                        alt="Редактировать" 
-                        className="news-card-edit-icon" 
-                        title="Редактировать событие" 
-                        onClick={() => handleEdit('Events', event.id)} 
-                    />
+                    {status === 'На модерации' && (
+                        <img 
+                            src={imgEdit} 
+                            alt="Редактировать" 
+                            className="news-card-edit-icon" 
+                            title="Редактировать событие" 
+                            onClick={() => handleEdit('Events', event.id)} 
+                        />
+                    )}
                     {status === 'Архив' && (
                         <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено', 'Events')}>
                             <img src={imgEyeOpened} alt="Из архива" />
