@@ -1,0 +1,25 @@
+.custom-file-manager {
+    padding: 10px;
+}
+
+.custom-file-manager .ant-breadcrumb {
+    margin-bottom: 10px;
+}
+
+.custom-file-manager .ant-table-thead > tr > th {
+    background: #fafafa;
+    font-weight: bold;
+    text-align: left; /* Выровняем текст заголовка по левому краю */
+}
+
+.custom-file-manager .ant-table-tbody > tr > td {
+    cursor: pointer;
+}
+
+.custom-file-manager .ant-table-tbody > tr:hover > td {
+    background: #e6f7ff;
+}
+
+.custom-file-manager .ant-breadcrumb-link {
+    cursor: pointer;
+}
