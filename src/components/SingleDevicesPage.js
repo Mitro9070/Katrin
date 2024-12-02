@@ -8,7 +8,8 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
-import imgFolderIcon from '../images/folder.svg'; // Импортируйте иконку папки
+import imgFolderIcon from '../images/folder.png';
+import imgBackIcon from '../images/back.svg';
 import { connectToWebDAV } from '../utils/webdavUtils';
 
 const SingleDevicesPage = () => {
@@ -17,13 +18,15 @@ const SingleDevicesPage = () => {
     const [device, setDevice] = useState({});
     const [allParameters, setAllParameters] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
-    const [webdavFiles, setWebdavFiles] = useState([]); // Добавьте состояние для файлов с WebDAV
-    const [webdavError, setWebdavError] = useState(null); // Состояние для ошибок WebDAV
+    const [webdavFiles, setWebdavFiles] = useState([]);
+    const [webdavSubFiles, setWebdavSubFiles] = useState([]);
+    const [webdavError, setWebdavError] = useState(null);
+    const [selectedFolder, setSelectedFolder] = useState(null);
 
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentDevicesTab);
         fetchDevice(id);
-        fetchWebDAVFiles(); // Загрузить файлы при загрузке страницы
+        fetchWebDAVFiles();
     }, [id]);
 
     const fetchDevice = async (deviceId) => {
@@ -42,18 +45,38 @@ const SingleDevicesPage = () => {
         }
     };
 
-    const fetchWebDAVFiles = async () => {
+    const fetchWebDAVFiles = async (path = '') => {
         console.log('Начало процесса подключения к WebDAV...');
         try {
             console.log('Вызов функции connectToWebDAV...');
-            const files = await connectToWebDAV();
+            const files = await connectToWebDAV(path);
             console.log('Подключение успешно. Получены файлы:', files);
-            setWebdavFiles(files.filter(file => file.basename !== "/Exchange/"));
+
+            const filteredFiles = files.map((file) => {
+                if (file.filename === '._.DS_Store' || file.filename === '.DS_Store') {
+                    file.type = 'file';
+                }
+                return file;
+            });
+
+            if (path) {
+                setWebdavSubFiles(filteredFiles.filter(file => file.basename !== `/Exchange${path}`));
+            } else {
+                setWebdavFiles(filteredFiles.filter(file => file.basename !== "/Exchange/"));
+                setWebdavSubFiles([]);
+                setSelectedFolder(null);
+            }
+
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
             setWebdavError(error.message);
         }
+    };
+
+    const handleFolderClick = (folder) => {
+        fetchWebDAVFiles(folder.basename.replace('/Exchange', ''));
+        setSelectedFolder(folder.basename);
     };
 
     const onTabClickHandler = (e) => {
@@ -167,7 +190,7 @@ const SingleDevicesPage = () => {
             <Link to={'/devices'}>
                 <div className="bid-page-head noselect">
                     <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
-                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFУ" onClick={onTabClickHandler}>МФУ</p>
+                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
                     <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
                 </div>
             </Link>
@@ -223,7 +246,10 @@ const SingleDevicesPage = () => {
                     <img src={imgSaveIcon} alt="" />
                     <p>Информация</p>
                 </div>
-                
+                <div className="devices-info-btn">
+                    <img src={imgSaveIcon} alt="" />
+                    <p>Информация</p>
+                </div>
             </div>
 
             <hr className="divider" />
@@ -234,8 +260,13 @@ const SingleDevicesPage = () => {
                 <div className="webdav-files">
                     {webdavFiles.length > 0 ? (
                         webdavFiles.map((file, index) => (
-                            <div key={index} className="webdav-file">
-                                <img src={imgFolderIcon} alt="Folder icon" />
+                            <div 
+                                key={index} 
+                                className="webdav-file"
+                                style={{color: selectedFolder === file.basename ? '#0C8CE9' : ''}}
+                                onClick={() => handleFolderClick(file)}
+                            >
+                                <img src={file.type === 'directory' ? imgFolderIcon : imgSaveIcon} alt="Icon" />
                                 <p>{extractFolderName(file.basename)}</p>
                             </div>
                         ))
@@ -243,6 +274,32 @@ const SingleDevicesPage = () => {
                         <p>Нет файлов для отображения</p>
                     )}
                 </div>
+            </div>
+
+            <div className="webdav-sub-files">
+                {webdavSubFiles.length > 0 && (
+                    <>
+                        <h3>Содержимое папки: {extractFolderName(selectedFolder)}</h3>
+                        <div className="webdav-files">
+                            <div 
+                                className="webdav-file" 
+                                onClick={() => {
+                                    setWebdavSubFiles([]);
+                                    setSelectedFolder(null);
+                                }}
+                            >
+                                <img src={imgBackIcon} alt="Назад" />
+                                <p>Вернуться</p>
+                            </div>
+                            {webdavSubFiles.map((file, index) => (
+                                <div key={index} className="webdav-file">
+                                    <img src={file.type === 'directory' ? imgFolderIcon : imgSaveIcon} alt="Icon" />
+                                    <p>{file.filename}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="devices-info-table">

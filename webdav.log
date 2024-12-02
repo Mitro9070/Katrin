@@ -219,3 +219,167 @@
 2024-12-02T05:33:18.047Z: Статус ответа: 207
 2024-12-02T05:33:18.048Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:33:18 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
 2024-12-02T05:33:18.050Z: Ответ отправлен клиенту
+2024-12-02T05:57:37.535Z: Получен запрос к /api/webdav
+2024-12-02T05:57:37.905Z: Статус ответа: 207
+2024-12-02T05:57:37.905Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:57:38 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:57:37.906Z: Ответ отправлен клиенту
+2024-12-02T05:57:37.907Z: Получен запрос к /api/webdav
+2024-12-02T05:57:38.129Z: Статус ответа: 207
+2024-12-02T05:57:38.131Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:57:38 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:57:38.132Z: Ответ отправлен клиенту
+2024-12-02T05:57:44.699Z: Получен запрос к /api/webdav
+2024-12-02T05:57:45.056Z: Статус ответа: 207
+2024-12-02T05:57:45.057Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:57:45 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:57:45.059Z: Ответ отправлен клиенту
+2024-12-02T05:59:27.269Z: Получен запрос к /api/webdav
+2024-12-02T05:59:27.454Z: Статус ответа: 207
+2024-12-02T05:59:27.455Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:27 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:27.456Z: Ответ отправлен клиенту
+2024-12-02T05:59:31.814Z: Получен запрос к /api/webdav
+2024-12-02T05:59:32.161Z: Статус ответа: 207
+2024-12-02T05:59:32.162Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:32 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:32.163Z: Ответ отправлен клиенту
+2024-12-02T05:59:34.175Z: Получен запрос к /api/webdav
+2024-12-02T05:59:35.525Z: Статус ответа: 207
+2024-12-02T05:59:35.526Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:35 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:35.527Z: Ответ отправлен клиенту
+2024-12-02T05:59:35.749Z: Получен запрос к /api/webdav
+2024-12-02T05:59:36.001Z: Статус ответа: 207
+2024-12-02T05:59:36.002Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:36 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:36.003Z: Ответ отправлен клиенту
+2024-12-02T05:59:37.172Z: Получен запрос к /api/webdav
+2024-12-02T05:59:37.468Z: Статус ответа: 207
+2024-12-02T05:59:37.469Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:37 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:37.471Z: Ответ отправлен клиенту
+2024-12-02T05:59:40.721Z: Получен запрос к /api/webdav
+2024-12-02T05:59:41.077Z: Статус ответа: 207
+2024-12-02T05:59:41.078Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 05:59:41 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T05:59:41.079Z: Ответ отправлен клиенту
+2024-12-02T06:00:40.793Z: Получен запрос к /api/webdav
+2024-12-02T06:00:41.116Z: Статус ответа: 207
+2024-12-02T06:00:41.117Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:00:41 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:00:41.118Z: Ответ отправлен клиенту
+2024-12-02T06:09:37.551Z: Получен запрос к /api/webdav
+2024-12-02T06:09:37.876Z: Статус ответа: 207
+2024-12-02T06:09:37.877Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:09:38 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:09:37.878Z: Ответ отправлен клиенту
+2024-12-02T06:10:01.566Z: Получен запрос к /api/webdav
+2024-12-02T06:10:01.797Z: Статус ответа: 207
+2024-12-02T06:10:01.798Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:10:02 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:10:01.799Z: Ответ отправлен клиенту
+2024-12-02T06:10:01.800Z: Получен запрос к /api/webdav
+2024-12-02T06:10:02.113Z: Статус ответа: 207
+2024-12-02T06:10:02.114Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:10:02 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:10:02.115Z: Ответ отправлен клиенту
+2024-12-02T06:10:07.192Z: Получен запрос к /api/webdav
+2024-12-02T06:10:07.346Z: Статус ответа: 207
+2024-12-02T06:10:07.347Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:10:07 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:10:07.348Z: Ответ отправлен клиенту
+2024-12-02T06:14:13.564Z: Получен запрос к /api/webdav
+2024-12-02T06:14:13.732Z: Статус ответа: 207
+2024-12-02T06:14:13.733Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:14:14 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:14:13.735Z: Ответ отправлен клиенту
+2024-12-02T06:14:17.450Z: Получен запрос к /api/webdav
+2024-12-02T06:14:17.584Z: Статус ответа: 207
+2024-12-02T06:14:17.585Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:14:17 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:14:17.586Z: Ответ отправлен клиенту
+2024-12-02T06:15:22.249Z: Получен запрос к /api/webdav
+2024-12-02T06:15:22.394Z: Статус ответа: 207
+2024-12-02T06:15:22.395Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:15:22 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:15:22.397Z: Ответ отправлен клиенту
+2024-12-02T06:38:07.619Z: Получен запрос к /api/webdav
+2024-12-02T06:38:07.675Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 401
+2024-12-02T06:38:07.676Z: Статус ошибки: 401
+2024-12-02T06:38:07.677Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>401 Unauthorized</title>\n</head><body>\n<h1>Unauthorized</h1>\n<p>This server could not verify that you\nare authorized to access the document\nrequested.  Either you supplied the wrong\ncredentials (e.g., bad password), or your\nbrowser doesn't understand how to supply\nthe credentials required.</p>\n</body></html>\n"
+2024-12-02T06:38:12.681Z: Получен запрос к /api/webdav
+2024-12-02T06:38:12.725Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 401
+2024-12-02T06:38:12.726Z: Статус ошибки: 401
+2024-12-02T06:38:12.727Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>401 Unauthorized</title>\n</head><body>\n<h1>Unauthorized</h1>\n<p>This server could not verify that you\nare authorized to access the document\nrequested.  Either you supplied the wrong\ncredentials (e.g., bad password), or your\nbrowser doesn't understand how to supply\nthe credentials required.</p>\n</body></html>\n"
+2024-12-02T06:38:15.682Z: Получен запрос к /api/webdav
+2024-12-02T06:38:15.712Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 401
+2024-12-02T06:38:15.713Z: Статус ошибки: 401
+2024-12-02T06:38:15.714Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>401 Unauthorized</title>\n</head><body>\n<h1>Unauthorized</h1>\n<p>This server could not verify that you\nare authorized to access the document\nrequested.  Either you supplied the wrong\ncredentials (e.g., bad password), or your\nbrowser doesn't understand how to supply\nthe credentials required.</p>\n</body></html>\n"
+2024-12-02T06:39:44.704Z: Получен запрос к /api/webdav
+2024-12-02T06:40:04.715Z: Получен запрос к /api/webdav
+2024-12-02T06:40:05.772Z: Ошибка при выполнении запроса к WebDAV: connect ETIMEDOUT 192.168.50.93:5356
+2024-12-02T06:40:10.700Z: Ошибка при выполнении запроса к WebDAV: connect ECONNABORTED 192.168.50.93:5356
+2024-12-02T06:40:19.449Z: Получен запрос к /api/webdav
+2024-12-02T06:40:19.665Z: Статус ответа: 207
+2024-12-02T06:40:19.667Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:40:20 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:40:19.669Z: Ответ отправлен клиенту
+2024-12-02T06:40:19.672Z: Получен запрос к /api/webdav
+2024-12-02T06:40:19.799Z: Статус ответа: 207
+2024-12-02T06:40:19.800Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:40:20 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:40:19.802Z: Ответ отправлен клиенту
+2024-12-02T06:40:24.221Z: Получен запрос к /api/webdav
+2024-12-02T06:40:24.335Z: Статус ответа: 207
+2024-12-02T06:40:24.336Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:40:24 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:40:24.338Z: Ответ отправлен клиенту
+2024-12-02T06:41:01.319Z: Получен запрос к /api/webdav
+2024-12-02T06:41:01.455Z: Статус ответа: 207
+2024-12-02T06:41:01.457Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:41:01 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:41:01.458Z: Ответ отправлен клиенту
+2024-12-02T06:41:02.645Z: Получен запрос к /api/webdav
+2024-12-02T06:41:02.789Z: Статус ответа: 207
+2024-12-02T06:41:02.791Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:41:03 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:41:02.793Z: Ответ отправлен клиенту
+2024-12-02T06:41:04.019Z: Получен запрос к /api/webdav
+2024-12-02T06:41:04.186Z: Статус ответа: 207
+2024-12-02T06:41:04.187Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:41:04 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:41:04.188Z: Ответ отправлен клиенту
+2024-12-02T06:41:04.935Z: Получен запрос к /api/webdav
+2024-12-02T06:41:05.091Z: Статус ответа: 207
+2024-12-02T06:41:05.092Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 06:41:05 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T06:41:05.093Z: Ответ отправлен клиенту
+2024-12-02T09:35:14.589Z: Получен запрос к /api/webdav
+2024-12-02T09:35:14.763Z: Статус ответа: 207
+2024-12-02T09:35:14.765Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:35:16 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:35:14.768Z: Ответ отправлен клиенту
+2024-12-02T09:35:14.770Z: Получен запрос к /api/webdav
+2024-12-02T09:35:14.947Z: Статус ответа: 207
+2024-12-02T09:35:14.949Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:35:16 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:35:14.950Z: Ответ отправлен клиенту
+2024-12-02T09:35:18.863Z: Получен запрос к /api/webdav
+2024-12-02T09:35:18.982Z: Статус ответа: 207
+2024-12-02T09:35:18.983Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:35:20 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:35:18.985Z: Ответ отправлен клиенту
+2024-12-02T09:48:04.712Z: Получен запрос к /api/webdav
+2024-12-02T09:48:25.783Z: Ошибка при выполнении запроса к WebDAV: connect ETIMEDOUT 192.168.50.93:5356
+2024-12-02T09:48:25.788Z: Получен запрос к /api/webdav
+2024-12-02T09:48:35.834Z: Получен запрос к /api/webdav
+2024-12-02T09:48:37.593Z: Получен запрос к /api/webdav
+2024-12-02T09:48:44.906Z: Ошибка при выполнении запроса к WebDAV: connect ECONNABORTED 192.168.50.93:5356
+2024-12-02T09:48:44.909Z: Ошибка при выполнении запроса к WebDAV: connect ECONNABORTED 192.168.50.93:5356
+2024-12-02T09:48:44.911Z: Ошибка при выполнении запроса к WebDAV: connect ECONNABORTED 192.168.50.93:5356
+2024-12-02T09:48:53.624Z: Получен запрос к /api/webdav
+2024-12-02T09:48:53.797Z: Статус ответа: 207
+2024-12-02T09:48:53.798Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:48:55 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:48:53.799Z: Ответ отправлен клиенту
+2024-12-02T09:48:53.801Z: Получен запрос к /api/webdav
+2024-12-02T09:48:53.971Z: Статус ответа: 207
+2024-12-02T09:48:53.972Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:48:55 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:48:53.973Z: Ответ отправлен клиенту
+2024-12-02T09:48:56.765Z: Получен запрос к /api/webdav
+2024-12-02T09:48:56.910Z: Статус ответа: 207
+2024-12-02T09:48:56.912Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:48:58 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:48:56.913Z: Ответ отправлен клиенту
+2024-12-02T09:48:59.647Z: Получен запрос к /api/webdav
+2024-12-02T09:48:59.800Z: Статус ответа: 207
+2024-12-02T09:48:59.801Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:49:01 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:48:59.802Z: Ответ отправлен клиенту
+2024-12-02T09:49:04.556Z: Получен запрос к /api/webdav
+2024-12-02T09:49:04.710Z: Статус ответа: 207
+2024-12-02T09:49:04.712Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:49:06 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:49:04.714Z: Ответ отправлен клиенту
+2024-12-02T09:49:11.066Z: Получен запрос к /api/webdav
+2024-12-02T09:49:11.251Z: Статус ответа: 207
+2024-12-02T09:49:11.253Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:49:12 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:49:11.254Z: Ответ отправлен клиенту
+2024-12-02T09:50:04.821Z: Получен запрос к /api/webdav
+2024-12-02T09:50:04.959Z: Статус ответа: 207
+2024-12-02T09:50:04.960Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:50:06 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:50:04.961Z: Ответ отправлен клиенту
+2024-12-02T09:50:11.423Z: Получен запрос к /api/webdav
+2024-12-02T09:50:11.576Z: Статус ответа: 207
+2024-12-02T09:50:11.577Z: Заголовки ответа: {"date":"Mon, 02 Dec 2024 09:50:13 GMT","server":"Apache","content-length":"4515","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-02T09:50:11.579Z: Ответ отправлен клиенту

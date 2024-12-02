@@ -214,7 +214,12 @@
 }
 
 .external-disk-section h2 {
-    font-size: 1.5em;
+    color: var(--Black-NNCK, #2C2C2C);
+    font-family: "PF DinText Pro";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
     margin-bottom: 10px;
 }
 
@@ -227,6 +232,8 @@
 .webdav-file {
     display: flex;
     align-items: center;
+    cursor: pointer;
+    transition: color 0.3s;
 }
 
 .webdav-file img {
@@ -236,5 +243,30 @@
 }
 
 .webdav-file p {
+    color: var(--, #2C2C2C);
+    font-family: "PF DinText Pro";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
     margin: 0;
+}
+
+.webdav-file:hover p,
+.webdav-file.selected p {
+    color: var(--, #0C8CE9) ;
+}
+
+.webdav-sub-files {
+    margin-top: -15px;
+}
+
+.webdav-sub-files h3 {
+    color: var(--Black-NNCK, #2C2C2C);
+    font-family: "PF DinText Pro";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-bottom: 10px;
 }
