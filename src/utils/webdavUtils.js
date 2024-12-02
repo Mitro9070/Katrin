@@ -1,49 +1,54 @@
-// src/utils/webdavUtils.js
+const log = (message) => {
+  const timestamp = new Date().toISOString();
+  console.log(`${timestamp}: ${message}`);
+};
 
 export const connectToWebDAV = async () => {
-    console.log('Начало подключения к WebDAV...');
+  log('Начало подключения к WebDAV...');
 
-    try {
-        console.log('Отправка запроса на получение содержимого корневой директории...');
-        const response = await fetch('https://intranet.corp.katusha-it.ru/api/webdav');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  try {
+    log('Отправка запроса на получение содержимого корневой директории...');
+    const response = await fetch('http://localhost:3001/api/webdav');
 
-        const xmlText = await response.text();
-        console.log('Ответ получен. Содержимое директории (XML):', xmlText);
-
-        // Здесь можно добавить парсинг XML в объекты JavaScript
-        // Например, используя DOMParser:
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        const directoryItems = Array.from(xmlDoc.getElementsByTagName('d:response')).map(response => {
-            const href = response.getElementsByTagName('d:href')[0].textContent;
-            const propstat = response.getElementsByTagName('d:propstat')[0];
-            const prop = propstat.getElementsByTagName('d:prop')[0];
-            const isCollection = prop.getElementsByTagName('d:resourcetype')[0].getElementsByTagName('d:collection').length > 0;
-
-            return {
-                filename: href.split('/').pop() || '/',
-                basename: href,
-                lastmod: prop.getElementsByTagName('d:getlastmodified')[0]?.textContent,
-                size: prop.getElementsByTagName('d:getcontentlength')[0]?.textContent,
-                type: isCollection ? 'directory' : 'file'
-            };
-        });
-
-        console.log('Parsed directory items:', JSON.stringify(directoryItems, null, 2));
-        console.log('Количество элементов в директории:', directoryItems.length);
-
-        directoryItems.forEach((item, index) => {
-            console.log(`Элемент ${index + 1}:`, JSON.stringify(item, null, 2));
-        });
-
-        return directoryItems;
-    } catch (error) {
-        console.error('Ошибка при получении содержимого директории:', error);
-        console.error('Детали ошибки:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-        throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const xmlText = await response.text();
+    log('Ответ получен. Длина XML: ' + xmlText.length);
+
+    log('Начало парсинга XML');
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+
+    const responses = xmlDoc.getElementsByTagName('D:response');
+    const directoryItems = Array.from(responses).map((response) => {
+      const href = response.getElementsByTagName('D:href')[0].textContent;
+      const propstat = response.getElementsByTagName('D:propstat')[0];
+      const prop = propstat.getElementsByTagName('D:prop')[0];
+      const resourcetype = prop.getElementsByTagName('lp1:resourcetype')[0] || prop.getElementsByTagName('D:resourcetype')[0];
+      const isCollection = resourcetype?.getElementsByTagName('D:collection').length > 0;
+
+      return {
+        filename: href.split('/').pop() || '/',
+        basename: href,
+        lastmod: prop.getElementsByTagName('lp1:getlastmodified')[0]?.textContent,
+        size: prop.getElementsByTagName('lp1:getcontentlength')[0]?.textContent,
+        type: isCollection ? 'directory' : 'file',
+      };
+    });
+
+    log('Парсинг XML завершен');
+    log(`Количество элементов в директории: ${directoryItems.length}`);
+
+    directoryItems.forEach((item, index) => {
+      log(`Элемент ${index + 1}: ${JSON.stringify(item)}`);
+    });
+
+    return directoryItems;
+  } catch (error) {
+    log('Ошибка при получении содержимого директории: ' + error.message);
+    log('Детали ошибки: ' + JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    throw error;
+  }
 };

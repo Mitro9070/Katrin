@@ -201,7 +201,7 @@ const DevicesPage = () => {
                 <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
                 {!isAddDevice && roleId === '1' && (
                     <div className="devices-page-btn-add" onClick={handleAddDeviceClick}>
-                        <p>Добавить устройство</p>
+                        <p>Редактировать устройство</p>
                     </div>
                 )}
             </div>

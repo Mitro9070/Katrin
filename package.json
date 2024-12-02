@@ -13,6 +13,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.8",
     "babel-polyfill": "^6.26.0",
     "cors": "^2.8.5",
     "draft-js": "^0.11.7",
@@ -22,6 +23,7 @@
     "js-cookie": "^3.0.5",
     "mobx": "^6.13.1",
     "mobx-react-lite": "^4.0.7",
+    "node-fetch": "^2.7.0",
     "react": "^18.3.1",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
@@ -32,7 +34,8 @@
     "react-toastify": "^10.0.6",
     "web-vitals": "^2.1.4",
     "webdav": "^5.7.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xml2js": "^0.6.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,7 +43,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "node server.js"
-    
   },
   "eslintConfig": {
     "extends": [

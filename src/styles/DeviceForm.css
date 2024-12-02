@@ -74,3 +74,14 @@
     background-color: #4caf50;
     transition: width 0.2s;
 }
+
+.loader-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-container p {
+    margin-left: 10px;
+    font-size: 16px;
+}

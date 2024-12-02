@@ -8,19 +8,22 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
+import imgFolderIcon from '../images/folder.svg'; // Импортируйте иконку папки
 import { connectToWebDAV } from '../utils/webdavUtils';
 
 const SingleDevicesPage = () => {
     const { id } = useParams();
-
     const [currentTab, setCurrentTab] = useState('All');
     const [device, setDevice] = useState({});
     const [allParameters, setAllParameters] = useState(true);
     const [currentImage, setCurrentImage] = useState(0);
+    const [webdavFiles, setWebdavFiles] = useState([]); // Добавьте состояние для файлов с WebDAV
+    const [webdavError, setWebdavError] = useState(null); // Состояние для ошибок WebDAV
 
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentDevicesTab);
         fetchDevice(id);
+        fetchWebDAVFiles(); // Загрузить файлы при загрузке страницы
     }, [id]);
 
     const fetchDevice = async (deviceId) => {
@@ -36,6 +39,20 @@ const SingleDevicesPage = () => {
             }
         } catch (error) {
             console.error('Ошибка при загрузке устройства:', error);
+        }
+    };
+
+    const fetchWebDAVFiles = async () => {
+        console.log('Начало процесса подключения к WebDAV...');
+        try {
+            console.log('Вызов функции connectToWebDAV...');
+            const files = await connectToWebDAV();
+            console.log('Подключение успешно. Получены файлы:', files);
+            setWebdavFiles(files.filter(file => file.basename !== "/Exchange/"));
+            setWebdavError(null);
+        } catch (error) {
+            console.error('Ошибка при подключении к WebDAV:', error);
+            setWebdavError(error.message);
         }
     };
 
@@ -141,21 +158,8 @@ const SingleDevicesPage = () => {
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
     ];
 
-    const handleConnectToWebDAV = async () => {
-        console.log('Начало процесса подключения к WebDAV...');
-        try {
-            console.log('Вызов функции connectToWebDAV...');
-            const files = await connectToWebDAV();
-            console.log('Подключение успешно. Получены файлы:', files);
-            console.log('Детальная информация о файлах:');
-            files.forEach((file, index) => {
-                console.log(`Файл ${index + 1}:`, JSON.stringify(file, null, 2));
-            });
-        } catch (error) {
-            console.error('Ошибка при подключении к WebDAV:', error);
-            console.error('Стек вызовов:', error.stack);
-            console.error('Детали ошибки:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-        }
+    const extractFolderName = (basename) => {
+        return basename.replace('/Exchange/', '');
     };
 
     return (
@@ -219,14 +223,28 @@ const SingleDevicesPage = () => {
                     <img src={imgSaveIcon} alt="" />
                     <p>Информация</p>
                 </div>
-                <div className="devices-info-btn">
-                    <img src={imgSaveIcon} alt="" />
-                    <p>Информация</p>
-                </div>
-                <div className="devices-info-btn">
-                    <button onClick={handleConnectToWebDAV}>Подключиться к диску</button>
+                
+            </div>
+
+            <hr className="divider" />
+
+            <div className="external-disk-section">
+                <h2>Внешний диск</h2>
+                {webdavError && <p style={{ color: 'red' }}>Ошибка: {webdavError}</p>}
+                <div className="webdav-files">
+                    {webdavFiles.length > 0 ? (
+                        webdavFiles.map((file, index) => (
+                            <div key={index} className="webdav-file">
+                                <img src={imgFolderIcon} alt="Folder icon" />
+                                <p>{extractFolderName(file.basename)}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>Нет файлов для отображения</p>
+                    )}
                 </div>
             </div>
+
             <div className="devices-info-table">
                 <div className="column-1">
                     <p className="devices-info-table-title">Основные параметры</p>

@@ -107,7 +107,7 @@ const DeviceForm = ({ setIsAddDevice }) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setLoading(true);
+        setLoading(true); // Установка состояния loading при начале загрузки
         setUploadProgress(0);
 
         try {
@@ -232,7 +232,7 @@ const DeviceForm = ({ setIsAddDevice }) => {
         } catch (error) {
             console.error('Ошибка при загрузке данных из Excel:', error);
         } finally {
-            setLoading(false);
+            setLoading(false); // Установка состояния loading по завершении загрузки
         }
     };
 
