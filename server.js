@@ -54,5 +54,76 @@ app.get('/api/webdav', async (req, res) => {
   }
 });
 
+app.get('/api/webdav/folder', async (req, res) => {
+  const folderName = req.query.name;
+  log(`Получен запрос на содержимое папки: ${folderName}`);
+
+  try {
+    const response = await axios({
+      method: 'PROPFIND',
+      url: `${webdavUrl}/${folderName}`,
+      headers: {
+        'Depth': '1',
+        'Content-Type': 'application/xml',
+      },
+      auth: {
+        username: username,
+        password: password,
+      },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
+    });
+
+    log(`Статус ответа: ${response.status}`);
+    log(`Заголовки ответа: ${JSON.stringify(response.headers)}`);
+
+    res.set('Content-Type', 'application/xml');
+    res.send(response.data);
+    log('Ответ отправлен клиенту');
+  } catch (error) {
+    log(`Ошибка при выполнении запроса к WebDAV: ${error.message}`);
+    if (error.response) {
+      log(`Статус ошибки: ${error.response.status}`);
+      log(`Данные ошибки: ${JSON.stringify(error.response.data)}`);
+    }
+    res.status(500).json({ error: 'Ошибка при выполнении запроса к WebDAV', details: error.message });
+  }
+});
+
+app.get('/api/webdav/download', async (req, res) => {
+  const filePath = req.query.file;
+  log(`Получен запрос на скачивание файла: ${filePath}`);
+
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `${webdavUrl}/${filePath}`,
+      responseType: 'stream',
+      auth: {
+        username: username,
+        password: password,
+      },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
+    });
+
+    log(`Статус ответа: ${response.status}`);
+    log(`Заголовки ответа: ${JSON.stringify(response.headers)}`);
+
+    res.set('Content-Disposition', `attachment; filename="${filePath.split('/').pop()}"`);
+    response.data.pipe(res);
+    log('Ответ клиенту отправлен, файл в процессе передачи');
+  } catch (error) {
+    log(`Ошибка при выполнении запроса к WebDAV: ${error.message}`);
+    if (error.response) {
+      log(`Статус ошибки: ${error.response.status}`);
+      log(`Данные ошибки: ${JSON.stringify(error.response.data)}`);
+    }
+    res.status(500).json({ error: 'Ошибка при выполнении запроса к WebDAV', details: error.message });
+  }
+});
+
 const PORT = 3001;
 app.listen(PORT, () => log(`Сервер запущен на порту ${PORT}`));

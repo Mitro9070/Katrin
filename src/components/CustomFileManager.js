@@ -7,10 +7,10 @@ import '../styles/CustomFileManager.css';
 
 // Функция преобразования байт в удобочитаемый размер
 const formatSize = (size) => {
-    if(size < 1024) return `${size} B`;
-    else if(size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-    else if(size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
-    else return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`; 
+    if (size < 1024) return `${size} B`;
+    else if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    else if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
+    return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
 };
 
 const dataToColumns = (data) => data.map((item, index) => ({
@@ -27,7 +27,7 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             title: 'Имя',
             dataIndex: 'name',
             key: 'name',
-            width: '370px',
+            width: '400px',
             render: (text, record) => (
                 <span onClick={() => record.type === 'directory' ? onFolderClick(record) : onFileClick(record)} style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <img src={record.type === 'directory' ? imgFolderIcon : imgFileIcon} alt={record.type} style={{ width: '20px', marginRight: '8px' }} />
@@ -39,7 +39,7 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             title: 'Размер',
             dataIndex: 'size',
             key: 'size',
-            width: '220px',
+            width: '250px',
         },
         {
             title: 'Дата изменения',
@@ -53,7 +53,7 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             width: '100px',
             render: (text, record) => (
                 record.type === 'file' ? (
-                    <img src={imgSaveIcon} alt="save" style={{ width: '20px', cursor: 'pointer' }} onClick={() => {/* Функционал добавим позже */}} />
+                    <img src={imgSaveIcon} alt="save" style={{ width: '20px', cursor: 'pointer' }} onClick={() => onFileClick(record)} />
                 ) : null
             ),
         },

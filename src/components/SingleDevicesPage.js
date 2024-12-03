@@ -10,7 +10,7 @@ import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
 import imgFolderIcon from '../images/folder.png';
 import imgBackIcon from '../images/back.svg';
-import { connectToWebDAV } from '../utils/webdavUtils';
+import { connectToWebDAV, getFolderContents, downloadFile } from '../utils/webdavUtils';
 import CustomFileManager from './CustomFileManager';
 import '../styles/SingleDevicesPage.css';
 
@@ -49,7 +49,7 @@ const SingleDevicesPage = () => {
     const fetchWebDAVFiles = async (path) => {
         console.log('Начало процесса подключения к WebDAV для пути:', path);
         try {
-            const files = await connectToWebDAV(path);
+            const files = await getFolderContents(path);
             console.log('Подключение успешно. Получены файлы:', files);
             const filteredFiles = files.map((file) => {
                 if (file.filename === '._.DS_Store' || file.filename === '.DS_Store') {
@@ -82,6 +82,14 @@ const SingleDevicesPage = () => {
         const newPaths = paths.slice(0, index + 1);
         setPaths(newPaths);
         fetchWebDAVFiles(newPaths[newPaths.length - 1] || '');
+    };
+
+    const handleFileDownload = async (file) => {
+        try {
+            await downloadFile(file.basename);
+        } catch (error) {
+            console.error('Ошибка при скачивании файла:', error);
+        }
     };
 
     const onTabClickHandler = (e) => {
@@ -241,13 +249,12 @@ const SingleDevicesPage = () => {
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <h2 style={{ fontSize: '24px', color: '#2C2C2C', fontFamily: '"PF DinText Pro", sans-serif', fontWeight: 400, lineHeight: 'normal', marginBottom: '10px' }}>Внешний диск</h2>
                 </AccordionSummary>
-                <AccordionDetails >
+                <AccordionDetails>
                     {webdavError && <p style={{ color: 'red' }}>Ошибка: {webdavError}</p>}
                     <CustomFileManager 
-                        
                         files={webdavFiles[webdavFiles.length - 1] || []} 
                         onFolderClick={handleFolderClick} 
-                        onFileClick={(file) => console.log('File clicked:', file)} 
+                        onFileClick={handleFileDownload} 
                         breadcrumbs={paths}
                         onBreadcrumbClick={handleBreadcrumbClick}
                     />
