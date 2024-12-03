@@ -19,7 +19,9 @@ const formatSize = (size) => {
 const dataToColumns = (data) =>
     data.map((item, index) => ({
         key: index,
-        name: decodeURIComponent(item.basename.replace('/Exchange/', '').replace(/\/$/, '')),
+        name: decodeURIComponent(item.type === 'directory' 
+                ? item.basename.replace('/Exchange/', '').split('/').filter(Boolean).slice(-1)[0] 
+                : item.basename.split('/').slice(-1)[0]), // Преобразуем имя файла, чтобы отображался только его конец
         size: item.type === 'directory' ? 'Папка' : formatSize(item.size),
         lastmod: new Date(item.lastmod).toLocaleString(),
         type: item.type,
@@ -29,7 +31,6 @@ const dataToColumns = (data) =>
 const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onBreadcrumbClick }) => {
     // Обработчик клика по хлебным крошкам
     const handleBreadcrumbClick = (index) => {
-        console.log('Клик по папке:', index);
         onBreadcrumbClick(index);
     };
 
@@ -90,6 +91,9 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
         },
     ];
 
+    // Проверяем, является ли папка пустой
+    const isEmpty = files.length === 1 && files[0].basename === '/';
+    
     return (
         <div className="custom-file-manager" style={{ width: '1095px', marginTop: '-40px', position: 'relative' }}>
             {/* Хлебные крошки */}
@@ -118,9 +122,10 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             <Table
                 style={{ marginTop: '0px' }}
                 columns={columns}
-                dataSource={dataToColumns(files)}
+                dataSource={isEmpty ? [] : dataToColumns(files)} // Проверяем на пустоту и отображаем пустую таблицу или данные
                 pagination={false}
                 scroll={{ y: 250 }}
+                locale={{ emptyText: 'Папка пуста' }} // Используем встроенную аннотацию Locale, чтобы отобразить сообщение, когда данные пусты
             />
         </div>
     );

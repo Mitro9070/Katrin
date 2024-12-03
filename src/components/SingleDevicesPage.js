@@ -52,17 +52,23 @@ const SingleDevicesPage = () => {
         try {
             const files = await getFolderContents(path);
             console.log('Подключение успешно. Получены файлы:', files);
-            const filteredFiles = files.filter((file) => {
+            
+            // Фильтруем первый элемент, если он является текущей директорией
+            const filteredFiles = files.filter((file, index) => {
+                if (index === 0 && file.type === 'directory' && file.basename.endsWith('/')) {
+                    return false;
+                }
                 // Фильтруем скрытые системные файлы
                 return file.filename !== '._.DS_Store' && file.filename !== '.DS_Store';
             });
-
-            setWebdavFiles(filteredFiles); // Устанавливаем файлы для текущей папки
+    
+            setWebdavFiles(filteredFiles.length ? filteredFiles : []); // Устанавливаем файлы для текущей папки или пустой массив для пустой папки
             setCurrentPath(path); // Обновляем текущий путь
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
             setWebdavError(error.message);
+            setWebdavFiles([]); // Устанавливаем пустой массив файлов в случае ошибки
         }
     };
 
