@@ -8,9 +8,8 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
-import imgFolderIcon from '../images/folder.png';
-import imgBackIcon from '../images/back.svg';
-import { connectToWebDAV, getFolderContents, downloadFile } from '../utils/webdavUtils';
+import homeIcon from '../images/home.png';
+import { getFolderContents, downloadFile } from '../utils/webdavUtils';
 import CustomFileManager from './CustomFileManager';
 import '../styles/SingleDevicesPage.css';
 
@@ -22,14 +21,15 @@ const SingleDevicesPage = () => {
     const [currentImage, setCurrentImage] = useState(0);
     const [webdavFiles, setWebdavFiles] = useState([]);
     const [webdavError, setWebdavError] = useState(null);
-    const [paths, setPaths] = useState(['']);
+    const [currentPath, setCurrentPath] = useState(''); // Строка для хранения текущего пути
 
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentDevicesTab);
         fetchDevice(id);
-        fetchWebDAVFiles('');
+        fetchWebDAVFiles(''); // Загружаем корневую директорию
     }, [id]);
 
+    // Функция для загрузки данных устройства из Firebase
     const fetchDevice = async (deviceId) => {
         try {
             const deviceRef = ref(database, `Devices/${deviceId}`);
@@ -46,22 +46,19 @@ const SingleDevicesPage = () => {
         }
     };
 
+    // Функция для получения содержимого папки по пути
     const fetchWebDAVFiles = async (path) => {
         console.log('Начало процесса подключения к WebDAV для пути:', path);
         try {
             const files = await getFolderContents(path);
             console.log('Подключение успешно. Получены файлы:', files);
-            const filteredFiles = files.map((file) => {
-                if (file.filename === '._.DS_Store' || file.filename === '.DS_Store') {
-                    file.type = 'file';
-                }
-                return file;
+            const filteredFiles = files.filter((file) => {
+                // Фильтруем скрытые системные файлы
+                return file.filename !== '._.DS_Store' && file.filename !== '.DS_Store';
             });
-            if (path === '') {
-                setWebdavFiles([filteredFiles]);
-            } else {
-                setWebdavFiles((prev) => [...prev, filteredFiles.filter(file => file.basename !== `/Exchange${path}`)]);
-            }
+
+            setWebdavFiles(filteredFiles); // Устанавливаем файлы для текущей папки
+            setCurrentPath(path); // Обновляем текущий путь
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
@@ -69,22 +66,30 @@ const SingleDevicesPage = () => {
         }
     };
 
-    const handleFolderClick = (folder) => {
+    // Обрабатываем клик по папке в файловом менеджере
+    const handleFolderClick = async (folder) => {
+        console.log('Клик по папке:', folder);
         if (folder.basename) {
-            const newPath = folder.basename.replace('/Exchange', '');
-            const newPaths = [...paths, newPath];
-            setPaths(newPaths);
+            // Получаем относительный путь к выбранной папке
+            const newPath = folder.basename.replace('/Exchange/', '').replace(/^\//, '');
+            fetchWebDAVFiles(newPath); // Загружаем содержимое выбранной папки
+        }
+    };
+
+    // Обрабатываем клик по хлебным крошкам
+    const handleBreadcrumbClick = (index) => {
+        if (index === -1) {
+            fetchWebDAVFiles(''); // Переходим в корневую директорию
+        } else {
+            const pathParts = currentPath.split('/').filter(part => part);
+            const newPath = pathParts.slice(0, index + 1).join('/');
             fetchWebDAVFiles(newPath);
         }
     };
 
-    const handleBreadcrumbClick = (index) => {
-        const newPaths = paths.slice(0, index + 1);
-        setPaths(newPaths);
-        fetchWebDAVFiles(newPaths[newPaths.length - 1] || '');
-    };
-
+    // Обрабатываем клик по файлу для его скачивания
     const handleFileDownload = async (file) => {
+        console.log('Клик по файлу:', file);
         try {
             await downloadFile(file.basename);
         } catch (error) {
@@ -92,12 +97,14 @@ const SingleDevicesPage = () => {
         }
     };
 
+    // Обработка переключения вкладок
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setCurrentTab(selectedTab);
         navigationStore.setCurrentDevicesTab(selectedTab);
     };
 
+    // Рендеринг параметров устройства
     const renderParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -112,6 +119,7 @@ const SingleDevicesPage = () => {
         return <p>Нет данных</p>;
     };
 
+    // Рендеринг параметров в таблице
     const renderTableParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -126,16 +134,19 @@ const SingleDevicesPage = () => {
         return <tr><td colSpan="2">Нет данных</td></tr>;
     };
 
+    // Переход к предыдущему изображению
     const prevImage = () => {
         currentImage > 0 && setCurrentImage(currentImage - 1);
     };
 
+    // Переход к следующему изображению
     const nextImage = () => {
         if (currentImage < (device.images?.length || 0) - 1) {
             setCurrentImage(currentImage + 1);
         }
     };
 
+    // Описание полей для отображения параметров устройства
     const basicFields = [
         { label: 'Тип оборудования', key: 'type_div' },
         { label: 'Торговая марка', key: 'marc' },
@@ -196,6 +207,7 @@ const SingleDevicesPage = () => {
 
     return (
         <div className="page-content devices-single-page">
+            {/* Ссылка для возврата на страницу устройств */}
             <Link to={'/devices'}>
                 <div className="bid-page-head noselect">
                     <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
@@ -204,6 +216,7 @@ const SingleDevicesPage = () => {
                 </div>
             </Link>
             <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
+                {/* Блок с изображением устройства */}
                 <div style={{ position: 'relative' }}>
                     <div style={{ position: 'relative', width: '420px', height: '420px' }}>
                         <div style={{ display: 'flex', overflow: 'hidden', width: '420px', height: '420px' }}>
@@ -221,6 +234,7 @@ const SingleDevicesPage = () => {
                                 ></div>
                             ))}
                         </div>
+                        {/* Навигация по изображениям */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'absolute', bottom: '-30px', width: '100%' }}>
                             <div style={{ cursor: 'pointer', transform: 'rotate(180deg)' }} onClick={prevImage}>
                                 <img src={imgGoArrowIcon} alt="" style={{ width: '24px', height: '24px' }} />
@@ -234,17 +248,20 @@ const SingleDevicesPage = () => {
                         </div>
                     </div>
                 </div>
+                {/* Информация об устройстве */}
                 <div className="single-device-info" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '645px' }}>
                     <h1 className="device-title" style={{ fontFamily: '"PF DinText Pro", sans-serif', fontSize: '24px', fontWeight: 400, color: '#2C2C2C' }}>{id}</h1>
                     <p className="device-description" style={{ fontFamily: '"PF DinText Pro", sans-serif', fontSize: '16px', fontWeight: 400, color: '#2C2C2C' }}>{device.description || 'Нет данных'}</p>
                 </div>
             </div>
+            {/* Кнопки действий */}
             <div className="devices-info-btns" style={{ display: 'flex', gap: '30px', marginTop: '40px', flexWrap: 'wrap' }}>
                 <div className="devices-info-btn" style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', width: '195px', height: '40px', border: '1px solid #0C8CE9', borderRadius: '20px', color: '#0C8CE9', cursor: 'pointer' }}>
                     <img src={imgSaveIcon} alt="" style={{ width: '24px', height: '24px' }} />
                     <p>Информация</p>
                 </div>
             </div>
+            {/* Блок с файловым менеджером */}
             <Accordion style={{ width: '1095px', marginTop: '20px' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <h2 style={{ fontSize: '24px', color: '#2C2C2C', fontFamily: '"PF DinText Pro", sans-serif', fontWeight: 400, lineHeight: 'normal', marginBottom: '10px' }}>Внешний диск</h2>
@@ -252,10 +269,10 @@ const SingleDevicesPage = () => {
                 <AccordionDetails>
                     {webdavError && <p style={{ color: 'red' }}>Ошибка: {webdavError}</p>}
                     <CustomFileManager 
-                        files={webdavFiles[webdavFiles.length - 1] || []} 
-                        onFolderClick={handleFolderClick} 
-                        onFileClick={handleFileDownload} 
-                        breadcrumbs={paths}
+                        files={webdavFiles} 
+                        onFolderClick={handleFolderClick}
+                        onFileClick={handleFileDownload}
+                        breadcrumbs={currentPath ? currentPath.split('/').filter(part => part) : []}
                         onBreadcrumbClick={handleBreadcrumbClick}
                     />
                 </AccordionDetails>

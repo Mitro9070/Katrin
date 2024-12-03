@@ -1,8 +1,10 @@
 import React from 'react';
-import { Table, Breadcrumb } from 'antd';
+import { Table } from 'antd';
 import imgFolderIcon from '../images/folder.png';
 import imgFileIcon from '../images/file.png';
 import imgSaveIcon from '../images/save-2.svg'; // Импортируем иконку сохранения
+import homeIcon from '../images/home.png'; // Импортируем иконку домика
+
 import '../styles/CustomFileManager.css';
 
 // Функция преобразования байт в удобочитаемый размер
@@ -13,15 +15,30 @@ const formatSize = (size) => {
     return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`;
 };
 
-const dataToColumns = (data) => data.map((item, index) => ({
-    key: index,
-    name: item.basename.replace('/Exchange/', ''), // Убираем имя корневой папки
-    size: item.type === 'directory' ? 'Папка' : formatSize(item.size), // Преобразуем размер в удобочитаемый формат или показываем "Папка"
-    lastmod: new Date(item.lastmod).toLocaleString(), // Преобразуем дату в локальный формат без GMT
-    type: item.type
-}));
+// Преобразуем данные из WebDAV в формат, подходящий для таблицы
+const dataToColumns = (data) =>
+    data.map((item, index) => ({
+        key: index,
+        name: decodeURIComponent(item.basename.replace('/Exchange/', '').replace(/\/$/, '')),
+        size: item.type === 'directory' ? 'Папка' : formatSize(item.size),
+        lastmod: new Date(item.lastmod).toLocaleString(),
+        type: item.type,
+        basename: decodeURIComponent(item.basename),
+    }));
 
 const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onBreadcrumbClick }) => {
+    // Обработчик клика по хлебным крошкам
+    const handleBreadcrumbClick = (index) => {
+        console.log('Клик по папке:', index);
+        onBreadcrumbClick(index);
+    };
+
+    // Обработчик клика по домику
+    const handleHomeClick = () => {
+        onBreadcrumbClick(-1);
+    };
+
+    // Колонки для таблицы
     const columns = [
         {
             title: 'Имя',
@@ -29,11 +46,22 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             key: 'name',
             width: '400px',
             render: (text, record) => (
-                <span onClick={() => record.type === 'directory' ? onFolderClick(record) : onFileClick(record)} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <img src={record.type === 'directory' ? imgFolderIcon : imgFileIcon} alt={record.type} style={{ width: '20px', marginRight: '8px' }} />
                     {text}
                 </span>
             ),
+            onCell: (record) => ({
+                onClick: (event) => {
+                    event.stopPropagation();
+                    if (record.type === 'directory') {
+                        onFolderClick(record);
+                    } else {
+                        onFileClick(record);
+                    }
+                },
+                style: { cursor: 'pointer' },
+            }),
         },
         {
             title: 'Размер',
@@ -53,21 +81,40 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             width: '100px',
             render: (text, record) => (
                 record.type === 'file' ? (
-                    <img src={imgSaveIcon} alt="save" style={{ width: '20px', cursor: 'pointer' }} onClick={() => onFileClick(record)} />
+                    <img src={imgSaveIcon} alt="save" style={{ width: '20px', cursor: 'pointer' }} onClick={(event) => {
+                        event.stopPropagation();
+                        onFileClick(record);
+                    }} />
                 ) : null
             ),
         },
     ];
 
     return (
-        <div className="custom-file-manager" style={{ width: '1095px', marginTop: '-40px' }}>
-            <Breadcrumb style={{ marginBottom: '20px' }}>
+        <div className="custom-file-manager" style={{ width: '1095px', marginTop: '-40px', position: 'relative' }}>
+            {/* Хлебные крошки */}
+            <div className="breadcrumbs" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', zIndex: 1000, position: 'relative', backgroundColor: '#fff' }}>
+                {/* Иконка домика */}
+                <span onClick={(event) => {
+                    event.stopPropagation();
+                    handleHomeClick();
+                }} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+                    <img src={homeIcon} alt="home" style={{ width: '24px' }} />
+                    <span style={{ marginLeft: '8px', marginRight: '8px' }}>/</span>
+                </span>
+                {/* Хлебные крошки */}
                 {breadcrumbs.map((breadcrumb, index) => (
-                    <Breadcrumb.Item key={index}>
-                        <span onClick={() => onBreadcrumbClick(index)}>{breadcrumb}</span>
-                    </Breadcrumb.Item>
+                    <React.Fragment key={index}>
+                        <span onClick={(event) => {
+                            event.stopPropagation();
+                            handleBreadcrumbClick(index);
+                        }} style={{ cursor: 'pointer', marginRight: '8px' }}>
+                            {decodeURIComponent(breadcrumb)}
+                        </span>
+                        {index < breadcrumbs.length - 1 && <span style={{ marginRight: '8px' }}>/</span>}
+                    </React.Fragment>
                 ))}
-            </Breadcrumb>
+            </div>
             <Table
                 style={{ marginTop: '0px' }}
                 columns={columns}
