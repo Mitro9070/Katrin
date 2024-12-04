@@ -2538,3 +2538,519 @@
 2024-12-04T07:08:20.904Z: Статус ответа: 207
 2024-12-04T07:08:20.906Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 07:08:24 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
 2024-12-04T07:08:20.909Z: Ответ отправлен клиенту
+2024-12-04T09:36:31.130Z: Получен запрос на содержимое папки: 
+2024-12-04T09:36:31.188Z: Статус ответа: 207
+2024-12-04T09:36:31.189Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:36:32 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:36:31.191Z: Ответ отправлен клиенту
+2024-12-04T09:36:31.193Z: Получен запрос на содержимое папки: 
+2024-12-04T09:36:31.230Z: Статус ответа: 207
+2024-12-04T09:36:31.231Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:36:32 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:36:31.233Z: Ответ отправлен клиенту
+2024-12-04T09:37:15.273Z: Получен запрос на содержимое папки: MFP/
+2024-12-04T09:37:15.317Z: Статус ответа: 207
+2024-12-04T09:37:15.319Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:37:16 GMT","server":"Apache","connection":"close","transfer-encoding":"chunked","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:37:15.320Z: Ответ отправлен клиенту
+2024-12-04T09:37:18.321Z: Получен запрос на содержимое папки: MFP/Katusha M133 series/
+2024-12-04T09:37:18.354Z: Статус ответа: 207
+2024-12-04T09:37:18.356Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:37:19 GMT","server":"Apache","content-length":"3961","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:37:18.358Z: Ответ отправлен клиенту
+2024-12-04T09:39:09.735Z: Получен запрос на содержимое папки: 
+2024-12-04T09:39:09.793Z: Статус ответа: 207
+2024-12-04T09:39:09.794Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:39:10 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:39:09.797Z: Ответ отправлен клиенту
+2024-12-04T09:39:09.799Z: Получен запрос на содержимое папки: 
+2024-12-04T09:39:09.836Z: Статус ответа: 207
+2024-12-04T09:39:09.838Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:39:10 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:39:09.840Z: Ответ отправлен клиенту
+2024-12-04T09:39:34.730Z: Получен запрос на содержимое папки: Printers/
+2024-12-04T09:39:34.777Z: Статус ответа: 207
+2024-12-04T09:39:34.778Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:39:35 GMT","server":"Apache","content-length":"6950","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:39:34.780Z: Ответ отправлен клиенту
+2024-12-04T09:41:26.587Z: Получен запрос на содержимое папки: Printers/Katusha P133 series/
+2024-12-04T09:41:26.619Z: Статус ответа: 207
+2024-12-04T09:41:26.621Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:41:27 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:41:26.623Z: Ответ отправлен клиенту
+2024-12-04T09:44:12.559Z: Получен запрос на содержимое папки: Printers/Katusha P133 series/2 Documentation/
+2024-12-04T09:44:12.608Z: Статус ответа: 207
+2024-12-04T09:44:12.610Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:44:13 GMT","server":"Apache","content-length":"4060","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:44:12.611Z: Ответ отправлен клиенту
+2024-12-04T09:55:05.178Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T09:55:05.224Z: Статус ответа: 207
+2024-12-04T09:55:05.225Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:55:06 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:55:05.227Z: Ответ отправлен клиенту
+2024-12-04T09:55:21.154Z: Получен запрос на содержимое папки: Printers
+2024-12-04T09:55:21.188Z: Статус ответа: 207
+2024-12-04T09:55:21.189Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:55:22 GMT","server":"Apache","content-length":"6950","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:55:21.191Z: Ответ отправлен клиенту
+2024-12-04T09:55:23.741Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T09:55:23.772Z: Статус ответа: 207
+2024-12-04T09:55:23.774Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:55:24 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:55:23.775Z: Ответ отправлен клиенту
+2024-12-04T09:55:34.262Z: Получен запрос на содержимое папки: MFP/Katusha M133- series
+2024-12-04T09:55:34.304Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:55:34.305Z: Статус ошибки: 404
+2024-12-04T09:55:34.307Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:55:34.319Z: Получен запрос на содержимое папки: MFP/Katusha M133- series
+2024-12-04T09:55:34.356Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:55:34.357Z: Статус ошибки: 404
+2024-12-04T09:55:34.358Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:55:56.795Z: Получен запрос на содержимое папки: MFP/Katusha M133p series
+2024-12-04T09:55:56.838Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:55:56.840Z: Статус ошибки: 404
+2024-12-04T09:55:56.841Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:55:56.845Z: Получен запрос на содержимое папки: MFP/Katusha M133p series
+2024-12-04T09:55:56.880Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:55:56.883Z: Статус ошибки: 404
+2024-12-04T09:55:56.884Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:56:18.614Z: Получен запрос на содержимое папки: MFP/Katusha M133p series
+2024-12-04T09:56:18.656Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:56:18.657Z: Статус ошибки: 404
+2024-12-04T09:56:18.658Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:56:33.639Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T09:56:33.692Z: Статус ответа: 207
+2024-12-04T09:56:33.693Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:56:34 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:56:33.695Z: Ответ отправлен клиенту
+2024-12-04T09:56:33.697Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T09:56:33.749Z: Статус ответа: 207
+2024-12-04T09:56:33.751Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 09:56:34 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T09:56:33.752Z: Ответ отправлен клиенту
+2024-12-04T09:56:51.685Z: Получен запрос на содержимое папки: Printers/Katusha P140T series
+2024-12-04T09:56:51.735Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:56:51.736Z: Статус ошибки: 404
+2024-12-04T09:56:51.737Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:56:51.741Z: Получен запрос на содержимое папки: Printers/Katusha P140T series
+2024-12-04T09:56:51.777Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:56:51.779Z: Статус ошибки: 404
+2024-12-04T09:56:51.779Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:59:13.423Z: Получен запрос на содержимое папки: Printers/Katusha P140T series
+2024-12-04T09:59:13.455Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:59:13.456Z: Статус ошибки: 404
+2024-12-04T09:59:13.457Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T09:59:22.537Z: Получен запрос на содержимое папки: Printers/Katusha P133- series
+2024-12-04T09:59:22.574Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T09:59:22.576Z: Статус ошибки: 404
+2024-12-04T09:59:22.578Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T10:00:00.142Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T10:00:00.189Z: Статус ответа: 207
+2024-12-04T10:00:00.190Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:00:01 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:00:00.192Z: Ответ отправлен клиенту
+2024-12-04T10:00:00.194Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T10:00:00.223Z: Статус ответа: 207
+2024-12-04T10:00:00.225Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:00:01 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:00:00.226Z: Ответ отправлен клиенту
+2024-12-04T10:00:08.094Z: Получен запрос на содержимое папки: Printers
+2024-12-04T10:00:08.142Z: Статус ответа: 207
+2024-12-04T10:00:08.144Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:00:09 GMT","server":"Apache","content-length":"6950","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:00:08.146Z: Ответ отправлен клиенту
+2024-12-04T10:02:53.120Z: Получен запрос на содержимое папки: 
+2024-12-04T10:02:53.158Z: Статус ответа: 207
+2024-12-04T10:02:53.160Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:02:54 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:02:53.163Z: Ответ отправлен клиенту
+2024-12-04T10:02:53.165Z: Получен запрос на содержимое папки: 
+2024-12-04T10:02:53.202Z: Статус ответа: 207
+2024-12-04T10:02:53.203Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:02:54 GMT","server":"Apache","content-length":"5295","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:02:53.204Z: Ответ отправлен клиенту
+2024-12-04T10:02:57.345Z: Получен запрос на содержимое папки: MFP/
+2024-12-04T10:02:57.382Z: Статус ответа: 207
+2024-12-04T10:02:57.384Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:02:58 GMT","server":"Apache","connection":"close","transfer-encoding":"chunked","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:02:57.385Z: Ответ отправлен клиенту
+2024-12-04T10:05:09.488Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T10:05:09.533Z: Статус ответа: 207
+2024-12-04T10:05:09.535Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:05:10 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:05:09.537Z: Ответ отправлен клиенту
+2024-12-04T10:05:09.539Z: Получен запрос на содержимое папки: Printers/Katusha P133 series
+2024-12-04T10:05:09.575Z: Статус ответа: 207
+2024-12-04T10:05:09.576Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:05:10 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:05:09.577Z: Ответ отправлен клиенту
+2024-12-04T10:05:27.770Z: Получен запрос на содержимое папки: MFP/Katusha M133 series
+2024-12-04T10:05:27.810Z: Статус ответа: 207
+2024-12-04T10:05:27.811Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:05:28 GMT","server":"Apache","content-length":"3961","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:05:27.812Z: Ответ отправлен клиенту
+2024-12-04T10:05:27.814Z: Получен запрос на содержимое папки: MFP/Katusha M133 series
+2024-12-04T10:05:27.868Z: Статус ответа: 207
+2024-12-04T10:05:27.870Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:05:28 GMT","server":"Apache","content-length":"3961","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:05:27.872Z: Ответ отправлен клиенту
+2024-12-04T10:05:42.042Z: Получен запрос на содержимое папки: MFP/Katusha M133p series
+2024-12-04T10:05:42.086Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T10:05:42.088Z: Статус ошибки: 404
+2024-12-04T10:05:42.088Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T10:05:42.092Z: Получен запрос на содержимое папки: MFP/Katusha M133p series
+2024-12-04T10:05:42.122Z: Ошибка при выполнении запроса к WebDAV: Request failed with status code 404
+2024-12-04T10:05:42.123Z: Статус ошибки: 404
+2024-12-04T10:05:42.124Z: Данные ошибки: "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n"
+2024-12-04T10:06:31.119Z: Получен запрос на содержимое папки: MFP/Katusha M133 series
+2024-12-04T10:06:31.159Z: Статус ответа: 207
+2024-12-04T10:06:31.160Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:32 GMT","server":"Apache","content-length":"3961","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:31.162Z: Ответ отправлен клиенту
+2024-12-04T10:06:31.458Z: Получен запрос на содержимое папки: MFP/Katusha M133 series
+2024-12-04T10:06:31.499Z: Статус ответа: 207
+2024-12-04T10:06:31.501Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:32 GMT","server":"Apache","content-length":"3961","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:31.502Z: Ответ отправлен клиенту
+2024-12-04T10:06:42.665Z: Получен запрос на содержимое папки: MFP/Katusha M140 series
+2024-12-04T10:06:42.706Z: Статус ответа: 207
+2024-12-04T10:06:42.708Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:43 GMT","server":"Apache","content-length":"5496","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:42.710Z: Ответ отправлен клиенту
+2024-12-04T10:06:42.712Z: Получен запрос на содержимое папки: MFP/Katusha M140 series
+2024-12-04T10:06:42.749Z: Статус ответа: 207
+2024-12-04T10:06:42.751Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:43 GMT","server":"Apache","content-length":"5496","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:42.753Z: Ответ отправлен клиенту
+2024-12-04T10:06:50.833Z: Получен запрос на содержимое папки: MFP/Katusha M140 series
+2024-12-04T10:06:50.878Z: Статус ответа: 207
+2024-12-04T10:06:50.880Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:51 GMT","server":"Apache","content-length":"5496","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:50.882Z: Ответ отправлен клиенту
+2024-12-04T10:06:53.089Z: Получен запрос на содержимое папки: MFP/Katusha M140 series/1 Launch Confirmation/
+2024-12-04T10:06:53.121Z: Статус ответа: 207
+2024-12-04T10:06:53.123Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:54 GMT","server":"Apache","content-length":"3246","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:53.124Z: Ответ отправлен клиенту
+2024-12-04T10:06:54.701Z: Получен запрос на содержимое папки: MFP/Katusha M140 series/1 Launch Confirmation/M140T/
+2024-12-04T10:06:54.738Z: Статус ответа: 207
+2024-12-04T10:06:54.739Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:55 GMT","server":"Apache","content-length":"878","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:54.741Z: Ответ отправлен клиенту
+2024-12-04T10:06:57.587Z: Получен запрос на содержимое папки: MFP/Katusha M140 series
+2024-12-04T10:06:57.627Z: Статус ответа: 207
+2024-12-04T10:06:57.629Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:06:58 GMT","server":"Apache","content-length":"5496","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:06:57.631Z: Ответ отправлен клиенту
+2024-12-04T10:07:24.823Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:07:24.860Z: Статус ответа: 207
+2024-12-04T10:07:24.861Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:07:25 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:07:24.864Z: Ответ отправлен клиенту
+2024-12-04T10:07:24.868Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:07:24.913Z: Статус ответа: 207
+2024-12-04T10:07:24.914Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:07:25 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:07:24.916Z: Ответ отправлен клиенту
+2024-12-04T10:13:35.128Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:13:35.175Z: Статус ответа: 207
+2024-12-04T10:13:35.177Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:13:36 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:13:35.178Z: Ответ отправлен клиенту
+2024-12-04T10:13:35.469Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:13:35.509Z: Статус ответа: 207
+2024-12-04T10:13:35.509Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:13:36 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:13:35.511Z: Ответ отправлен клиенту
+2024-12-04T10:13:48.185Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:13:48.227Z: Статус ответа: 207
+2024-12-04T10:13:48.228Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:13:49 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:13:48.230Z: Ответ отправлен клиенту
+2024-12-04T10:13:48.232Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:13:48.272Z: Статус ответа: 207
+2024-12-04T10:13:48.273Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:13:49 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:13:48.275Z: Ответ отправлен клиенту
+2024-12-04T10:13:57.411Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation/
+2024-12-04T10:13:57.450Z: Статус ответа: 207
+2024-12-04T10:13:57.452Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:13:58 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:13:57.454Z: Ответ отправлен клиенту
+2024-12-04T10:14:00.805Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:00.840Z: Статус ответа: 207
+2024-12-04T10:14:00.841Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:01 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:00.842Z: Ответ отправлен клиенту
+2024-12-04T10:14:07.580Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/
+2024-12-04T10:14:07.620Z: Статус ответа: 207
+2024-12-04T10:14:07.621Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:08 GMT","server":"Apache","content-length":"4060","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:07.623Z: Ответ отправлен клиенту
+2024-12-04T10:14:08.674Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/Specification/
+2024-12-04T10:14:08.710Z: Статус ответа: 207
+2024-12-04T10:14:08.711Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:09 GMT","server":"Apache","content-length":"2494","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:08.713Z: Ответ отправлен клиенту
+2024-12-04T10:14:11.147Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/Specification/Original/
+2024-12-04T10:14:11.177Z: Статус ответа: 207
+2024-12-04T10:14:11.178Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:12 GMT","server":"Apache","content-length":"892","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:11.180Z: Ответ отправлен клиенту
+2024-12-04T10:14:15.320Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:15.359Z: Статус ответа: 207
+2024-12-04T10:14:15.360Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:16 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:15.362Z: Ответ отправлен клиенту
+2024-12-04T10:14:16.393Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:16.434Z: Статус ответа: 207
+2024-12-04T10:14:16.435Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:17 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:16.437Z: Ответ отправлен клиенту
+2024-12-04T10:14:18.492Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:18.522Z: Статус ответа: 207
+2024-12-04T10:14:18.524Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:19 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:18.525Z: Ответ отправлен клиенту
+2024-12-04T10:14:19.467Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:19.508Z: Статус ответа: 207
+2024-12-04T10:14:19.509Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:20 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:19.511Z: Ответ отправлен клиенту
+2024-12-04T10:14:20.683Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:20.717Z: Статус ответа: 207
+2024-12-04T10:14:20.718Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:21 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:20.720Z: Ответ отправлен клиенту
+2024-12-04T10:14:22.910Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:22.940Z: Статус ответа: 207
+2024-12-04T10:14:22.941Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:24 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:22.943Z: Ответ отправлен клиенту
+2024-12-04T10:14:24.297Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:24.333Z: Статус ответа: 207
+2024-12-04T10:14:24.334Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:25 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:24.336Z: Ответ отправлен клиенту
+2024-12-04T10:14:26.193Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:26.225Z: Статус ответа: 207
+2024-12-04T10:14:26.226Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:27 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:26.227Z: Ответ отправлен клиенту
+2024-12-04T10:14:27.687Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:27.726Z: Статус ответа: 207
+2024-12-04T10:14:27.727Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:28 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:27.730Z: Ответ отправлен клиенту
+2024-12-04T10:14:30.172Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:30.207Z: Статус ответа: 207
+2024-12-04T10:14:30.208Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:31 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:30.209Z: Ответ отправлен клиенту
+2024-12-04T10:14:31.222Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:31.263Z: Статус ответа: 207
+2024-12-04T10:14:31.264Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:32 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:31.267Z: Ответ отправлен клиенту
+2024-12-04T10:14:32.403Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation/
+2024-12-04T10:14:32.443Z: Статус ответа: 207
+2024-12-04T10:14:32.444Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:33 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:32.446Z: Ответ отправлен клиенту
+2024-12-04T10:14:34.021Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:34.061Z: Статус ответа: 207
+2024-12-04T10:14:34.062Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:35 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:34.064Z: Ответ отправлен клиенту
+2024-12-04T10:14:36.258Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/
+2024-12-04T10:14:36.290Z: Статус ответа: 207
+2024-12-04T10:14:36.291Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:37 GMT","server":"Apache","content-length":"4060","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:36.293Z: Ответ отправлен клиенту
+2024-12-04T10:14:38.329Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/
+2024-12-04T10:14:38.361Z: Статус ответа: 207
+2024-12-04T10:14:38.362Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:39 GMT","server":"Apache","content-length":"1689","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:38.364Z: Ответ отправлен клиенту
+2024-12-04T10:14:39.821Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/Katusha/
+2024-12-04T10:14:39.851Z: Статус ответа: 207
+2024-12-04T10:14:39.852Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:40 GMT","server":"Apache","content-length":"2552","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:39.855Z: Ответ отправлен клиенту
+2024-12-04T10:14:41.831Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual
+2024-12-04T10:14:41.866Z: Статус ответа: 207
+2024-12-04T10:14:41.867Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:43 GMT","server":"Apache","content-length":"1689","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:41.869Z: Ответ отправлен клиенту
+2024-12-04T10:14:45.175Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/Katusha/
+2024-12-04T10:14:45.207Z: Статус ответа: 207
+2024-12-04T10:14:45.208Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:46 GMT","server":"Apache","content-length":"2552","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:45.209Z: Ответ отправлен клиенту
+2024-12-04T10:14:47.664Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/Katusha/Katusha P247-pp serias/
+2024-12-04T10:14:47.702Z: Статус ответа: 207
+2024-12-04T10:14:47.703Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:48 GMT","server":"Apache","content-length":"918","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:47.705Z: Ответ отправлен клиенту
+2024-12-04T10:14:50.356Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:14:50.398Z: Статус ответа: 207
+2024-12-04T10:14:50.399Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:51 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:50.401Z: Ответ отправлен клиенту
+2024-12-04T10:14:51.865Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/
+2024-12-04T10:14:51.902Z: Статус ответа: 207
+2024-12-04T10:14:51.904Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:14:53 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:14:51.906Z: Ответ отправлен клиенту
+2024-12-04T10:22:32.188Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:22:32.236Z: Статус ответа: 207
+2024-12-04T10:22:32.238Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:22:33 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:22:32.240Z: Ответ отправлен клиенту
+2024-12-04T10:22:32.543Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:22:32.575Z: Статус ответа: 207
+2024-12-04T10:22:32.576Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:22:33 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:22:32.577Z: Ответ отправлен клиенту
+2024-12-04T10:23:40.172Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:23:40.213Z: Статус ответа: 207
+2024-12-04T10:23:40.214Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:23:41 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:23:40.217Z: Ответ отправлен клиенту
+2024-12-04T10:23:40.530Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:23:40.563Z: Статус ответа: 207
+2024-12-04T10:23:40.564Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:23:41 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:23:40.565Z: Ответ отправлен клиенту
+2024-12-04T10:24:19.119Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:24:19.159Z: Статус ответа: 207
+2024-12-04T10:24:19.160Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:20 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:19.161Z: Ответ отправлен клиенту
+2024-12-04T10:24:19.474Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:24:19.513Z: Статус ответа: 207
+2024-12-04T10:24:19.515Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:20 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:19.517Z: Ответ отправлен клиенту
+2024-12-04T10:24:30.005Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation/
+2024-12-04T10:24:30.049Z: Статус ответа: 207
+2024-12-04T10:24:30.050Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:31 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:30.053Z: Ответ отправлен клиенту
+2024-12-04T10:24:39.477Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation
+2024-12-04T10:24:39.522Z: Статус ответа: 207
+2024-12-04T10:24:39.524Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:40 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:39.525Z: Ответ отправлен клиенту
+2024-12-04T10:24:40.354Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:24:40.396Z: Статус ответа: 207
+2024-12-04T10:24:40.397Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:41 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:40.398Z: Ответ отправлен клиенту
+2024-12-04T10:24:41.790Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/
+2024-12-04T10:24:41.823Z: Статус ответа: 207
+2024-12-04T10:24:41.824Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:43 GMT","server":"Apache","content-length":"4060","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:41.825Z: Ответ отправлен клиенту
+2024-12-04T10:24:43.909Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/Specification/
+2024-12-04T10:24:43.956Z: Статус ответа: 207
+2024-12-04T10:24:43.957Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:45 GMT","server":"Apache","content-length":"2494","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:43.959Z: Ответ отправлен клиенту
+2024-12-04T10:24:45.098Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/Specification/Katusha/
+2024-12-04T10:24:45.146Z: Статус ответа: 207
+2024-12-04T10:24:45.149Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:46 GMT","server":"Apache","content-length":"1958","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:45.152Z: Ответ отправлен клиенту
+2024-12-04T10:24:53.761Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:24:53.797Z: Статус ответа: 207
+2024-12-04T10:24:53.798Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:54 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:53.800Z: Ответ отправлен клиенту
+2024-12-04T10:24:55.635Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/
+2024-12-04T10:24:55.684Z: Статус ответа: 207
+2024-12-04T10:24:55.686Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:56 GMT","server":"Apache","content-length":"3225","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:55.688Z: Ответ отправлен клиенту
+2024-12-04T10:24:56.881Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/
+2024-12-04T10:24:56.918Z: Статус ответа: 207
+2024-12-04T10:24:56.920Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:58 GMT","server":"Apache","content-length":"2460","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:56.922Z: Ответ отправлен клиенту
+2024-12-04T10:24:58.032Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/
+2024-12-04T10:24:58.277Z: Статус ответа: 207
+2024-12-04T10:24:58.279Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:24:59 GMT","server":"Apache","content-length":"1685","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:58.280Z: Ответ отправлен клиенту
+2024-12-04T10:24:59.198Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/
+2024-12-04T10:24:59.232Z: Статус ответа: 207
+2024-12-04T10:24:59.233Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:00 GMT","server":"Apache","content-length":"1701","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:24:59.236Z: Ответ отправлен клиенту
+2024-12-04T10:24:59.992Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/
+2024-12-04T10:25:00.029Z: Статус ответа: 207
+2024-12-04T10:25:00.031Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:01 GMT","server":"Apache","content-length":"3348","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:00.033Z: Ответ отправлен клиенту
+2024-12-04T10:25:01.556Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/MacOS/
+2024-12-04T10:25:01.593Z: Статус ответа: 207
+2024-12-04T10:25:01.594Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:02 GMT","server":"Apache","content-length":"903","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:01.595Z: Ответ отправлен клиенту
+2024-12-04T10:25:03.644Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/MacOS
+2024-12-04T10:25:03.690Z: Статус ответа: 207
+2024-12-04T10:25:03.691Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:04 GMT","server":"Apache","content-length":"903","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:03.692Z: Ответ отправлен клиенту
+2024-12-04T10:25:06.043Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/MacOS
+2024-12-04T10:25:06.077Z: Статус ответа: 207
+2024-12-04T10:25:06.078Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:07 GMT","server":"Apache","content-length":"903","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:06.080Z: Ответ отправлен клиенту
+2024-12-04T10:25:06.923Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release
+2024-12-04T10:25:06.956Z: Статус ответа: 207
+2024-12-04T10:25:06.957Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:08 GMT","server":"Apache","content-length":"3348","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:06.958Z: Ответ отправлен клиенту
+2024-12-04T10:25:09.790Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/Windows/
+2024-12-04T10:25:09.830Z: Статус ответа: 207
+2024-12-04T10:25:09.831Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:11 GMT","server":"Apache","content-length":"905","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:09.832Z: Ответ отправлен клиенту
+2024-12-04T10:25:11.528Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/Windows
+2024-12-04T10:25:11.569Z: Статус ответа: 207
+2024-12-04T10:25:11.570Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:12 GMT","server":"Apache","content-length":"905","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:11.572Z: Ответ отправлен клиенту
+2024-12-04T10:25:12.823Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release
+2024-12-04T10:25:12.858Z: Статус ответа: 207
+2024-12-04T10:25:12.859Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:14 GMT","server":"Apache","content-length":"3348","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:12.861Z: Ответ отправлен клиенту
+2024-12-04T10:25:17.320Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release/Linux/
+2024-12-04T10:25:17.362Z: Статус ответа: 207
+2024-12-04T10:25:17.363Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:18 GMT","server":"Apache","content-length":"903","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:17.364Z: Ответ отправлен клиенту
+2024-12-04T10:25:18.946Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha/Release
+2024-12-04T10:25:19.011Z: Статус ответа: 207
+2024-12-04T10:25:19.012Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:20 GMT","server":"Apache","content-length":"3348","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:19.014Z: Ответ отправлен клиенту
+2024-12-04T10:25:20.399Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities/Katusha
+2024-12-04T10:25:20.440Z: Статус ответа: 207
+2024-12-04T10:25:20.442Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:21 GMT","server":"Apache","content-length":"1701","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:20.443Z: Ответ отправлен клиенту
+2024-12-04T10:25:22.088Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Utilities
+2024-12-04T10:25:22.121Z: Статус ответа: 207
+2024-12-04T10:25:22.123Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:23 GMT","server":"Apache","content-length":"1685","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:22.124Z: Ответ отправлен клиенту
+2024-12-04T10:25:23.989Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers
+2024-12-04T10:25:24.030Z: Статус ответа: 207
+2024-12-04T10:25:24.031Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:25 GMT","server":"Apache","content-length":"2460","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:24.033Z: Ответ отправлен клиенту
+2024-12-04T10:25:26.451Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Printer/
+2024-12-04T10:25:26.491Z: Статус ответа: 207
+2024-12-04T10:25:26.492Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:27 GMT","server":"Apache","content-length":"1681","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:26.493Z: Ответ отправлен клиенту
+2024-12-04T10:25:27.213Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Printer/Katusha/
+2024-12-04T10:25:27.255Z: Статус ответа: 207
+2024-12-04T10:25:27.256Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:28 GMT","server":"Apache","content-length":"1697","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:27.258Z: Ответ отправлен клиенту
+2024-12-04T10:25:27.917Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Printer/Katusha/Release/
+2024-12-04T10:25:27.957Z: Статус ответа: 207
+2024-12-04T10:25:27.958Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:29 GMT","server":"Apache","content-length":"3342","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:27.959Z: Ответ отправлен клиенту
+2024-12-04T10:25:29.124Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/Drivers/Printer/Katusha/Release/Linux/
+2024-12-04T10:25:29.164Z: Статус ответа: 207
+2024-12-04T10:25:29.166Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:30 GMT","server":"Apache","content-length":"1827","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:25:29.168Z: Ответ отправлен клиенту
+2024-12-04T10:25:38.186Z: Получен запрос на скачивание файла: Printers/Katusha P247 series/5 R&D/Drivers/Printer/Katusha/Release/Linux/Katusha-Universal-Driver_installer_v2.1-0-stable.tar
+2024-12-04T10:25:38.227Z: Статус ответа: 200
+2024-12-04T10:25:38.229Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:25:39 GMT","server":"Apache","last-modified":"Fri, 18 Oct 2024 15:12:00 GMT","etag":"\"1519c00-624c1b9843000\"","accept-ranges":"bytes","content-length":"22125568","connection":"close","content-type":"application/x-tar"}
+2024-12-04T10:25:38.231Z: Ответ клиенту отправлен, файл в процессе передачи
+2024-12-04T10:27:34.110Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:34.168Z: Статус ответа: 207
+2024-12-04T10:27:34.169Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:35 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:34.170Z: Ответ отправлен клиенту
+2024-12-04T10:27:34.485Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:34.528Z: Статус ответа: 207
+2024-12-04T10:27:34.530Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:35 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:34.531Z: Ответ отправлен клиенту
+2024-12-04T10:27:44.121Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:44.160Z: Статус ответа: 207
+2024-12-04T10:27:44.161Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:45 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:44.164Z: Ответ отправлен клиенту
+2024-12-04T10:27:44.467Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:44.509Z: Статус ответа: 207
+2024-12-04T10:27:44.510Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:45 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:44.512Z: Ответ отправлен клиенту
+2024-12-04T10:27:48.433Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation/
+2024-12-04T10:27:48.474Z: Статус ответа: 207
+2024-12-04T10:27:48.475Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:49 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:48.477Z: Ответ отправлен клиенту
+2024-12-04T10:27:50.044Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/1 Launch Confirmation
+2024-12-04T10:27:50.082Z: Статус ответа: 207
+2024-12-04T10:27:50.084Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:51 GMT","server":"Apache","content-length":"877","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:50.086Z: Ответ отправлен клиенту
+2024-12-04T10:27:51.062Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:51.098Z: Статус ответа: 207
+2024-12-04T10:27:51.099Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:52 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:51.101Z: Ответ отправлен клиенту
+2024-12-04T10:27:53.668Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/5 R&D/
+2024-12-04T10:27:53.702Z: Статус ответа: 207
+2024-12-04T10:27:53.704Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:54 GMT","server":"Apache","content-length":"3225","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:53.705Z: Ответ отправлен клиенту
+2024-12-04T10:27:55.152Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:27:55.221Z: Статус ответа: 207
+2024-12-04T10:27:55.222Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:56 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:55.224Z: Ответ отправлен клиенту
+2024-12-04T10:27:56.876Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/6 Unit's image/
+2024-12-04T10:27:56.914Z: Статус ответа: 207
+2024-12-04T10:27:56.916Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:58 GMT","server":"Apache","content-length":"2475","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:56.918Z: Ответ отправлен клиенту
+2024-12-04T10:27:58.226Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/6 Unit's image/Photo for Web/
+2024-12-04T10:27:58.269Z: Статус ответа: 207
+2024-12-04T10:27:58.271Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:27:59 GMT","server":"Apache","content-length":"888","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:27:58.273Z: Ответ отправлен клиенту
+2024-12-04T10:28:00.164Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/6 Unit's image
+2024-12-04T10:28:00.213Z: Статус ответа: 207
+2024-12-04T10:28:00.215Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:01 GMT","server":"Apache","content-length":"2475","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:00.218Z: Ответ отправлен клиенту
+2024-12-04T10:28:01.189Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/6 Unit's image/Photo of device/
+2024-12-04T10:28:01.229Z: Статус ответа: 207
+2024-12-04T10:28:01.230Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:02 GMT","server":"Apache","content-length":"890","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:01.232Z: Ответ отправлен клиенту
+2024-12-04T10:28:02.793Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:28:02.845Z: Статус ответа: 207
+2024-12-04T10:28:02.847Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:04 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:02.850Z: Ответ отправлен клиенту
+2024-12-04T10:28:05.661Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/
+2024-12-04T10:28:05.741Z: Статус ответа: 207
+2024-12-04T10:28:05.742Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:06 GMT","server":"Apache","content-length":"4060","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:05.744Z: Ответ отправлен клиенту
+2024-12-04T10:28:07.344Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/
+2024-12-04T10:28:07.381Z: Статус ответа: 207
+2024-12-04T10:28:07.383Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:08 GMT","server":"Apache","content-length":"1689","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:07.385Z: Ответ отправлен клиенту
+2024-12-04T10:28:08.259Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/Katusha/
+2024-12-04T10:28:08.296Z: Статус ответа: 207
+2024-12-04T10:28:08.297Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:09 GMT","server":"Apache","content-length":"2552","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:08.299Z: Ответ отправлен клиенту
+2024-12-04T10:28:10.824Z: Получен запрос на содержимое папки: Printers/Katusha P247 series/2 Documentation/User Manual/Katusha/Katusha P247 serias/
+2024-12-04T10:28:10.884Z: Статус ответа: 207
+2024-12-04T10:28:10.886Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:12 GMT","server":"Apache","content-length":"2051","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:10.888Z: Ответ отправлен клиенту
+2024-12-04T10:28:35.739Z: Получен запрос на содержимое папки: Printers/Katusha P247 series
+2024-12-04T10:28:35.786Z: Статус ответа: 207
+2024-12-04T10:28:35.787Z: Заголовки ответа: {"date":"Wed, 04 Dec 2024 10:28:37 GMT","server":"Apache","content-length":"3986","connection":"close","content-type":"text/xml; charset=\"utf-8\""}
+2024-12-04T10:28:35.789Z: Ответ отправлен клиенту

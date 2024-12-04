@@ -13,37 +13,84 @@ import CustomFileManager from './CustomFileManager';
 import '../styles/SingleDevicesPage.css';
 
 const SingleDevicesPage = () => {
-    const { id } = useParams();
-    const [currentTab, setCurrentTab] = useState('All');
-    const [device, setDevice] = useState({});
-    const [allParameters, setAllParameters] = useState(true);
-    const [currentImage, setCurrentImage] = useState(0);
-    const [webdavFiles, setWebdavFiles] = useState([]);
-    const [webdavError, setWebdavError] = useState(null);
-    const [currentPath, setCurrentPath] = useState('');
+    const { id } = useParams(); // Получаем ID устройства из параметров URL
+    const [currentTab, setCurrentTab] = useState('All'); // Текущая вкладка навигации
+    const [device, setDevice] = useState({}); // Данные устройства
+    const [allParameters, setAllParameters] = useState(true); // Флаг отображения всех параметров
+    const [currentImage, setCurrentImage] = useState(0); // Индекс текущего изображения
+    const [webdavFiles, setWebdavFiles] = useState([]); // Список файлов из WebDAV
+    const [webdavError, setWebdavError] = useState(null); // Ошибка при загрузке файлов
+    const [currentPath, setCurrentPath] = useState(''); // Текущий путь в файловой системе
+    const [basePath, setBasePath] = useState(''); // Базовый путь для устройства
 
     useEffect(() => {
+        // Устанавливаем текущую вкладку и загружаем данные устройства
         setCurrentTab(() => navigationStore.currentDevicesTab);
-        fetchDevice(id);
-        fetchWebDAVFiles('');
+        fetchDevice(id); // Загружаем данные устройства
     }, [id]);
 
+    useEffect(() => {
+        // После загрузки устройства определяем базовый путь и загружаем файлы
+        if (device && device.id) {
+            const path = determineDevicePath(device.id); // Определяем базовый путь
+            setBasePath(path); // Устанавливаем базовый путь
+            if (path) {
+                fetchWebDAVFiles(path); // Загружаем файлы из WebDAV
+            } else {
+                setWebdavError('Нет данных для запрашиваемого устройства');
+            }
+        }
+    }, [device]);
+
+    // Функция для загрузки данных устройства из Firebase
     const fetchDevice = async (deviceId) => {
         try {
             const deviceRef = ref(database, `Devices/${deviceId}`);
             const snapshot = await get(deviceRef);
             if (snapshot.exists()) {
                 const deviceData = snapshot.val();
+                // Если есть основное изображение и дополнительные, перемещаем основное в начало массива
                 if (deviceData.main_image && deviceData.images) {
                     deviceData.images = [deviceData.main_image, ...deviceData.images.filter(img => img !== deviceData.main_image)];
                 }
-                setDevice(deviceData);
+                deviceData.id = deviceId; // Добавляем ID устройства в данные
+                setDevice(deviceData); // Устанавливаем данные устройства в состояние
             }
         } catch (error) {
             console.error('Ошибка при загрузке устройства:', error);
         }
     };
 
+    // Функция для определения пути к папке на основе названия устройства
+    const determineDevicePath = (deviceId) => {
+        let path = ''; // Базовый путь
+        if (deviceId) {
+            const firstLetter = deviceId.charAt(0).toUpperCase(); // Первая буква ID устройства
+            let mainFolder = '';
+            // Определяем основную папку (MFP или Printers)
+            if (firstLetter === 'M') {
+                mainFolder = 'MFP';
+            } else if (firstLetter === 'P') {
+                mainFolder = 'Printers';
+            }
+
+            if (mainFolder) {
+                // Извлекаем серию устройства, выбирая цифры после первой буквы до возможных символов
+                const seriesMatch = deviceId.substring(1).match(/^\d+/);
+                const series = seriesMatch ? seriesMatch[0] : '';
+                // Формируем полное название папки серии устройства
+                const seriesFolder = `Katusha ${deviceId.charAt(0)}${series} series`;
+                // Формируем полный путь к папке устройства
+                path = `${mainFolder}/${seriesFolder}`;
+            } else {
+                // Если первая буква не M и не P
+                path = ''; // Путь не определён
+            }
+        }
+        return path; // Возвращаем полученный путь
+    };
+
+    // Функция для загрузки файлов из WebDAV по указанному пути
     const fetchWebDAVFiles = async (path) => {
         console.log('Начало процесса подключения к WebDAV для пути:', path);
         try {
@@ -62,29 +109,49 @@ const SingleDevicesPage = () => {
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
-            setWebdavError(error.message);
+            setWebdavError('Нет данных для запрашиваемого устройства');
             setWebdavFiles([]);
         }
     };
 
+    // Обработчик клика по папке в файловом менеджере
     const handleFolderClick = async (folder) => {
         console.log('Клик по папке:', folder);
         if (folder.basename) {
             const newPath = folder.basename.replace('/Exchange/', '').replace(/^\//, '');
-            fetchWebDAVFiles(newPath);
+            // Проверяем, не выше ли новый путь базового пути
+            if (newPath.startsWith(basePath)) {
+                fetchWebDAVFiles(newPath);
+            } else {
+                // Если пользователь пытается подняться выше базовой пути
+                console.warn('Попытка доступа выше базовой директории запрещена.');
+            }
         }
     };
 
+    // Обновленный обработчик клика по хлебным крошкам
     const handleBreadcrumbClick = (index) => {
-        if (index === -1) {
-            fetchWebDAVFiles('');
-        } else {
-            const pathParts = currentPath.split('/').filter(part => part);
-            const newPath = pathParts.slice(0, index + 1).join('/');
-            fetchWebDAVFiles(newPath);
+        if (index >= 0) {
+            if (index === 0) {
+                // Пользователь кликнул на 'home' - возвращаемся к базовой директории устройства
+                fetchWebDAVFiles(basePath);
+            } else {
+                // Получаем части текущего пути без базового пути
+                const fullPathParts = currentPath.split('/').filter((part) => part);
+                const basePathParts = basePath.split('/').filter((part) => part);
+                const relativePathParts = fullPathParts.slice(basePathParts.length);
+    
+                // Формируем новый относительный путь на основе индекса хлебной крошки
+                const newRelativePath = relativePathParts.slice(0, index).join('/');
+    
+                // Формируем полный путь для загрузки файлов
+                const newPath = `${basePath}/${newRelativePath}`;
+                fetchWebDAVFiles(newPath);
+            }
         }
     };
 
+    // Обработчик скачивания файла
     const handleFileDownload = async (file) => {
         console.log('Клик по файлу:', file);
         try {
@@ -94,12 +161,14 @@ const SingleDevicesPage = () => {
         }
     };
 
-    const onTabClickHandler = (e) => {
-        const selectedTab = e.target.dataset.tab;
-        setCurrentTab(selectedTab);
-        navigationStore.setCurrentDevicesTab(selectedTab);
-    };
+    // Обработчик клика по вкладке навигации
+        const onTabClickHandler = (e) => {
+            const selectedTab = e.target.dataset.tab;
+            setCurrentTab(selectedTab);
+            navigationStore.setCurrentDevicesTab(selectedTab);
+        };
 
+    // Функция для отображения параметров устройства
     const renderParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -114,6 +183,7 @@ const SingleDevicesPage = () => {
         return <p>Нет данных</p>;
     };
 
+    // Функция для отображения всех параметров в таблице
     const renderTableParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -128,6 +198,7 @@ const SingleDevicesPage = () => {
         return <tr><td colSpan="2">Нет данных</td></tr>;
     };
 
+    // Обработчики переключения изображений устройства
     const prevImage = () => {
         currentImage > 0 && setCurrentImage(currentImage - 1);
     };
@@ -138,6 +209,7 @@ const SingleDevicesPage = () => {
         }
     };
 
+    // Определение полей для отображения параметров устройства
     const basicFields = [
         { label: 'Тип оборудования', key: 'type_div' },
         { label: 'Торговая марка', key: 'marc' },
@@ -164,6 +236,7 @@ const SingleDevicesPage = () => {
     ];
 
     const allFields = [
+        // Здесь перечислены все остальные параметры устройства
         { label: 'Тип автоподатчика', key: 'feeder_type' },
         { label: 'Процессор', key: 'processor' },
         { label: 'Оперативная память', key: 'ram' },
@@ -195,14 +268,38 @@ const SingleDevicesPage = () => {
         { label: 'Форматы файлов сканирования', key: 'scan_file_formats' },
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
     ];
-
     return (
         <div className="page-content devices-single-page">
+            {/* Ссылка для возврата на страницу устройств */}
             <Link to={'/devices'}>
                 <div className="bid-page-head noselect">
-                    <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
-                    <p className={`bid-page-head-tab ${currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''}`} data-tab="MFU" onClick={onTabClickHandler}>МФУ</p>
-                    <p className={`bid-page-head-tab ${currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Printers" onClick={onTabClickHandler}>Принтеры</p>
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'All' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="All"
+                        onClick={onTabClickHandler}
+                    >
+                        Все
+                    </p>
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="MFU"
+                        onClick={onTabClickHandler}
+                    >
+                        МФУ
+                    </p>
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="Printers"
+                        onClick={onTabClickHandler}
+                    >
+                        Принтеры
+                    </p>
                 </div>
             </Link>
             <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
@@ -233,32 +330,36 @@ const SingleDevicesPage = () => {
                         </div>
                     </div>
                 </div>
+                {/* Блок с описанием устройства */}
                 <div className="single-device-info">
                     <h1 className="device-title">{id}</h1>
                     <p className="device-description">{device.description || 'Нет данных'}</p>
                 </div>
             </div>
-            {/* <div className="devices-info-btns">
-                <div className="devices-info-btn">
-                    <img src={imgSaveIcon} alt="save" />
-                    <p>Информация</p>
-                </div>
-            </div> */}
+            {/* Раздел с внешним диском */}
             <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <h2 className="external-disk-header">Внешний диск</h2>
                 </AccordionSummary>
                 <AccordionDetails>
-                    {webdavError && <p style={{ color: 'red' }}>Ошибка: {webdavError}</p>}
-                    <CustomFileManager 
-                        files={webdavFiles} 
+                    {webdavError && <p style={{ color: 'red' }}>{webdavError}</p>}
+                    {/* Компонент файлового менеджера */}
+                    <CustomFileManager
+                        files={webdavFiles}
                         onFolderClick={handleFolderClick}
                         onFileClick={handleFileDownload}
-                        breadcrumbs={currentPath ? currentPath.split('/').filter(part => part) : []}
+                        breadcrumbs={[
+                            'home',
+                            ...currentPath
+                                .replace(basePath, '')
+                                .split('/')
+                                .filter((part) => part),
+                        ]}
                         onBreadcrumbClick={handleBreadcrumbClick}
                     />
                 </AccordionDetails>
             </Accordion>
+            {/* Таблица с параметрами устройства */}
             <div className="devices-info-table">
                 <div className="column-1">
                     <p className="devices-info-table-title">Основные параметры</p>
@@ -273,16 +374,20 @@ const SingleDevicesPage = () => {
                     {renderParameters(device.options?.consumables, consumablesFields)}
                 </div>
             </div>
+            {/* Кнопка для отображения всех параметров */}
             <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
-                <img src={imgOpenDownIcon} alt="toggle" className={allParameters ? 'icon-rotate' : ''} />
+                <img
+                    src={imgOpenDownIcon}
+                    alt="toggle"
+                    className={allParameters ? 'icon-rotate' : ''}
+                />
                 <p>{allParameters ? 'Скрыть параметры' : 'Посмотреть все параметры'}</p>
             </div>
+            {/* Отображение всех параметров устройства */}
             {allParameters && (
                 <div className="device-all-param">
                     <table>
-                        <tbody>
-                            {renderTableParameters(device.options?.all, allFields)}
-                        </tbody>
+                        <tbody>{renderTableParameters(device.options?.all, allFields)}</tbody>
                     </table>
                 </div>
             )}
