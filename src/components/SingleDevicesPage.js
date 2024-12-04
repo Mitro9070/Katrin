@@ -8,7 +8,6 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
-import homeIcon from '../images/home.png';
 import { getFolderContents, downloadFile } from '../utils/webdavUtils';
 import CustomFileManager from './CustomFileManager';
 import '../styles/SingleDevicesPage.css';
@@ -21,15 +20,14 @@ const SingleDevicesPage = () => {
     const [currentImage, setCurrentImage] = useState(0);
     const [webdavFiles, setWebdavFiles] = useState([]);
     const [webdavError, setWebdavError] = useState(null);
-    const [currentPath, setCurrentPath] = useState(''); // Строка для хранения текущего пути
+    const [currentPath, setCurrentPath] = useState('');
 
     useEffect(() => {
         setCurrentTab(() => navigationStore.currentDevicesTab);
         fetchDevice(id);
-        fetchWebDAVFiles(''); // Загружаем корневую директорию
+        fetchWebDAVFiles('');
     }, [id]);
 
-    // Функция для загрузки данных устройства из Firebase
     const fetchDevice = async (deviceId) => {
         try {
             const deviceRef = ref(database, `Devices/${deviceId}`);
@@ -46,46 +44,40 @@ const SingleDevicesPage = () => {
         }
     };
 
-    // Функция для получения содержимого папки по пути
     const fetchWebDAVFiles = async (path) => {
         console.log('Начало процесса подключения к WebDAV для пути:', path);
         try {
             const files = await getFolderContents(path);
             console.log('Подключение успешно. Получены файлы:', files);
             
-            // Фильтруем первый элемент, если он является текущей директорией
             const filteredFiles = files.filter((file, index) => {
                 if (index === 0 && file.type === 'directory' && file.basename.endsWith('/')) {
                     return false;
                 }
-                // Фильтруем скрытые системные файлы
                 return file.filename !== '._.DS_Store' && file.filename !== '.DS_Store';
             });
     
-            setWebdavFiles(filteredFiles.length ? filteredFiles : []); // Устанавливаем файлы для текущей папки или пустой массив для пустой папки
-            setCurrentPath(path); // Обновляем текущий путь
+            setWebdavFiles(filteredFiles.length ? filteredFiles : []);
+            setCurrentPath(path);
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);
             setWebdavError(error.message);
-            setWebdavFiles([]); // Устанавливаем пустой массив файлов в случае ошибки
+            setWebdavFiles([]);
         }
     };
 
-    // Обрабатываем клик по папке в файловом менеджере
     const handleFolderClick = async (folder) => {
         console.log('Клик по папке:', folder);
         if (folder.basename) {
-            // Получаем относительный путь к выбранной папке
             const newPath = folder.basename.replace('/Exchange/', '').replace(/^\//, '');
-            fetchWebDAVFiles(newPath); // Загружаем содержимое выбранной папки
+            fetchWebDAVFiles(newPath);
         }
     };
 
-    // Обрабатываем клик по хлебным крошкам
     const handleBreadcrumbClick = (index) => {
         if (index === -1) {
-            fetchWebDAVFiles(''); // Переходим в корневую директорию
+            fetchWebDAVFiles('');
         } else {
             const pathParts = currentPath.split('/').filter(part => part);
             const newPath = pathParts.slice(0, index + 1).join('/');
@@ -93,7 +85,6 @@ const SingleDevicesPage = () => {
         }
     };
 
-    // Обрабатываем клик по файлу для его скачивания
     const handleFileDownload = async (file) => {
         console.log('Клик по файлу:', file);
         try {
@@ -103,14 +94,12 @@ const SingleDevicesPage = () => {
         }
     };
 
-    // Обработка переключения вкладок
     const onTabClickHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setCurrentTab(selectedTab);
         navigationStore.setCurrentDevicesTab(selectedTab);
     };
 
-    // Рендеринг параметров устройства
     const renderParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -125,7 +114,6 @@ const SingleDevicesPage = () => {
         return <p>Нет данных</p>;
     };
 
-    // Рендеринг параметров в таблице
     const renderTableParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
             return fields.map((field, index) => (
@@ -140,19 +128,16 @@ const SingleDevicesPage = () => {
         return <tr><td colSpan="2">Нет данных</td></tr>;
     };
 
-    // Переход к предыдущему изображению
     const prevImage = () => {
         currentImage > 0 && setCurrentImage(currentImage - 1);
     };
 
-    // Переход к следующему изображению
     const nextImage = () => {
         if (currentImage < (device.images?.length || 0) - 1) {
             setCurrentImage(currentImage + 1);
         }
     };
 
-    // Описание полей для отображения параметров устройства
     const basicFields = [
         { label: 'Тип оборудования', key: 'type_div' },
         { label: 'Торговая марка', key: 'marc' },
@@ -213,7 +198,6 @@ const SingleDevicesPage = () => {
 
     return (
         <div className="page-content devices-single-page">
-            {/* Ссылка для возврата на страницу устройств */}
             <Link to={'/devices'}>
                 <div className="bid-page-head noselect">
                     <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
@@ -224,53 +208,45 @@ const SingleDevicesPage = () => {
             <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
                 {/* Блок с изображением устройства */}
                 <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'relative', width: '420px', height: '420px' }}>
-                        <div style={{ display: 'flex', overflow: 'hidden', width: '420px', height: '420px' }}>
-                            {device.images?.map((image, index) => (
-                                <div
-                                    key={index}
-                                    style={{
-                                        width: '420px',
-                                        height: '420px',
-                                        flexShrink: 0,
-                                        borderRadius: '20px',
-                                        background: `url(${image}) lightgray 50% / cover no-repeat`,
-                                        display: currentImage === index ? 'block' : 'none',
-                                    }}
-                                ></div>
-                            ))}
-                        </div>
+                    <div className="image-slider-wrapper">
+                        {device.images?.map((image, index) => (
+                            <div
+                                key={index}
+                                className="image-slide"
+                                style={{
+                                    backgroundImage: `url(${image})`,
+                                    display: currentImage === index ? 'block' : 'none',
+                                }}
+                            ></div>
+                        ))}
                         {/* Навигация по изображениям */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'absolute', bottom: '-30px', width: '100%' }}>
-                            <div style={{ cursor: 'pointer', transform: 'rotate(180deg)' }} onClick={prevImage}>
-                                <img src={imgGoArrowIcon} alt="" style={{ width: '24px', height: '24px' }} />
+                        <div className="image-slider-controls">
+                            <div className="icon-container icon-rotate" onClick={prevImage}>
+                                <img src={imgGoArrowIcon} alt="prev" />
                             </div>
-                            <p style={{ fontSize: '16px', color: '#2C2C2C' }}>
+                            <p className="current-image-index">
                                 {device.images?.length > 0 ? currentImage + 1 : '1'}
                             </p>
-                            <div style={{ cursor: 'pointer' }} onClick={nextImage}>
-                                <img src={imgGoArrowIcon} alt="" style={{ width: '24px', height: '24px' }} />
+                            <div className="icon-container" onClick={nextImage}>
+                                <img src={imgGoArrowIcon} alt="next" />
                             </div>
                         </div>
                     </div>
                 </div>
-                {/* Информация об устройстве */}
-                <div className="single-device-info" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '645px' }}>
-                    <h1 className="device-title" style={{ fontFamily: '"PF DinText Pro", sans-serif', fontSize: '24px', fontWeight: 400, color: '#2C2C2C' }}>{id}</h1>
-                    <p className="device-description" style={{ fontFamily: '"PF DinText Pro", sans-serif', fontSize: '16px', fontWeight: 400, color: '#2C2C2C' }}>{device.description || 'Нет данных'}</p>
+                <div className="single-device-info">
+                    <h1 className="device-title">{id}</h1>
+                    <p className="device-description">{device.description || 'Нет данных'}</p>
                 </div>
             </div>
-            {/* Кнопки действий */}
-            <div className="devices-info-btns" style={{ display: 'flex', gap: '30px', marginTop: '40px', flexWrap: 'wrap' }}>
-                <div className="devices-info-btn" style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center', width: '195px', height: '40px', border: '1px solid #0C8CE9', borderRadius: '20px', color: '#0C8CE9', cursor: 'pointer' }}>
-                    <img src={imgSaveIcon} alt="" style={{ width: '24px', height: '24px' }} />
+            {/* <div className="devices-info-btns">
+                <div className="devices-info-btn">
+                    <img src={imgSaveIcon} alt="save" />
                     <p>Информация</p>
                 </div>
-            </div>
-            {/* Блок с файловым менеджером */}
-            <Accordion style={{ width: '1095px', marginTop: '20px' }}>
+            </div> */}
+            <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <h2 style={{ fontSize: '24px', color: '#2C2C2C', fontFamily: '"PF DinText Pro", sans-serif', fontWeight: 400, lineHeight: 'normal', marginBottom: '10px' }}>Внешний диск</h2>
+                    <h2 className="external-disk-header">Внешний диск</h2>
                 </AccordionSummary>
                 <AccordionDetails>
                     {webdavError && <p style={{ color: 'red' }}>Ошибка: {webdavError}</p>}
@@ -283,27 +259,27 @@ const SingleDevicesPage = () => {
                     />
                 </AccordionDetails>
             </Accordion>
-            <div className="devices-info-table" style={{ marginTop: '30px', display: 'flex', gap: '30px' }}>
-                <div className="column-1" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '308px' }}>
-                    <p className="devices-info-table-title" style={{ fontWeight: 500, marginBottom: '10px' }}>Основные параметры</p>
+            <div className="devices-info-table">
+                <div className="column-1">
+                    <p className="devices-info-table-title">Основные параметры</p>
                     {renderParameters(device.options?.basic, basicFields)}
                 </div>
-                <div className="column-2" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '420px' }}>
-                    <p className="devices-info-table-title" style={{ fontWeight: 500, marginBottom: '10px' }}>Опции</p>
+                <div className="column-2">
+                    <p className="devices-info-table-title">Опции</p>
                     {renderParameters(device.options?.opt, optionsFields)}
                 </div>
-                <div className="column-3" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '308px' }}>
-                    <p className="devices-info-table-title" style={{ fontWeight: 500, marginBottom: '10px' }}>Расходные материалы</p>
+                <div className="column-3">
+                    <p className="devices-info-table-title">Расходные материалы</p>
                     {renderParameters(device.options?.consumables, consumablesFields)}
                 </div>
             </div>
-            <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '40px', border: '1px solid #A9A9A9', borderRadius: '20px', cursor: 'pointer', marginTop: '30px' }}>
-                <img src={imgOpenDownIcon} alt="" style={{ marginRight: '10px', transform: allParameters ? 'rotate(180deg)' : 'none' }} />
+            <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
+                <img src={imgOpenDownIcon} alt="toggle" className={allParameters ? 'icon-rotate' : ''} />
                 <p>{allParameters ? 'Скрыть параметры' : 'Посмотреть все параметры'}</p>
             </div>
             {allParameters && (
-                <div className="device-all-param" style={{ marginTop: '20px', padding: '20px', border: '1px solid #A9A9A9', borderRadius: '20px' }}>
-                    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px' }}>
+                <div className="device-all-param">
+                    <table>
                         <tbody>
                             {renderTableParameters(device.options?.all, allFields)}
                         </tbody>

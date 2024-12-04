@@ -45,7 +45,7 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             title: 'Имя',
             dataIndex: 'name',
             key: 'name',
-            width: '400px',
+            width: '450px',
             render: (text, record) => (
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <img src={record.type === 'directory' ? imgFolderIcon : imgFileIcon} alt={record.type} style={{ width: '20px', marginRight: '8px' }} />
@@ -68,13 +68,13 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
             title: 'Размер',
             dataIndex: 'size',
             key: 'size',
-            width: '250px',
+            width: '200px',
         },
         {
             title: 'Дата изменения',
             dataIndex: 'lastmod',
             key: 'lastmod',
-            width: '350px',
+            width: '250px',
         },
         {
             title: 'Действия',
