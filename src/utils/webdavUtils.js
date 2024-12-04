@@ -106,10 +106,13 @@ export const getFolderContents = async (folderName) => {
 export const downloadFile = async (filePath) => {
   log(`Начало скачивания файла: ${filePath}...`);
 
+  // Удаляем лишние префиксы из filePath
+  const cleanFilePath = filePath.replace(/^\/?Exchange\/?/, '');
+
   try {
     log('Отправка запроса на скачивание файла...');
-    const response = await fetch(`http://localhost:3001/api/webdav/download?file=${encodeURIComponent(filePath)}`);
-
+    const response = await fetch(`http://localhost:3001/api/webdav/download?file=${encodeURIComponent(cleanFilePath)}`);
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -118,7 +121,7 @@ export const downloadFile = async (filePath) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filePath.split('/').pop();
+    a.download = cleanFilePath.split('/').pop();
     document.body.appendChild(a);
     a.click();
     a.remove();
