@@ -8,6 +8,7 @@ import { navigationStore } from '../stores/NavigationStore';
 import imgSaveIcon from '../images/save-2.svg';
 import imgOpenDownIcon from '../images/select-open-down.svg';
 import imgGoArrowIcon from '../images/go-arrow.svg';
+import noFotoImage from '../images/nofoto2.jpg'; // Импортируем изображение по умолчанию
 import { getFolderContents, downloadFile } from '../utils/webdavUtils';
 import CustomFileManager from './CustomFileManager';
 import '../styles/SingleDevicesPage.css';
@@ -265,108 +266,118 @@ const SingleDevicesPage = () => {
         { label: 'Направления сканирования', key: 'scan_destinations' },
         { label: 'Форматы файлов сканирования', key: 'scan_file_formats' },
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
-        ];
-        return (
-            <div className="page-content devices-single-page">
-                {/* Ссылка для возврата на страницу устройств */}
-                <Link to={'/devices'}>
-                    <div className="bid-page-head noselect">
-                        <p
-                            className={`bid-page-head-tab ${
-                                currentTab === 'All' ? 'bid-page-head-tab-selected' : ''
-                            }`}
-                            data-tab="All"
-                            onClick={onTabClickHandler}
-                        >
-                            Все
-                        </p>
-                        <p
-                            className={`bid-page-head-tab ${
-                                currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''
-                            }`}
-                            data-tab="MFU"
-                            onClick={onTabClickHandler}
-                        >
-                            МФУ
-                        </p>
-                        <p
-                            className={`bid-page-head-tab ${
-                                currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''
-                            }`}
-                            data-tab="Printers"
-                            onClick={onTabClickHandler}
-                        >
-                            Принтеры
-                        </p>
-                    </div>
-                </Link>
-                <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
-                    {/* Блок с изображением устройства */}
-                    <div style={{ position: 'relative' }}>
-                        <div className="image-slider-wrapper">
-                            {device.images?.map((image, index) => (
-                                <div
-                                    key={index}
-                                    className="image-slide"
-                                    style={{
-                                        backgroundImage: `url(${image})`,
-                                        display: currentImage === index ? 'block' : 'none',
-                                    }}
-                                ></div>
-                            ))}
-                            {/* Навигация по изображениям */}
-                            <div className="image-slider-controls">
-                                <div className="icon-container icon-rotate" onClick={prevImage}>
-                                    <img src={imgGoArrowIcon} alt="prev" />
-                                </div>
-                                <p className="current-image-index">
-                                    {device.images?.length > 0 ? currentImage + 1 : '1'}
-                                </p>
-                                <div className="icon-container" onClick={nextImage}>
-                                    <img src={imgGoArrowIcon} alt="next" />
-                                </div>
+    ];
+    return (
+        <div className="page-content devices-single-page">
+            {/* Ссылка для возврата на страницу устройств */}
+            <Link to={'/devices'}>
+                <div className="bid-page-head noselect">
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'All' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="All"
+                        onClick={onTabClickHandler}
+                    >
+                        Все
+                    </p>
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="MFU"
+                        onClick={onTabClickHandler}
+                    >
+                        МФУ
+                    </p>
+                    <p
+                        className={`bid-page-head-tab ${
+                            currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''
+                        }`}
+                        data-tab="Printers"
+                        onClick={onTabClickHandler}
+                    >
+                        Принтеры
+                    </p>
+                </div>
+            </Link>
+            <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
+                {/* Блок с изображением устройства */}
+                <div style={{ position: 'relative' }}>
+                    <div className="image-slider-wrapper">
+                        {device.images?.map((image, index) => (
+                            <div
+                                key={index}
+                                className="image-slide"
+                                style={{
+                                    backgroundImage: `url(${image})`,
+                                    display: currentImage === index ? 'block' : 'none',
+                                }}
+                            ></div>
+                        ))}
+                        {/* Если нет изображений - показываем дефолтное изображение */}
+                        {(!device.images || device.images.length === 0) && (
+                            <div
+                                className="image-slide"
+                                style={{
+                                    backgroundImage: `url(${noFotoImage})`,
+                                    display: 'block',
+                                }}
+                            ></div>
+                        )}
+                        {/* Навигация по изображениям */}
+                        <div className="image-slider-controls">
+                            <div className="icon-container icon-rotate" onClick={prevImage}>
+                                <img src={imgGoArrowIcon} alt="prev" />
+                            </div>
+                            <p className="current-image-index">
+                                {device.images?.length > 0 ? currentImage + 1 : '1'}
+                            </p>
+                            <div className="icon-container" onClick={nextImage}>
+                                <img src={imgGoArrowIcon} alt="next" />
                             </div>
                         </div>
                     </div>
-                    {/* Блок с описанием устройства */}
-                    <div className="single-device-info">
-                        <h1 className="device-title">{id}</h1>
-                        <p className="device-description">{device.description || 'Нет данных'}</p>
-                    </div>
                 </div>
-                {/* Раздел с внешним диском */}
-                <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <h2 className="external-disk-header">Внешний диск</h2>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        {webdavError && <p style={{ color: 'red' }}>{webdavError}</p>}
-                        {/* Компонент файлового менеджера */}
-                        <CustomFileManager
-                            files={webdavFiles}
-                            onFolderClick={handleFolderClick}
-                            onFileClick={handleFileDownload}
-                            breadcrumbs={breadcrumbs}
-                            onBreadcrumbClick={handleBreadcrumbClick}
-                        />
-                    </AccordionDetails>
-                </Accordion>
-                {/* Таблица с параметрами устройства */}
-                <div className="devices-info-table">
-                    <div className="column-1">
-                        <p className="devices-info-table-title">Основные параметры</p>
-                        {renderParameters(device.options?.basic, basicFields)}
-                    </div>
-                    <div className="column-2">
-                        <p className="devices-info-table-title">Опции</p>
-                        {renderParameters(device.options?.opt, optionsFields)}
-                    </div>
-                    <div className="column-3">
-                        <p className="devices-info-table-title">Расходные материалы</p>
-                        {renderParameters(device.options?.consumables, consumablesFields)}
-                    </div>
+                {/* Блок с описанием устройства */}
+                <div className="single-device-info">
+                    <h1 className="device-title">{id}</h1>
+                    <p className="device-description">{device.description || 'Нет данных'}</p>
                 </div>
-                {/* Кнопка для отображения всех параметров */}
+            </div>
+            {/* Раздел с внешним диском */}
+            <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <h2 className="external-disk-header">Внешний диск</h2>
+                </AccordionSummary>
+                <AccordionDetails>
+                    {webdavError && <p style={{ color: 'red' }}>{webdavError}</p>}
+                    {/* Компонент файлового менеджера */}
+                    <CustomFileManager
+                        files={webdavFiles}
+                        onFolderClick={handleFolderClick}
+                        onFileClick={handleFileDownload}
+                        breadcrumbs={breadcrumbs}
+                        onBreadcrumbClick={handleBreadcrumbClick}
+                    />
+                </AccordionDetails>
+            </Accordion>
+            {/* Таблица с параметрами устройства */}
+            <div className="devices-info-table">
+                <div className="column-1">
+                    <p className="devices-info-table-title">Основные параметры</p>
+                    {renderParameters(device.options?.basic, basicFields)}
+                </div>
+                <div className="column-2">
+                    <p className="devices-info-table-title">Опции</p>
+                    {renderParameters(device.options?.opt, optionsFields)}
+                </div>
+                <div className="column-3">
+                    <p className="devices-info-table-title">Расходные материалы</p>
+                    {renderParameters(device.options?.consumables, consumablesFields)}
+                </div>
+            </div>
+            {/* Кнопка для отображения всех параметров */}
             <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
                 <img
                     src={imgOpenDownIcon}
