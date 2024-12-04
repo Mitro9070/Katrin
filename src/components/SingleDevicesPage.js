@@ -14,7 +14,7 @@ import '../styles/SingleDevicesPage.css';
 
 const SingleDevicesPage = () => {
     const { id } = useParams(); // Получаем ID устройства из параметров URL
-    const [currentTab, setCurrentTab] = useState('All'); // Текущая вкладка навигации
+    const [currentTab, setCurrentTab] = useState('All'); // Текущая вкладка
     const [device, setDevice] = useState({}); // Данные устройства
     const [allParameters, setAllParameters] = useState(true); // Флаг отображения всех параметров
     const [currentImage, setCurrentImage] = useState(0); // Индекс текущего изображения
@@ -22,20 +22,22 @@ const SingleDevicesPage = () => {
     const [webdavError, setWebdavError] = useState(null); // Ошибка при загрузке файлов
     const [currentPath, setCurrentPath] = useState(''); // Текущий путь в файловой системе
     const [basePath, setBasePath] = useState(''); // Базовый путь для устройства
+    const [displayBasePath, setDisplayBasePath] = useState(''); // Отображаемое имя корневой папки
 
     useEffect(() => {
         // Устанавливаем текущую вкладку и загружаем данные устройства
         setCurrentTab(() => navigationStore.currentDevicesTab);
-        fetchDevice(id); // Загружаем данные устройства
+        fetchDevice(id);
     }, [id]);
 
     useEffect(() => {
         // После загрузки устройства определяем базовый путь и загружаем файлы
         if (device && device.id) {
-            const path = determineDevicePath(device.id); // Определяем базовый путь
-            setBasePath(path); // Устанавливаем базовый путь
-            if (path) {
-                fetchWebDAVFiles(path); // Загружаем файлы из WebDAV
+            const paths = determineDevicePath(device.id); // Получаем полный и отображаемый пути
+            setBasePath(paths.fullPath); // Устанавливаем базовый путь (для запросов к WebDAV)
+            setDisplayBasePath(paths.displayPath); // Устанавливаем отображаемое имя корневой папки
+            if (paths.fullPath) {
+                fetchWebDAVFiles(paths.fullPath);
             } else {
                 setWebdavError('Нет данных для запрашиваемого устройства');
             }
@@ -49,21 +51,22 @@ const SingleDevicesPage = () => {
             const snapshot = await get(deviceRef);
             if (snapshot.exists()) {
                 const deviceData = snapshot.val();
-                // Если есть основное изображение и дополнительные, перемещаем основное в начало массива
+                // Перемещаем основное изображение в начало массива изображений
                 if (deviceData.main_image && deviceData.images) {
                     deviceData.images = [deviceData.main_image, ...deviceData.images.filter(img => img !== deviceData.main_image)];
                 }
                 deviceData.id = deviceId; // Добавляем ID устройства в данные
-                setDevice(deviceData); // Устанавливаем данные устройства в состояние
+                setDevice(deviceData);
             }
         } catch (error) {
             console.error('Ошибка при загрузке устройства:', error);
         }
     };
 
-    // Функция для определения пути к папке на основе названия устройства
+    // Функция для определения путей к папке на основе ID устройства
     const determineDevicePath = (deviceId) => {
-        let path = ''; // Базовый путь
+        let fullPath = ''; // Полный путь, включая 'Printers' или 'MFP'
+        let displayPath = ''; // Отображаемый путь для хлебных крошек
         if (deviceId) {
             const firstLetter = deviceId.charAt(0).toUpperCase(); // Первая буква ID устройства
             let mainFolder = '';
@@ -75,35 +78,36 @@ const SingleDevicesPage = () => {
             }
 
             if (mainFolder) {
-                // Извлекаем серию устройства, выбирая цифры после первой буквы до возможных символов
+                // Извлекаем серию устройства (цифры после первой буквы)
                 const seriesMatch = deviceId.substring(1).match(/^\d+/);
                 const series = seriesMatch ? seriesMatch[0] : '';
-                // Формируем полное название папки серии устройства
+                // Формируем название папки серии устройства
                 const seriesFolder = `Katusha ${deviceId.charAt(0)}${series} series`;
-                // Формируем полный путь к папке устройства
-                path = `${mainFolder}/${seriesFolder}`;
+                fullPath = `${mainFolder}/${seriesFolder}`; // Полный путь для запросов к WebDAV
+                displayPath = seriesFolder; // Отображаемый путь для хлебных крошек
             } else {
-                // Если первая буква не M и не P
-                path = ''; // Путь не определён
+                fullPath = '';
+                displayPath = '';
             }
         }
-        return path; // Возвращаем полученный путь
+        return { fullPath, displayPath };
     };
 
-    // Функция для загрузки файлов из WebDAV по указанному пути
+    // Функция для загрузки файлов из WebDAV по заданному пути
     const fetchWebDAVFiles = async (path) => {
         console.log('Начало процесса подключения к WebDAV для пути:', path);
         try {
             const files = await getFolderContents(path);
             console.log('Подключение успешно. Получены файлы:', files);
-            
+
+            // Фильтруем системные файлы
             const filteredFiles = files.filter((file, index) => {
                 if (index === 0 && file.type === 'directory' && file.basename.endsWith('/')) {
                     return false;
                 }
                 return file.filename !== '._.DS_Store' && file.filename !== '.DS_Store';
             });
-    
+
             setWebdavFiles(filteredFiles.length ? filteredFiles : []);
             setCurrentPath(path);
             setWebdavError(null);
@@ -119,37 +123,27 @@ const SingleDevicesPage = () => {
         console.log('Клик по папке:', folder);
         if (folder.basename) {
             const newPath = folder.basename.replace('/Exchange/', '').replace(/^\//, '');
-            // Проверяем, не выше ли новый путь базового пути
+            // Проверяем, не выходит ли новый путь за пределы базового пути
             if (newPath.startsWith(basePath)) {
                 fetchWebDAVFiles(newPath);
             } else {
-                // Если пользователь пытается подняться выше базовой пути
                 console.warn('Попытка доступа выше базовой директории запрещена.');
             }
         }
     };
 
-    // Обновленный обработчик клика по хлебным крошкам
+    // Обработчик клика по хлебным крошкам
     const handleBreadcrumbClick = (index) => {
+        const breadcrumbParts = [displayBasePath, ...currentPath.replace(basePath, '').split('/').filter(part => part)];
         if (index >= 0) {
-            if (index === 0) {
-                // Пользователь кликнул на 'home' - возвращаемся к базовой директории устройства
-                fetchWebDAVFiles(basePath);
-            } else {
-                // Получаем части текущего пути без базового пути
-                const fullPathParts = currentPath.split('/').filter((part) => part);
-                const basePathParts = basePath.split('/').filter((part) => part);
-                const relativePathParts = fullPathParts.slice(basePathParts.length);
-    
-                // Формируем новый относительный путь на основе индекса хлебной крошки
-                const newRelativePath = relativePathParts.slice(0, index).join('/');
-    
-                // Формируем полный путь для загрузки файлов
-                const newPath = `${basePath}/${newRelativePath}`;
-                fetchWebDAVFiles(newPath);
-            }
+            const newRelativePath = breadcrumbParts.slice(1, index + 1).join('/');
+            const newPath = index === 0 ? basePath : `${basePath}/${newRelativePath}`;
+            fetchWebDAVFiles(newPath);
         }
     };
+
+    // Формируем массив хлебных крошек для отображения
+    const breadcrumbs = [displayBasePath, ...currentPath.replace(basePath, '').split('/').filter(part => part)];
 
     // Обработчик скачивания файла
     const handleFileDownload = async (file) => {
@@ -161,24 +155,24 @@ const SingleDevicesPage = () => {
         }
     };
 
-    // Обработчик клика по вкладке навигации
-        const onTabClickHandler = (e) => {
-            const selectedTab = e.target.dataset.tab;
-            setCurrentTab(selectedTab);
-            navigationStore.setCurrentDevicesTab(selectedTab);
-        };
+    // Обработчик клика по вкладкам навигации
+    const onTabClickHandler = (e) => {
+        const selectedTab = e.target.dataset.tab;
+        setCurrentTab(selectedTab);
+        navigationStore.setCurrentDevicesTab(selectedTab);
+    };
 
     // Функция для отображения параметров устройства
     const renderParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
-            return fields.map((field, index) => (
-                parameters[field.key] && (
+            return fields.map((field, index) =>
+                parameters[field.key] ? (
                     <div className="devices-info-table-row" key={index}>
                         <p>{field.label}</p>
                         <p>{parameters[field.key]}</p>
                     </div>
-                )
-            ));
+                ) : null
+            );
         }
         return <p>Нет данных</p>;
     };
@@ -186,16 +180,20 @@ const SingleDevicesPage = () => {
     // Функция для отображения всех параметров в таблице
     const renderTableParameters = (parameters, fields) => {
         if (typeof parameters === 'object') {
-            return fields.map((field, index) => (
-                parameters[field.key] && (
+            return fields.map((field, index) =>
+                parameters[field.key] ? (
                     <tr key={index}>
                         <td>{field.label}</td>
                         <td>{parameters[field.key]}</td>
                     </tr>
-                )
-            ));
+                ) : null
+            );
         }
-        return <tr><td colSpan="2">Нет данных</td></tr>;
+        return (
+            <tr>
+                <td colSpan="2">Нет данных</td>
+            </tr>
+        );
     };
 
     // Обработчики переключения изображений устройства
@@ -236,7 +234,7 @@ const SingleDevicesPage = () => {
     ];
 
     const allFields = [
-        // Здесь перечислены все остальные параметры устройства
+        // Здесь перечислены остальные параметры устройства
         { label: 'Тип автоподатчика', key: 'feeder_type' },
         { label: 'Процессор', key: 'processor' },
         { label: 'Оперативная память', key: 'ram' },
@@ -259,7 +257,7 @@ const SingleDevicesPage = () => {
         { label: 'Время выхода первой копии', key: 'first_copy_out_time' },
         { label: 'Масштабирование', key: 'scaling' },
         { label: 'Скорость сканирования', key: 'scan_speed' },
-        { label: 'Емкость автоподатчиков оригиналов на сканирование', key: 'adf_capacity' },
+        { label: 'Емкость автоподатчика оригиналов на сканирование', key: 'adf_capacity' },
         { label: 'Максимальный формат сканирования', key: 'maximum_scan_size' },
         { label: 'Технология системы сканирования', key: 'scanning_technology' },
         { label: 'Оптическое разрешение сканирования', key: 'optical_scan_resolution' },
@@ -267,114 +265,108 @@ const SingleDevicesPage = () => {
         { label: 'Направления сканирования', key: 'scan_destinations' },
         { label: 'Форматы файлов сканирования', key: 'scan_file_formats' },
         { label: 'Габариты (Ш х Г х В)', key: 'dimensions' },
-    ];
-    return (
-        <div className="page-content devices-single-page">
-            {/* Ссылка для возврата на страницу устройств */}
-            <Link to={'/devices'}>
-                <div className="bid-page-head noselect">
-                    <p
-                        className={`bid-page-head-tab ${
-                            currentTab === 'All' ? 'bid-page-head-tab-selected' : ''
-                        }`}
-                        data-tab="All"
-                        onClick={onTabClickHandler}
-                    >
-                        Все
-                    </p>
-                    <p
-                        className={`bid-page-head-tab ${
-                            currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''
-                        }`}
-                        data-tab="MFU"
-                        onClick={onTabClickHandler}
-                    >
-                        МФУ
-                    </p>
-                    <p
-                        className={`bid-page-head-tab ${
-                            currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''
-                        }`}
-                        data-tab="Printers"
-                        onClick={onTabClickHandler}
-                    >
-                        Принтеры
-                    </p>
-                </div>
-            </Link>
-            <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
-                {/* Блок с изображением устройства */}
-                <div style={{ position: 'relative' }}>
-                    <div className="image-slider-wrapper">
-                        {device.images?.map((image, index) => (
-                            <div
-                                key={index}
-                                className="image-slide"
-                                style={{
-                                    backgroundImage: `url(${image})`,
-                                    display: currentImage === index ? 'block' : 'none',
-                                }}
-                            ></div>
-                        ))}
-                        {/* Навигация по изображениям */}
-                        <div className="image-slider-controls">
-                            <div className="icon-container icon-rotate" onClick={prevImage}>
-                                <img src={imgGoArrowIcon} alt="prev" />
-                            </div>
-                            <p className="current-image-index">
-                                {device.images?.length > 0 ? currentImage + 1 : '1'}
-                            </p>
-                            <div className="icon-container" onClick={nextImage}>
-                                <img src={imgGoArrowIcon} alt="next" />
+        ];
+        return (
+            <div className="page-content devices-single-page">
+                {/* Ссылка для возврата на страницу устройств */}
+                <Link to={'/devices'}>
+                    <div className="bid-page-head noselect">
+                        <p
+                            className={`bid-page-head-tab ${
+                                currentTab === 'All' ? 'bid-page-head-tab-selected' : ''
+                            }`}
+                            data-tab="All"
+                            onClick={onTabClickHandler}
+                        >
+                            Все
+                        </p>
+                        <p
+                            className={`bid-page-head-tab ${
+                                currentTab === 'MFU' ? 'bid-page-head-tab-selected' : ''
+                            }`}
+                            data-tab="MFU"
+                            onClick={onTabClickHandler}
+                        >
+                            МФУ
+                        </p>
+                        <p
+                            className={`bid-page-head-tab ${
+                                currentTab === 'Printers' ? 'bid-page-head-tab-selected' : ''
+                            }`}
+                            data-tab="Printers"
+                            onClick={onTabClickHandler}
+                        >
+                            Принтеры
+                        </p>
+                    </div>
+                </Link>
+                <div style={{ display: 'flex', gap: '30px', marginTop: '20px' }}>
+                    {/* Блок с изображением устройства */}
+                    <div style={{ position: 'relative' }}>
+                        <div className="image-slider-wrapper">
+                            {device.images?.map((image, index) => (
+                                <div
+                                    key={index}
+                                    className="image-slide"
+                                    style={{
+                                        backgroundImage: `url(${image})`,
+                                        display: currentImage === index ? 'block' : 'none',
+                                    }}
+                                ></div>
+                            ))}
+                            {/* Навигация по изображениям */}
+                            <div className="image-slider-controls">
+                                <div className="icon-container icon-rotate" onClick={prevImage}>
+                                    <img src={imgGoArrowIcon} alt="prev" />
+                                </div>
+                                <p className="current-image-index">
+                                    {device.images?.length > 0 ? currentImage + 1 : '1'}
+                                </p>
+                                <div className="icon-container" onClick={nextImage}>
+                                    <img src={imgGoArrowIcon} alt="next" />
+                                </div>
                             </div>
                         </div>
                     </div>
+                    {/* Блок с описанием устройства */}
+                    <div className="single-device-info">
+                        <h1 className="device-title">{id}</h1>
+                        <p className="device-description">{device.description || 'Нет данных'}</p>
+                    </div>
                 </div>
-                {/* Блок с описанием устройства */}
-                <div className="single-device-info">
-                    <h1 className="device-title">{id}</h1>
-                    <p className="device-description">{device.description || 'Нет данных'}</p>
+                {/* Раздел с внешним диском */}
+                <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <h2 className="external-disk-header">Внешний диск</h2>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        {webdavError && <p style={{ color: 'red' }}>{webdavError}</p>}
+                        {/* Компонент файлового менеджера */}
+                        <CustomFileManager
+                            files={webdavFiles}
+                            onFolderClick={handleFolderClick}
+                            onFileClick={handleFileDownload}
+                            breadcrumbs={breadcrumbs}
+                            onBreadcrumbClick={handleBreadcrumbClick}
+                        />
+                    </AccordionDetails>
+                </Accordion>
+                {/* Таблица с параметрами устройства */}
+                <div className="devices-info-table">
+                    <div className="column-1">
+                        <p className="devices-info-table-title">Основные параметры</p>
+                        {renderParameters(device.options?.basic, basicFields)}
+                    </div>
+                    <div className="column-2">
+                        <p className="devices-info-table-title">Опции</p>
+                        {renderParameters(device.options?.opt, optionsFields)}
+                    </div>
+                    <div className="column-3">
+                        <p className="devices-info-table-title">Расходные материалы</p>
+                        {renderParameters(device.options?.consumables, consumablesFields)}
+                    </div>
                 </div>
-            </div>
-            {/* Раздел с внешним диском */}
-            <Accordion style={{ width: '1095px', marginTop: '50px', borderRadius: '10px' }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <h2 className="external-disk-header">Внешний диск</h2>
-                </AccordionSummary>
-                <AccordionDetails>
-                    {webdavError && <p style={{ color: 'red' }}>{webdavError}</p>}
-                    {/* Компонент файлового менеджера */}
-                    <CustomFileManager
-                        files={webdavFiles}
-                        onFolderClick={handleFolderClick}
-                        onFileClick={handleFileDownload}
-                        breadcrumbs={[
-                            'home',
-                            ...currentPath
-                                .replace(basePath, '')
-                                .split('/')
-                                .filter((part) => part),
-                        ]}
-                        onBreadcrumbClick={handleBreadcrumbClick}
-                    />
-                </AccordionDetails>
-            </Accordion>
-            {/* Таблица с параметрами устройства */}
-            <div className="devices-info-table">
-                <div className="column-1">
-                    <p className="devices-info-table-title">Основные параметры</p>
-                    {renderParameters(device.options?.basic, basicFields)}
-                </div>
-                <div className="column-2">
-                    <p className="devices-info-table-title">Опции</p>
-                    {renderParameters(device.options?.opt, optionsFields)}
-                </div>
-                <div className="column-3">
-                    <p className="devices-info-table-title">Расходные материалы</p>
-                    {renderParameters(device.options?.consumables, consumablesFields)}
-                </div>
-            </div>
-            {/* Кнопка для отображения всех параметров */}
+                {/* Кнопка для отображения всех параметров */}
             <div className="device-btn-look-all" onClick={() => setAllParameters(!allParameters)}>
                 <img
                     src={imgOpenDownIcon}
