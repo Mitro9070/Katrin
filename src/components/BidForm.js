@@ -15,7 +15,7 @@ import imgAddIcon from '../images/add.svg';
 import imgCheckmark from '../images/checkmark.svg';
 
 import CustomInput from './CustomInput';
-import CustomPhotoBox from './CustomPhotoBox';
+import CustomPhotoBox from './CustomPhotoBox2';
 import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 
@@ -32,6 +32,12 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [loading, setLoading] = useState(false);
 
     const [CarouselPosition, setCarouselPosition] = useState(0);
+    const [coverImageURL, setCoverImageURL] = useState('');
+    const [imageURLs, setImageURLs] = useState([]);
+
+    const addImageURL = (url) => {
+        setImageURLs((prevURLs) => [...prevURLs, url]);
+    };
 
     const changeAddPageHandler = () => {
         setIsAddPage && setIsAddPage(() => false);
@@ -69,6 +75,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         try {
             const newBidKey = uuidv4();
             const userId = getUserIdFromCookie();
+            
             console.log("Сгенерирован новый ключ:", newBidKey);
 
             const uploadFiles = async (files, folder) => {
@@ -102,12 +109,12 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 return;
             }
             // Собираем файлы
-            let n_images = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]).filter(Boolean);
+            
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
             let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
 
             // Загрузка изображений и файлов
-            const photosUrls = await uploadFiles([document?.getElementById('bid-cover')?.files[0], ...n_images], `images/${newBidKey}`);
+            const photosUrls = [coverImageURL, ...imageURLs];
             const filesUrls = await uploadFiles(n_files, `files/${newBidKey}`);
             console.log("Файлы загружены. Фото:", photosUrls, "Файлы:", filesUrls);
 
@@ -326,7 +333,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 <div className="bid-form-body-oneline bid-form-body-oneline-photo">
                     <div className="bid-form-cover">
                         <p>Обложка</p>
-                        <CustomPhotoBox id='bid-cover' />
+                        <CustomPhotoBox name='bid-image' id='bid-cover' onImageUpload={(url) => setCoverImageURL(url)} />
                     </div>
                     <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
                         <img src={imgArrowIcon} alt="" style={{ transform: 'rotate(180deg)' }} className={`${CarouselPosition >= 0 ? 'non-active-img' : ''}`} />
@@ -336,10 +343,10 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         <div className="wrapper-bid-form">
                             <div className="bid-form-photoes-carousel">
                                 <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
-                                    <CustomPhotoBox name='bid-image' />
+                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
                                     {componentsCarousel.map((component) => component)}
                                 </div>
                             </div>

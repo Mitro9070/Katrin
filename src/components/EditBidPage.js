@@ -15,7 +15,7 @@ import imgArrowIcon from '../images/go-arrow.svg';
 import imgTrashDelete from '../images/trash-delete.png';
 
 import CustomInput from './CustomInput';
-import CustomPhotoBox from './CustomPhotoBox';
+import CustomPhotoBox from './CustomPhotoBox2';
 import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 import Loader from './Loader';
@@ -25,7 +25,7 @@ import { navigationStore } from '../stores/NavigationStore';
 import { eventsStore } from '../stores/EventsStore';
 
 import { ref as storageRef, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid'; // Импортируем uuid для генерации уникальных идентификаторов
+import { v4 as uuidv4 } from 'uuid';
 
 const storage = getStorage();
 
@@ -37,9 +37,11 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const [isAdsChecked, setIsAdsChecked] = useState(false);
     const [isImportant, setIsImportant] = useState(false);
     const [CarouselPosition, setCarouselPosition] = useState(0);
+    const [coverImageURL, setCoverImageURL] = useState('');
     const [loading, setLoading] = useState(false);
     const [organizerName, setOrganizerName] = useState('');
     const [error, setError] = useState(null);
+    const [imageURLs, setImageURLs] = useState([]);
 
     const maxPhotoCnt = 6;
 
@@ -53,8 +55,6 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 if (typeForm === 'News' || typeForm === 'TechNews') {
                     await newsContentStore.fetchData();
                     bid = newsContentStore.getNewsById(id);
-    
-                    console.log("Fetched bid for TechNews:", bid);
     
                     if (typeForm === 'TechNews' && bid) {
                         setBidData({
@@ -74,10 +74,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 navigationStore.setCurrentBidText(bid.text || '');
     
                 if (bid.display_up_to) {
-                    // Форматируем значение даты в нужный формат 'YYYY-MM-DDTHH:mm'
                     const formattedDisplayUpTo = new Date(bid.display_up_to).toISOString().slice(0, 16);
-                    console.log("Formatted display_up_to:", formattedDisplayUpTo);
-    
                     setBidData({
                         ...bid,
                         display_up_to: formattedDisplayUpTo 
@@ -96,7 +93,11 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 if (bid.end_date) {
                     bid.end_date = new Date(bid.end_date).toISOString().slice(0, 16);
                 }
-    
+
+                // Set initial cover and other image URLs
+                setCoverImageURL(bid.images[0]);
+                setImageURLs(bid.images.slice(1));
+
                 setFilesList(
                     Array.isArray(bid?.files) ? 
                     bid?.files?.map((file, index) => (
@@ -115,11 +116,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 setIsImportant(bid?.fixed);
     
                 const carouselImages = (bid?.images?.slice(1) || []).map((image, index) => (
-                    <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => setComponentsCarousel(prevState => {
-                        const newState = [...prevState];
-                        newState[index] = <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onChange={() => handlePhotoChange(index)} />;
-                        return newState;
-                    })} />
+                    <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onImageUpload={(url) => handlePhotoChange(url, index)} />
                 ));
     
                 setComponentsCarousel(carouselImages);
@@ -175,9 +172,9 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         if (position <= 0 && position >= (195 + 2 + 30) * -(maxPhotoCnt - 3)) {
             setCarouselPosition(position);
             if (direction > 0 && componentsCarousel.length < (maxPhotoCnt - 4)) {
-                setComponentsCarousel([
-                    ...componentsCarousel,
-                    <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onChange={() => handlePhotoChange(componentsCarousel.length)} />
+                setComponentsCarousel((prevComponents) => [
+                    ...prevComponents,
+                    <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onImageUpload={(url) => addImageURL(url)} />
                 ]);
             }
         }
@@ -200,36 +197,10 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const addPhotoFieldHandler = () => {
         setComponentsCarousel([
             ...componentsCarousel,
-            <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onChange={() => handlePhotoChange(componentsCarousel.length)} />
+            <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onImageUpload={(url) => addImageURL(url)} />
         ]);
     };
 
-    const handlePhotoUpload = async (files, folder, newBidKey) => {
-        const urls = [];
-        for (const file of files) {
-            if (file) {
-                const fileRef = storageRef(storage, `${folder}/${newBidKey}/${file.name}`);
-                await uploadBytes(fileRef, file);
-                const url = await getDownloadURL(fileRef);
-                urls.push(url);
-            }
-        }
-        return urls;
-    };
-
-    const handlePhotoChange = (index) => {
-        setComponentsCarousel(prevState => {
-            const newState = [...prevState];
-            const photoElement = newState[index];
-            const inputFile = photoElement?.props?.defaultValue;
-            if (inputFile) {
-                newState[index] = <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={inputFile} onChange={() => handlePhotoChange(index)} />;
-            }
-            return newState;
-        });
-    }
-
-    // Функция для обработки удаления фото
     const handlePhotoDelete = (index) => {
         setComponentsCarousel(prevState => {
             const newState = [...prevState];
@@ -238,18 +209,13 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         });
     };
 
+
     const handleCoverPhotoUpload = async (coverImage, newBidKey) => {
         const fileRef = storageRef(storage, `images/${newBidKey}/${coverImage.name}`);
         await uploadBytes(fileRef, coverImage);
         const url = await getDownloadURL(fileRef);
+        setCoverImageURL(url);
         return url;
-    };
-
-    // Функция для подачи в handlePhotoUpload отдельно для каждого фото.
-    const handleSinglePhotoUpload = async (file, folder, newBidKey) => {
-        const fileRef = storageRef(storage, `${folder}/${newBidKey}/${file.name}`);
-        await uploadBytes(fileRef, file);
-        return await getDownloadURL(fileRef);
     };
 
     const addNewPhotoFields = async (files, folder, currentImages, newBidKey) => {
@@ -261,12 +227,42 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 const url = await handleSinglePhotoUpload(file, folder, newBidKey);
                 uploadedUrls.push(url);
             } else {
-                // Если файла нет, берем соответствующее изображение из текущих данных
                 uploadedUrls.push(currentImages[i]);
             }
         }
 
         return uploadedUrls;
+    };
+
+    const handleSinglePhotoUpload = async (file, folder, newBidKey) => {
+        const fileRef = storageRef(storage, `${folder}/${new Date().getTime()}.jpg`);
+        await uploadBytes(fileRef, file);
+        return await getDownloadURL(fileRef);
+    };
+
+    const handlePhotoUpload = async (files, folder, newBidKey) => {
+        const urls = [];
+        for (const file of files) {
+            if (file) {
+                const fileRef = storageRef(storage, `${folder}/${newBidKey}/${new Date().getTime()}.jpg`);
+                await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(fileRef);
+                urls.push(url);
+            }
+        }
+        return urls;
+    };
+
+    const handlePhotoChange = (url, index) => {
+        setImageURLs((prevURLs) => {
+            const newURLs = [...prevURLs];
+            newURLs[index] = url;
+            return newURLs;
+        });
+    };
+
+    const addImageURL = (url) => {
+        setImageURLs((prevURLs) => [...prevURLs, url]);
     };
 
     function getCookie(name) {
@@ -279,23 +275,17 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const updateBidHandler = async () => {
         setLoading(true);
     
-        console.log("Before save bidData.title:", bidData?.title);
-    
-        // Получаем id пользователя из cookies
-        const userId = getCookie('userId');  
-    
+        const userId = getCookie('userId');
         let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
         let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
     
         const currentImages = bidData.images || [];
         const otherImages = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]);
     
-        // Проверка форматов для разных типов форм.
         let format = typeForm === 'Events'
             ? [document.querySelector('input[type="radio"][name="bid-format"]:checked')?.value]
             : Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb.value);
     
-        // Если формат не выбран, устанавливаем "Тех. новости" по умолчанию для `TechNews`.
         if (typeForm === 'TechNews' && format.length === 0) {
             format = ['Тех. новости'];
         }
@@ -311,18 +301,9 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             const newCoverImage = document.getElementById('bid-cover')?.files[0];
             const coverImageURL = newCoverImage ? await handleCoverPhotoUpload(newCoverImage, newBidKey) : bidData?.images?.[0];
     
-            // Фильтруем удаленные фотографии
-            const currentImagesFiltered = currentImages.slice(1).filter((img, index) => componentsCarousel[index] !== null);
-            const otherPhotosUrls = await addNewPhotoFields(
-                otherImages,
-                'images',
-                currentImagesFiltered,
-                newBidKey
-            );
-    
             const filesUrls = n_files.length > 0 ? await handlePhotoUpload(n_files, 'files', newBidKey) : bidData.files || [];
+            const otherPhotosUrls = await addNewPhotoFields(otherImages, 'images', currentImages.slice(1), newBidKey);
     
-            // Если organizer не введен вручную, используем id из cookies
             const organizer = bidData.organizer || userId;
     
             const updatedBidData = {
@@ -344,8 +325,6 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 fixed: isImportant,
                 postData: new Date().toLocaleString('ru-RU'),
             };
-    
-            console.log("Updated bidData for save:", updatedBidData);
     
             if (typeForm === 'News' || typeForm === 'TechNews') {
                 await newsContentStore.updateNews(bidData.id, updatedBidData);
@@ -530,120 +509,121 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                                 style={{ width: '308px' }}
                             />
                             <p className='bid-form-text-date'>Дата</p>
-                            <input
-                                type='datetime-local'
-                                id='bid-start-date'
-                                className="custom-input"
-                                placeholder='Дата начала'
-                                value={bidData?.start_date || ''}
-                                onChange={(e) => setBidData({ ...bidData, start_date: e.target.value })}
-                                style={{ width: '220px' }}
-                            />
-                            <p style={{ marginLeft: '0px' }}>до</p>
-                            <input
-                                type='datetime-local'
-                                id='bid-end-date'
-                                className="custom-input"
-                                placeholder='Дата окончания'
-                                value={bidData?.end_date || ''}
-                                onChange={(e) => setBidData({ ...bidData, end_date: e.target.value })}
-                                style={{ width: '220px' }}
-                            />
-                        </div>
-                        <div className="bid-form-body-oneline">
-                        <input
-                            type='text'
-                            id='bid-organizer'
-                            className="custom-input"
-                            placeholder='Организатор мероприятия'
-                            value={organizerName || bidData?.organizer || ''}
-                            onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
-                            style={{ width: '308px' }}
-                        />
-                            <input
-                                type='phone'
-                                id='organizer-phone'
-                                className="custom-input"
-                                placeholder='Телефон'
-                                value={bidData?.organizer_phone || ''}
-                                onChange={(e) => setBidData({ ...bidData, organizer_phone: e.target.value })}
-                                style={{ width: '308px' }}
-                            />
-                            <input
-                                type='email'
-                                id='organizer-email'
-                                className="custom-input"
-                                placeholder='Почта'
-                                value={bidData?.organizer_email || ''}
-                                onChange={(e) => setBidData({ ...bidData, organizer_email: e.target.value })}
-                                style={{ width: '308px' }}
-                            />
-                        </div>
-                    </>
-                )}
-                
-                <div className="bid-form-body-oneline bid-form-body-oneline-photo">
-            <div className="bid-form-cover">
-                <p>Обложка</p>
-                <CustomPhotoBox
-                    id='bid-cover'
-                    defaultValue={bidData?.images?.[0]}
-                />
-            </div>
-            <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
-                <img src={imgArrowIcon} alt="" style={{ transform: 'rotate(180deg)' }} className={`${CarouselPosition >= 0 ? 'non-active-img' : ''}`} />
-            </div>
-            <div className="bid-form-photoes">
-                <p>Другие фотографии</p>
-                <div className="wrapper-bid-form">
-                    <div className="bid-form-photoes-carousel">
-                        <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
-                            {componentsCarousel.map((component, index) => (
-                                component && (
-                                    <div key={index} className="photo-wrapper" style={{ position: 'relative' }}>
-                                        {component}
-                                        <div className="cover-photo-delete-container" onClick={() => handlePhotoDelete(index)}>
-                                            <img src={imgTrashDelete} className="cover-photo-delete" alt="Удалить" />
-                                        </div>
-                                    </div>
-                                )
-                            ))}
-                        </div>
-                    </div>
-                    <div className={`icon-container ${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(1)}>
-                        <img src={imgArrowIcon} alt="" className={`${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img' : ''}`} />
-                    </div>
-                    <img src={imgAddIcon} alt="" className="add-photofield" onClick={addPhotoFieldHandler} />
+<input
+    type='datetime-local'
+    id='bid-start-date'
+    className="custom-input"
+    placeholder='Дата начала'
+    value={bidData?.start_date || ''}
+    onChange={(e) => setBidData({ ...bidData, start_date: e.target.value })}
+    style={{ width: '220px' }}
+/>
+<p style={{ marginLeft: '0px' }}>до</p>
+<input
+    type='datetime-local'
+    id='bid-end-date'
+    className="custom-input"
+    placeholder='Дата окончания'
+    value={bidData?.end_date || ''}
+    onChange={(e) => setBidData({ ...bidData, end_date: e.target.value })}
+    style={{ width: '220px' }}
+/>
+</div>
+<div className="bid-form-body-oneline">
+    <input
+        type='text'
+        id='bid-organizer'
+        className="custom-input"
+        placeholder='Организатор мероприятия'
+        value={organizerName || bidData?.organizer || ''}
+        onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
+        style={{ width: '308px' }}
+    />
+    <input
+        type='phone'
+        id='organizer-phone'
+        className="custom-input"
+        placeholder='Телефон'
+        value={bidData?.organizer_phone || ''}
+        onChange={(e) => setBidData({ ...bidData, organizer_phone: e.target.value })}
+        style={{ width: '308px' }}
+    />
+    <input
+        type='email'
+        id='organizer-email'
+        className="custom-input"
+        placeholder='Почта'
+        value={bidData?.organizer_email || ''}
+        onChange={(e) => setBidData({ ...bidData, organizer_email: e.target.value })}
+        style={{ width: '308px' }}
+    />
+</div>
+</>
+)}
+<div className="bid-form-body-oneline bid-form-body-oneline-photo">
+    <div className="bid-form-cover">
+        <p>Обложка</p>
+        <CustomPhotoBox
+            id='bid-cover'
+            defaultValue={bidData?.images?.[0]}
+            onImageUpload={(url) => setCoverImageURL(url)}
+        />
+    </div>
+    <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
+        <img src={imgArrowIcon} alt="" style={{ transform: 'rotate(180deg)' }} className={`${CarouselPosition >= 0 ? 'non-active-img' : ''}`} />
+    </div>
+    <div className="bid-form-photoes">
+        <p>Другие фотографии</p>
+        <div className="wrapper-bid-form">
+            <div className="bid-form-photoes-carousel">
+                <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
+                    {componentsCarousel.map((component, index) => (
+                        component && (
+                            <div key={index} className="photo-wrapper" style={{ position: 'relative' }}>
+                                {component}
+                                <div className="cover-photo-delete-container" onClick={() => handlePhotoDelete(index)}>
+                                    <img src={imgTrashDelete} className="cover-photo-delete" alt="Удалить" />
+                                </div>
+                            </div>
+                        )
+                    ))}
                 </div>
             </div>
+            <div className={`icon-container ${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(1)}>
+                <img src={imgArrowIcon} alt="" className={`${CarouselPosition <= 227 * -(maxPhotoCnt - 3) ? 'non-active-img' : ''}`} />
+            </div>
+            <img src={imgAddIcon} alt="" className="add-photofield" onClick={addPhotoFieldHandler} />
         </div>
+    </div>
+</div>
 
-                <CKEditorRedaktor className='ckeditor' data={bidData?.text} />
-                <p className='title-бид-form'>Файлы</p>
-                <div className="files-row">
-                    {filesList}
-                    <img
-                        src={imgAddIcon}
-                        alt=""
-                        className="add-filefield"
-                        onClick={addFileFieldHandler}
-                    />
-                </div>
-                <p className='title-бид-form'>Ссылки</p>
-                <div className="links-row">
-                    {linksList}
-                    <img
-                        src={imgAddIcon}
-                        alt=""
-                        className="add-linkfield"
-                        onClick={addLinkFieldHandler}
-                    />
-                </div>
-                <div className='bid-form-send-btn' onClick={updateBidHandler}>
-                    {loading ? <p>Загрузка...</p> : <p>Обновить заявку</p>}
-                </div>
-            </div>
-        </div>
-    );
+<CKEditorRedaktor className='ckeditor' data={bidData?.text} />
+<p className='title-бид-form'>Файлы</p>
+<div className="files-row">
+    {filesList}
+    <img
+        src={imgAddIcon}
+        alt=""
+        className="add-filefield"
+        onClick={addFileFieldHandler}
+    />
+</div>
+<p className='title-бид-form'>Ссылки</p>
+<div className="links-row">
+    {linksList}
+    <img
+        src={imgAddIcon}
+        alt=""
+        className="add-linkfield"
+        onClick={addLinkFieldHandler}
+    />
+</div>
+<div className='bid-form-send-btn' onClick={updateBidHandler}>
+    {loading ? <p>Загрузка...</p> : <p>Обновить заявку</p>}
+</div>
+</div>
+</div>
+);
 }
+
 export default EditBidForm;

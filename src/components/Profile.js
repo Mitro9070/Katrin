@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ref as databaseRef, get, set } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { database, storage } from '../firebaseConfig';
+import { createPortal } from 'react-dom';
+import CustomCropper from './CustomCropper';
 import Cookies from 'js-cookie';
 import Loader from './Loader';
 import Footer from './Footer';
@@ -20,6 +22,8 @@ const Profile = () => {
     const [inputData, setInputData] = useState({});
     const [isFormChanged, setIsFormChanged] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
+    const [imageSrc, setImageSrc] = useState(null);
+    const [showCropper, setShowCropper] = useState(false);
 
     useEffect(() => {
         console.log("Profile userId:", userId); 
@@ -87,23 +91,41 @@ const Profile = () => {
         }
     };
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setLoadingImage(true); 
-            try {
-                const imgRef = storageRef(storage, `employee-photos/${file.name}`);
-                await uploadBytes(imgRef, file);
-                const url = await getDownloadURL(imgRef);
-                setImageUrl(url);
-                setIsFormChanged(true); 
-            } catch (error) {
-                console.error('Error uploading image:', error);
-            } finally {
-                setLoadingImage(false); 
-            }
+          const reader = new FileReader();
+          reader.addEventListener('load', () => {
+            setImageSrc(reader.result);
+            setShowCropper(true);
+          });
+          reader.readAsDataURL(file);
         }
-    };
+      };
+
+
+      const handleCropCancel = () => {
+        setShowCropper(false);
+        setImageSrc(null);
+      };
+   
+      const handleCropSave = async (croppedBlob) => {
+        setShowCropper(false);
+        setImageSrc(null);
+        setLoadingImage(true);
+        try {
+          const imgRef = storageRef(storage, `employee-photos/${userId}.jpg`);
+          await uploadBytes(imgRef, croppedBlob);
+          const url = await getDownloadURL(imgRef);
+          setImageUrl(url);
+          setIsFormChanged(true);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        } finally {
+          setLoadingImage(false);
+        }
+      };
+
 
     const changeCurrentTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
@@ -268,8 +290,17 @@ const Profile = () => {
                         <p>В разработке...</p>
                     </div>
                 )}
+
+                {showCropper && createPortal(
+                    <CustomCropper
+                    imageSrc={imageSrc}
+                    onCancel={handleCropCancel}
+                    onSave={handleCropSave}
+                    />,
+                    document.body
+                )}
             </div>
-            <Footer />
+            
         </div>
     );
 };

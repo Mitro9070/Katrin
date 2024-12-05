@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { storage } from '../firebaseConfig';
+import { createPortal } from 'react-dom';
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import CustomCropper from './CustomCropper';
 import '../styles/CustomPhotoBox.css';
@@ -7,7 +8,7 @@ import '../styles/CustomPhotoBox.css';
 import imgAddIcon from '../images/add.svg';
 import imgTrashIcon from '../images/edit.png';
 
-function CustomPhotoBox({ name = '', id = '', defaultValue = '' }) {
+function CustomPhotoBox({ name = '', id = '', defaultValue = '', onImageUpload }) {
     const [imagePath, setImagePath] = useState(defaultValue ? defaultValue : '');
     const [imageSrc, setImageSrc] = useState(null);
     const [showCropper, setShowCropper] = useState(false);
@@ -45,14 +46,17 @@ function CustomPhotoBox({ name = '', id = '', defaultValue = '' }) {
 
     const handleCropSave = async (croppedBlob) => {
         setShowCropper(false);
-        const croppedUrl = URL.createObjectURL(croppedBlob);
-        setImagePath(croppedUrl);
-        
+
         const fileRef = storageRef(storage, `images/${new Date().getTime()}.jpg`);
         await uploadBytes(fileRef, croppedBlob);
         const url = await getDownloadURL(fileRef);
+
         setImagePath(url);
-        localStorage.setItem(fileRef.fullPath, url);
+
+        // Передаем URL в родительский компонент
+        if (onImageUpload) {
+            onImageUpload(url);
+        }
     };
 
     return (
@@ -76,12 +80,13 @@ function CustomPhotoBox({ name = '', id = '', defaultValue = '' }) {
                     </div>
                 )}
             </label>
-            {showCropper && (
+            {showCropper && createPortal(
                 <CustomCropper
                     imageSrc={imageSrc}
                     onCancel={handleCropCancel}
                     onSave={handleCropSave}
-                />
+                />,
+                document.body
             )}
         </div>
     );
