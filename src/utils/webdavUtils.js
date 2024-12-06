@@ -3,7 +3,7 @@ const log = (message) => {
   console.log(`${timestamp}: ${message}`);
 };
 
-const serverUrl = 'http://localhost:4000';
+const serverUrl = 'https://192.168.19.179:4000';
 
 export const connectToWebDAV = async () => {
   log('Начало подключения к WebDAV...');

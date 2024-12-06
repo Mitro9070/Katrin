@@ -77,34 +77,49 @@ const ContentPage = () => {
             const filteredNewsData = [];
             const filteredEventsData = [];
 
+            // Обработка данных новостей
             if (newsSnapshot.exists()) {
-                newsSnapshot.forEach((childSnapshot) => {
-                    const item = childSnapshot.val();
+                const newsData = newsSnapshot.val();
+                for (const key in newsData) {
+                    const item = newsData[key];
                     const organizer = users[item.organizer];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
-                    if ((roleId === '3' || roleId === '6') && item.organizer !== userId) return;
+                    if ((roleId === '3' || roleId === '6') && item.organizer !== userId) continue;
                     filteredNewsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: childSnapshot.key
+                        id: key
                     });
-                });
+                }
             }
 
+            // Обработка данных событий
             if (eventsSnapshot.exists()) {
-                eventsSnapshot.forEach((childSnapshot) => {
-                    const item = childSnapshot.val();
-                    const organizer = users[item.organizer];
-                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+                const eventsData = eventsSnapshot.val();
+                for (const key in eventsData) {
+                    const item = eventsData[key];
+                    let organizerName = "Неизвестно";
 
-                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) return;
+                    if (item.organizer) {
+                        const userRef = ref(database, `Users/${item.organizer}`);
+                        const snapshot = await get(userRef);
+
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            organizerName = `${userData.surname || ''} ${userData.Name ? userData.Name.charAt(0) + '.' : ''}`.trim();
+                        } else {
+                            organizerName = item.organizer;
+                        }
+                    }
+
+                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) continue;
                     filteredEventsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: childSnapshot.key
+                        id: key
                     });
-                });
+                }
             }
 
             setNewsData(filteredNewsData);
