@@ -3,12 +3,14 @@ const log = (message) => {
   console.log(`${timestamp}: ${message}`);
 };
 
+const serverUrl = 'http://localhost:4000';
+
 export const connectToWebDAV = async () => {
   log('Начало подключения к WebDAV...');
 
   try {
     log('Отправка запроса на получение содержимого корневой директории...');
-    const response = await fetch('http://localhost:3001/api/webdav');
+    const response = await fetch(`${serverUrl}/api/webdav`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,7 +60,7 @@ export const getFolderContents = async (folderName) => {
 
   try {
     log('Отправка запроса на получение содержимого папки...');
-    const response = await fetch(`http://localhost:3001/api/webdav/folder?name=${encodeURIComponent(folderName)}`);
+    const response = await fetch(`${serverUrl}/api/webdav/folder?name=${encodeURIComponent(folderName)}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -111,7 +113,7 @@ export const downloadFile = async (filePath) => {
 
   try {
     log('Отправка запроса на скачивание файла...');
-    const response = await fetch(`http://localhost:3001/api/webdav/download?file=${encodeURIComponent(cleanFilePath)}`);
+    const response = await fetch(`${serverUrl}/api/webdav/download?file=${encodeURIComponent(cleanFilePath)}`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

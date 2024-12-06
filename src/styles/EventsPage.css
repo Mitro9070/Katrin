@@ -136,3 +136,21 @@
     border-radius: 20px;
 
 }
+
+/* EventsPage.css */
+.events-content-cards-container {
+    width: 100%;
+}
+
+.events-content-cards-list {
+    height: 700px;
+    overflow-y: scroll;
+    overflow-x: hidden; /* Запретим горизонтальный скролл */
+    padding-right: 40px; /* Добавим отступ */
+}
+
+.standart-card-link {
+    width: 572px; /* Увеличим ширину карточки */
+    display: block; /* Убедимся, что ссылка отображается как блок */
+    margin: 2px 0; /* Добавим отступы */
+}

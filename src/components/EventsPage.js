@@ -4,6 +4,7 @@ import '../styles/EventsPage.css';
 import StandartCard from "./StandartCard";
 import { Link, useNavigate } from 'react-router-dom';
 import imgFilterIcon from '../images/filter.svg';
+import defaultEventImage from '../images/events.jpg'; // Импортируем изображение по умолчанию
 import Loader from "./Loader";
 import Cookies from 'js-cookie';
 import { ref, get } from 'firebase/database';
@@ -64,7 +65,8 @@ const EventsPage = () => {
                         if (item.status === "Опубликовано") {
                             eventsData.push({
                                 ...item,
-                                id: childSnapshot.key
+                                id: childSnapshot.key,
+                                images: item.images && Array.isArray(item.images) ? item.images : [defaultEventImage]
                             });
                         }
                     });
@@ -97,20 +99,45 @@ const EventsPage = () => {
         if (name === "elementType") setElementType(value);
     };
 
-    const filteredEvents = eventsData.filter(item => {
-        const eventStartDate = new Date(item.start_date);
+    // Функция для нормализации даты (обнуление времени)
+    const normalizeDate = (date) => {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    };
+
+    // Функция для форматирования даты события
+    const formatEventDate = (dateString) => {
+        const date = new Date(dateString);
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        if (date.getTime() === today.getTime()) {
+            return 'Сегодня';
+        } else if (date.getTime() === tomorrow.getTime()) {
+            return 'Завтра';
+        } else {
+            return formatDate(dateString, true); // Используем вашу функцию formatDate
+        }
+    };
+
+    const filteredEvents = eventsData.filter(item => {
+        const eventStartDate = normalizeDate(item.start_date);
+        const eventEndDate = normalizeDate(item.end_date);
+        const today = normalizeDate(new Date());
 
         // Фильтрация по прошедшим событиям
-        if (pastEvents && eventStartDate >= today) {
+        if (!pastEvents && eventEndDate < today) {
             return false;
         }
 
         // Фильтрация по диапазону дат
         if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            if (eventStartDate < start || eventStartDate > end) {
+            const start = normalizeDate(startDate);
+            const end = normalizeDate(endDate);
+            if (eventStartDate > end || eventEndDate < start) {
                 return false;
             }
         }
@@ -123,34 +150,33 @@ const EventsPage = () => {
         return true;
     });
 
-    // Функция для форматирования даты
-    const formatEventDate = (dateString) => {
-        const date = new Date(dateString);
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        if (date.toDateString() === today.toDateString()) {
-            return 'Сегодня';
-        } else if (date.toDateString() === tomorrow.toDateString()) {
-            return 'Завтра';
-        } else {
-            return formatDate(dateString, true); // Используем вашу функцию formatDate
-        }
-    };
-
     // Обработчик выбора даты в календаре
     const handleDateSelect = (date) => {
-        setSelectedDate(date);
+        // Нормализуем выбранную дату
+        const normalizedDate = normalizeDate(date);
+        setSelectedDate(normalizedDate);
     };
 
     // Фильтрация событий по выбранной дате
     const eventsForSelectedDate = selectedDate
         ? filteredEvents.filter(event => {
-            const eventDate = new Date(event.start_date);
-            return eventDate.toDateString() === selectedDate.toDateString();
-          })
-        : [];
+            const eventStartDate = normalizeDate(event.start_date);
+            const eventEndDate = normalizeDate(event.end_date);
+            return (
+                eventStartDate <= selectedDate && eventEndDate >= selectedDate
+            );
+        })
+        : filteredEvents.filter(event => {
+            const eventStartDate = normalizeDate(event.start_date);
+            const today = normalizeDate(new Date());
+            const thirtyDaysFromNow = new Date(today);
+            thirtyDaysFromNow.setDate(today.getDate() + 30);
+            const endDate = normalizeDate(thirtyDaysFromNow);
+            return eventStartDate >= today && eventStartDate <= endDate;
+        });
+
+    // Сортировка событий по дате начала
+    eventsForSelectedDate.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
 
     if (loading) return <Loader />;
     if (error) return <p>{error}</p>;
@@ -171,41 +197,62 @@ const EventsPage = () => {
                 </div>
             </div>
 
-            {selectedDate && (
-                <div className="events-content-cards-list">
-                    <div className={`filter filter-worked ${IsFilterBlock ? 'filter-worked-active' : ''} noselect`} onClick={() => setIsFilterBlock(!IsFilterBlock)}>
-                        <img src={imgFilterIcon} alt="" />
-                        <p>Фильтр</p>
-                    </div>
-                    {IsFilterBlock && (
-                        <div className="filter-block noselect">
-                            <div>
-                                <label>Дата с:</label>
-                                <input type="date" name="startDate" value={startDate} onChange={handleFilterChange} />
-                            </div>
-                            <div>
-                                <label>Дата по:</label>
-                                <input type="date" name="endDate" value={endDate} onChange={handleFilterChange} />
-                            </div>
-                            <hr/>
-                            <div>
-                                <label style={{display: 'flex'}}>
-                                    <input type="checkbox" name="pastEvents" checked={pastEvents} onChange={handleFilterChange} />
-                                    <div>Прошедшие события</div>
-                                </label>
-                            </div>
-                            <hr/>
-                            <div>
-                                <select name="elementType" value={elementType} onChange={handleFilterChange}>
-                                    <option value="">Тип события</option>
-                                    <option value="Внешнее событие">Внешнее событие</option>
-                                    <option value="Внутреннее событие">Внутреннее событие</option>
-                                </select>
-                            </div>
+            <div className="events-content-cards-container">
+                <div
+                    className={`filter filter-worked ${IsFilterBlock ? 'filter-worked-active' : ''} noselect`}
+                    onClick={() => setIsFilterBlock(!IsFilterBlock)}>
+                    <img src={imgFilterIcon} alt="" />
+                    <p>Фильтр</p>
+                </div>
+                {IsFilterBlock && (
+                    <div className="filter-block noselect">
+                        <div>
+                            <label>Дата с:</label>
+                            <input
+                                type="date"
+                                name="startDate"
+                                value={startDate}
+                                onChange={handleFilterChange}
+                            />
                         </div>
-                    )}
+                        <div>
+                            <label>Дата по:</label>
+                            <input
+                                type="date"
+                                name="endDate"
+                                value={endDate}
+                                onChange={handleFilterChange}
+                            />
+                        </div>
+                        <hr />
+                        <div>
+                            <label style={{ display: 'flex' }}>
+                                <input
+                                    type="checkbox"
+                                    name="pastEvents"
+                                    checked={pastEvents}
+                                    onChange={handleFilterChange}
+                                />
+                                <div>Прошедшие события</div>
+                            </label>
+                        </div>
+                        <hr />
+                        <div>
+                            <select
+                                name="elementType"
+                                value={elementType}
+                                onChange={handleFilterChange}
+                            >
+                                <option value="">Тип события</option>
+                                <option value="Внешнее событие">Внешнее событие</option>
+                                <option value="Внутреннее событие">Внутреннее событие</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+                <div className="events-content-cards-list">
                     {eventsForSelectedDate.map(e => (
-                        <Link to={`/events/${e.id}`} key={e.id}>
+                        <Link to={`/events/${e.id}`} key={e.id} className="standart-card-link">
                             <StandartCard
                                 title={e.title}
                                 text={e.text}
@@ -216,8 +263,11 @@ const EventsPage = () => {
                             />
                         </Link>
                     ))}
+                    {eventsForSelectedDate.length === 0 && (
+                        <p>На выбранную дату событий нет.</p>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };
