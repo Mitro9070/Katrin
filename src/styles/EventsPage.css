@@ -154,3 +154,25 @@
     display: block; /* Убедимся, что ссылка отображается как блок */
     margin: 2px 0; /* Добавим отступы */
 }
+
+.filter-block {
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 15px; /* Увеличим высоту на 15px */
+    height: auto; /* Убедимся, что высота автоматически регулируется */
+}
+
+.filter-block a {
+    display: inline-block;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-block a:hover {
+    text-decoration: underline;
+}

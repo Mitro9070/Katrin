@@ -99,6 +99,19 @@ const EventsPage = () => {
         if (name === "elementType") setElementType(value);
     };
 
+    // Функция для сброса фильтров
+    const resetFilters = () => {
+        const today = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        setStartDate(today.toISOString().split("T")[0]); // Формат YYYY-MM-DD
+        setEndDate(thirtyDaysFromNow.toISOString().split("T")[0]); // Формат YYYY-MM-DD
+        setPastEvents(false); // Сбросим фильтр прошедших событий
+        setElementType(''); // Сбросим тип события
+        setSelectedDate(null); // Сбросим выбранную дату
+    };
+
     // Функция для нормализации даты (обнуление времени)
     const normalizeDate = (date) => {
         const normalized = new Date(date);
@@ -248,6 +261,7 @@ const EventsPage = () => {
                                 <option value="Внутреннее событие">Внутреннее событие</option>
                             </select>
                         </div>
+                        <a onClick={resetFilters}>Сбросить фильтр</a>
                     </div>
                 )}
                 <div className="events-content-cards-list">
