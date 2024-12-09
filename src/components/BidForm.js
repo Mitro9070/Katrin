@@ -206,7 +206,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         elementType: format,
                         text: navigationStore.currentBidText || '',
                         organizer: userId,
-                        status: "На модерации",
+                        status: typeForm === 'TechNews' ? "Одобрено" : "На модерации",
                         images: photosUrls || [],
                         files: filesUrls || [],
                         links: n_links || [],
