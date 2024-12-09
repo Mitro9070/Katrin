@@ -3,6 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 const fs = require('fs');
 const https = require('https');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -138,4 +139,9 @@ app.get('/api/webdav/download', async (req, res) => {
 });
 
 const PORT = 4000;
-app.listen(PORT, () => log(`Сервер запущен на порту ${PORT}`));
+const httpsOptions = {
+  key: fs.readFileSync('/etc/ssl/private/private.key'),
+  cert: fs.readFileSync('/etc/ssl/certs/__corp_katusha-it_ru.crt')
+};
+
+https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => log(`Сервер запущен на порту ${PORT}`));

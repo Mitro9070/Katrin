@@ -50,9 +50,14 @@ function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
                         return cachedImage;
                     } else {
                         const fileRef = storageRef(storage, image);
-                        const url = await getDownloadURL(fileRef);
-                        localStorage.setItem(image, url);
-                        return url;
+                        try {
+                            const url = await getDownloadURL(fileRef);
+                            localStorage.setItem(image, url);
+                            return url;
+                        } catch (error) {
+                            console.error("Ошибка при получении URL:", error);
+                            return null; // Если файл не найден, возвращаем null
+                        }
                     }
                 }));
                 setImageUrls(urls);
