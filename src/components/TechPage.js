@@ -61,37 +61,27 @@ const TechPage = () => {
             const filteredNewsData = [];
 
             if (newsSnapshot.exists()) {
-                const newsData = newsSnapshot.val();
-                for (const key in newsData) {
-                    const item = newsData[key];
-                    let organizerName = 'Неизвестно';
-
-                    if (item.organizer) {
-                        const userRef = ref(database, `Users/${item.organizer}`);
-                        const snapshot = await get(userRef);
-
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-                            organizerName = `${userData.surname || ''} ${userData.Name ? userData.Name.charAt(0) + '.' : ''}`.trim();
-                        } else {
-                            organizerName = item.organizer;
-                        }
-                    }
+                newsSnapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const organizer = users[item.organizer];
+                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
                     if (item.status === 'Архив') {
+                        // Технические новости в архиве
                         filteredNewsData.push({
                             ...item,
                             organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: key
+                            id: childSnapshot.key
                         });
                     } else if (roleId !== '5' || item.organizer === userId) {
+                        // Технические новости не в архиве
                         filteredNewsData.push({
                             ...item,
                             organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: key
+                            id: childSnapshot.key
                         });
                     }
-                }
+                });
             }
 
             setNewsData(filteredNewsData);

@@ -91,23 +91,32 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 return urls;
             };
 
-            // Validate required fields (title and format)
-            const title = document.getElementById('bid-title').value;
-            if (!title) {
-                toast.error("Укажите название новости.");
-                setLoading(false);
-                return;
-            }
+            // Проверка обязательных полей (название и формат)
+                const title = document.getElementById('bid-title').value;
+                if (!title) {
+                    toast.error("Укажите название новости.");
+                    setLoading(false);
+                    return;
+                }
 
-            let selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
-            if (typeForm === 'Events') {
-                selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
-            }
-            if (!selectedFormats.length) {
-                toast.error("Выберите тип Новости.");
-                setLoading(false);
-                return;
-            }
+                let selectedFormats = [];
+                if (typeForm === 'TechNews') {
+                    selectedFormats = ['Тех. новости']; // Автоматически устанавливаем для TechNews
+                } else if (typeForm === 'Events') {
+                    selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
+                    if (!selectedFormats.length) {
+                        toast.error("Выберите тип События.");
+                        setLoading(false);
+                        return;
+                    }
+                } else {
+                    selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
+                    if (!selectedFormats.length) {
+                        toast.error("Выберите тип Новости.");
+                        setLoading(false);
+                        return;
+                    }
+                }
             // Собираем файлы
             
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
