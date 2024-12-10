@@ -1,3 +1,4 @@
+// Импортируем необходимые библиотеки и стили
 import { Link, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
@@ -8,11 +9,11 @@ import iconPrinterImg from '../images/printer.svg';
 import iconPOImg from '../images/on-laptop.svg';
 import iconCalendarImg from '../images/calendar.svg';
 import iconMapImg from '../images/map-2.svg';
-import iconDocImg from '../images/write-on-doc.svg';
-import iconContentImg from '../images/task-send.svg';  // Импорт новой иконки для пункта "Контент"
+import iconDocImg from '../images/write-on-doc.svg';  
+import iconContentImg from '../images/task-send.svg';  
 import iconTechNewsImg from '../images/settings.svg';
-import iconProfileImg from '../images/man.png';  // Импорт иконки для пункта "Профиль"
-import iconAdminImg from '../images/lock.png';  // Импорт иконки для пункта "Администратор"
+import iconProfileImg from '../images/man.png';  
+import iconAdminImg from '../images/lock.png';  
 import logo from '../images/logo.png';
 
 function Menu() {
@@ -39,9 +40,13 @@ function Menu() {
                 <Link to="/software"><div onClick={(e) => onClickTabHandler(e, '/software')} className={`menu-tab ${currentPath === '/software' ? 'menu-selected-tab' : ''}`}><img src={iconPOImg} alt="" /><p>ПО</p></div></Link>
                 <Link to="/events"><div onClick={(e) => onClickTabHandler(e, '/events')} className={`menu-tab ${currentPath === '/events' ? 'menu-selected-tab' : ''}`}><img src={iconCalendarImg} alt="" /><p>События</p></div></Link>
                 <Link to="/map"><div onClick={(e) => onClickTabHandler(e, '/map')} className={`menu-tab ${currentPath === '/map' ? 'menu-selected-tab' : ''}`}><img src={iconMapImg} alt="" /><p>Карта</p></div></Link>
-                {permissions.homepage && permissions.newspage && permissions.devicepage && permissions.calendarevents && permissions.map && permissions.software && (
+                
+                {/* Обновленное условие для отображения вкладки "Заявки" */}
+                {permissions.homepage && permissions.newspage && permissions.devicepage && permissions.calendarevents && permissions.map && permissions.software && 
+                !(roleId === '4' || roleId === '5' || roleId === '6') && ( // Проверяем, что роль не 4, 5 или 6
                     <Link to="/bid"><div onClick={(e) => onClickTabHandler(e, '/bid')} className={`menu-tab ${currentPath === '/bid' ? 'menu-selected-tab' : ''}`}><img src={iconContentImg} alt="" /><p>Заявки</p></div> </Link>
                 )}
+
                 {(roleId === '4' || roleId === '1' || roleId === '5') && (
                     <>
                         <div className="menu-divider"></div> 
