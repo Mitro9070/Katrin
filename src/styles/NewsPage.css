@@ -1,3 +1,5 @@
+/* NewsPage.css */
+
 .news-page-head {
     display: flex;
     justify-content: space-between;
@@ -30,6 +32,8 @@
     display: grid;
     grid-template-columns: auto auto; /* Две колонки одинаковой ширины */
     gap: 30px;
+    min-height: 500px; /* Устанавливаем минимальную высоту */
+    margin-top: 20px; /* Отступ сверху под вкладками */
 }
 
 .news-page-content div {
@@ -69,4 +73,10 @@
     background-color: #0056b3;
     color: white;
     border-color: #0056b3;
+}
+
+.bid-page-head.disabled {
+    pointer-events: none; /* Отключает все события мыши */
+    opacity: 0.5; /* Делаем вкладку более бледной */
+    cursor: default;
 }

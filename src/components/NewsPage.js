@@ -1,185 +1,169 @@
-import '../styles/NewsPage.css'; // Импорт стилей для страницы новостей
-import { useState, useEffect } from 'react'; // Импорт хуков useState и useEffect из React
-import { Link, useNavigate } from 'react-router-dom'; // Импорт компонента Link из react-router-dom для навигации
-import StandartCard from './StandartCard'; // Импорт компонента StandartCard для отображения карточек новостей
-import { ref, get } from 'firebase/database'; // Импорт функций ref и get из firebase/database для работы с базой данных Firebase
-import { database } from '../firebaseConfig'; // Импорт конфигурации Firebase
-import Cookies from 'js-cookie'; // Импорт библиотеки js-cookie для работы с куки
-import Loader from './Loader'; // Импорт компонента Loader для отображения индикатора загрузки
-import { getPermissions } from '../utils/Permissions'; // Импорт функции getPermissions для получения разрешений
+import '../styles/NewsPage.css';
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import StandartCard from './NewsCard';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebaseConfig';
+import Cookies from 'js-cookie';
+import Loader from './Loader';
+import { getPermissions } from '../utils/Permissions';
+import PageHeadTab from './PageHeadTab';
 
 const NewsPage = () => {
     const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
-    const [news, setNews] = useState([]); // Состояние для новостей
+    const [news, setNews] = useState([]); // Состояние для хранения новостей
     const [currentPage, setCurrentPage] = useState(1); // Состояние для текущей страницы
-    const itemsPerPage = 6; // Количество элементов на странице
+    const itemsPerPage = 6; // Количество новостей на странице
     const [permissions, setPermissions] = useState({ newspage: false }); // Состояние для разрешений пользователя
-    const [userName, setUserName] = useState('Гость'); // Состояние для имени пользователя
     const [showModal, setShowModal] = useState(false); // Состояние для отображения модального окна
-    const [modalMessage, setModalMessage] = useState(''); // Состояние для сообщения в модальном окне
-    const [loading, setLoading] = useState(true); // Состояние для индикатора загрузки
+    const [modalMessage, setModalMessage] = useState(''); // Сообщение для модального окна
+    const [loading, setLoading] = useState(true); // Состояние загрузки
     const [error, setError] = useState(null); // Состояние для обработки ошибок
-    const navigate = useNavigate();
 
-    const roleId = Cookies.get('roleId'); // Получение идентификатора роли из куки
+    const roleId = Cookies.get('roleId') || '2'; // Роль пользователя (по умолчанию "Гость")
+    const [cardsLoaded, setCardsLoaded] = useState(0); // Счетчик загруженных карточек
+    const totalCards = useRef(0); // Общее количество карточек для загрузки
+
+    // Определение типа новостей
+    const newsTypeList = {
+        'Ads': 'Объявления',
+        'Devices': 'Устройства и ПО',
+        'Activity': 'Мероприятия',
+        'TechNews': 'Тех. новости'
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userId = Cookies.get('userId');
-                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
-                const permissions = getPermissions(roleId);
-
+                const permissions = getPermissions(roleId); // Получаем разрешения
                 setPermissions(permissions);
 
-                switch (roleId) {
-                    case '1': // Администратор
-                        if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '3': // Авторизованный пользователь
-                        if (!permissions.submissionNews && !permissions.submissionEvents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '2': // Гость
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '4': // Контент-менеджер
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '5': // Менеджер событий
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    case '6': // Техник
-                        if (!permissions.newspage) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true); // Отображение модального окна с сообщением
-                            return;
-                        }
-                        break;
-                    default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+                if (!permissions.newspage) {
+                    setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
+                    setShowModal(true);
+                    setLoading(false);
+                    return; // Прерываем выполнение, если нет прав
                 }
 
-                await fetchNews(); // Загрузка новостей
-                //await fetchEvents(); // Загрузка событий
-                //await fetchDevices(); // Загрузка устройств при монтировании компонента
+                await fetchNews(); // Загружаем новости
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
-                setError('Не удалось загрузить данные'); // Установка сообщения об ошибке
-            } finally {
-                setLoading(false); // Отключение индикатора загрузки
+                setError('Не удалось загрузить данные'); // Устанавливаем сообщение об ошибке
+                setLoading(false);
             }
         };
 
-        fetchData(); // Вызов функции загрузки данных
-        Cookies.set('currentPage', 'news');
-    }, [navigate]);
+        fetchData(); // Вызываем функцию загрузки данных
+        Cookies.set('currentPage', 'news'); // Устанавливаем текущую страницу в куки
+    }, [roleId]);
 
     const fetchNews = async () => {
         try {
-            const newsRef = ref(database, 'News'); // Ссылка на данные новостей в базе данных Firebase
-            const snapshot = await get(newsRef); // Получение данных новостей из базы данных
+            const newsRef = ref(database, 'News'); // Ссылка на базу данных новостей
+            const snapshot = await get(newsRef); // Получение данных
             if (snapshot.exists()) {
                 const newsData = [];
                 snapshot.forEach(childSnapshot => {
-                    const item = childSnapshot.val(); // Получение данных новости
+                    const item = childSnapshot.val(); // Получаем данные для каждой новости
                     if (item.status === 'Опубликовано') {
-                        newsData.push({
-                            ...item,
-                            id: childSnapshot.key
-                        });
+                        newsData.push({ ...item, id: childSnapshot.key }); // Загружаем только опубликованные новости
                     }
                 });
-                setNews(newsData); // Установка состояния новостей
+                setNews(newsData); // Устанавливаем загруженные новости
+                totalCards.current = newsData.length; // Устанавливаем общее количество карточек
             }
+            setLoading(false); // Снимаем состояние загрузки после получения данных
         } catch (error) {
-            console.error('Ошибка при загрузке новостей:', error); // Обработка ошибки загрузки новостей
+            console.error('Ошибка при загрузке новостей:', error);
+            setError('Не удалось загрузить новости'); // Устанавливаем сообщение об ошибке
+            setLoading(false);
         }
     };
 
-    const newsTypeList = { 'Ads': 'Объявления', 'Devices': 'Устройства и ПО', 'Activity': 'Мероприятия', 'TechNews': 'Тех. новости' }; // Список типов новостей
-
     const onTabClickHandler = (e) => {
-        const selectedTab = e.target.dataset.tab; // Получение выбранной вкладки
-        setCurrentTab(selectedTab); // Установка текущей вкладки
-        setCurrentPage(1); // Сброс текущей страницы при смене вкладки
+        const selectedTab = e.target.dataset.tab; // Получаем выбранную вкладку
+        if (!loading) { // Не позволяем менять вкладки во время загрузки
+            setCurrentTab(selectedTab); // Устанавливаем текущую вкладку
+            setCurrentPage(1); // Сбрасываем текущую страницу
+            setCardsLoaded(0); // Сброс загруженных карточек
+        }
+    };
+
+    const handleCardLoad = () => {
+        setCardsLoaded(prev => {
+            const newVal = prev + 1;
+            if (newVal === totalCards.current) {
+                setLoading(false); // Снимаем состояние загрузки, если загружены все карточки
+            }
+            return newVal;
+        });
+    };
+
+    const getFilteredItems = () => {
+        if (currentTab === 'All') {
+            return news.filter(newsItem => newsItem.status === 'Опубликовано' && newsItem.elementType !== 'Тех. новости');
+        } else if (currentTab === 'TechNews') {
+            return news.filter(newsItem => newsItem.status === 'Опубликовано' && newsItem.elementType === 'Тех. новости');
+        } else {
+            return news.filter(newsItem => newsItem.status === 'Опубликовано' && newsItem.elementType === newsTypeList[currentTab]);
+        }
     };
 
     const renderNews = (type) => {
         const sortedNews = [...news].sort((a, b) => {
             if (!a.postData) return 1;
             if (!b.postData) return -1;
-            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
-                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
+            return new Date(
+                b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]
+            ) - new Date(
+                a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]
+            );
         });
 
-        if (type) {
-            const filteredNews = sortedNews.filter(news => news.elementType === type && news.status === 'Опубликовано');
-            const indexOfLastItem = currentPage * itemsPerPage;
-            const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-            const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
+        const filteredNews = sortedNews.filter(newsItem => newsItem.elementType === type && newsItem.status === 'Опубликовано');
+        const indexOfLastItem = currentPage * itemsPerPage;
+        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
 
-            return currentItems.map(e => (
-                <Link to={`/news/${e.id}`} key={e.id}>
-                    <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
-                </Link>
-            ));
-        } else {
-            const filteredNews = sortedNews.filter(news => news.status === 'Опубликовано' && news.elementType !== 'Тех. новости');
-            const indexOfLastItem = currentPage * itemsPerPage;
-            const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-            const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
-
-            return currentItems.map(e => (
-                <Link to={`/news/${e.id}`} key={e.id}>
-                    <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
-                </Link>
-            ));
-        }
+        return currentItems.map(e => (
+            <Link to={`/news/${e.id}`} key={e.id} onClick={(e) => { if (loading) e.preventDefault(); }}>
+                <StandartCard
+                    title={e.title}
+                    text={e.text}
+                    publicDate={e.postData}
+                    images={e.images}
+                    onCardLoad={handleCardLoad}
+                />
+            </Link>
+        ));
     };
 
     const renderAll = () => {
         const sortedNews = [...news].sort((a, b) => {
             if (!a.postData) return 1;
             if (!b.postData) return -1;
-            return new Date(b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]) - 
-                   new Date(a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]);
-        }).filter(news => news.status === 'Опубликовано' && news.elementType !== 'Тех. новости');
+            return new Date(
+                b.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + b.postData.split(', ')[1]
+            ) - new Date(
+                a.postData.split(', ')[0].split('.').reverse().join('-') + 'T' + a.postData.split(', ')[1]
+            );
+        }).filter(newsItem => newsItem.status === 'Опубликовано' && newsItem.elementType !== 'Тех. новости');
 
         const indexOfLastItem = currentPage * itemsPerPage;
         const indexOfFirstItem = indexOfLastItem - itemsPerPage;
         const currentItems = sortedNews.slice(indexOfFirstItem, indexOfLastItem);
 
         return currentItems.map(e => (
-            <Link to={`/news/${e.id}`} key={e.id}>
-                <StandartCard title={e.title} text={e.text} publicDate={e.postData} images={e.images} />
+            <Link to={`/news/${e.id}`} key={e.id} onClick={(e) => { if (loading) e.preventDefault(); }}>
+                <StandartCard
+                    title={e.title}
+                    text={e.text}
+                    publicDate={e.postData}
+                    images={e.images}
+                    onCardLoad={handleCardLoad}
+                />
             </Link>
         ));
-    };
-
-    const getFilteredItems = () => {
-        if (currentTab === 'All') {
-            return news.filter(news => news.elementType !== 'Тех. новости');
-        } else if (currentTab === 'TechNews') {
-            return news.filter(news => news.elementType === 'Тех. новости');
-        } else {
-            return news.filter(news => news.elementType === newsTypeList[currentTab]);
-        }
     };
 
     const filteredItems = getFilteredItems();
@@ -191,9 +175,9 @@ const NewsPage = () => {
 
     const renderPageNumbers = pageNumbers.map(number => (
         <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-            <a onClick={() => setCurrentPage(number)} className="page-link">
+            <span onClick={() => setCurrentPage(number)} className="page-link" style={{ cursor: 'pointer' }}>
                 {number}
-            </a>
+            </span>
         </li>
     ));
 
@@ -210,25 +194,23 @@ const NewsPage = () => {
                     </div>
                 </div>
             )}
-            <div className="bid-page-head noselect">
-                <p className={`bid-page-head-tab ${currentTab === 'All' ? 'bid-page-head-tab-selected' : ''}`} data-tab="All" onClick={onTabClickHandler}>Все</p>
-                {(roleId === '1' || roleId === '6') && (
-                    <p className={`bid-page-head-tab ${currentTab === 'TechNews' ? 'bid-page-head-tab-selected' : ''}`} data-tab="TechNews" onClick={onTabClickHandler}>Тех. новости</p>
-                )}
-                <p className={`bid-page-head-tab ${currentTab === 'Ads' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Ads" onClick={onTabClickHandler}>Объявления</p>
-                <p className={`bid-page-head-tab ${currentTab === 'Devices' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Devices" onClick={onTabClickHandler}>Устройства и ПО</p>
-                <p className={`bid-page-head-tab ${currentTab === 'Activity' ? 'bid-page-head-tab-selected' : ''}`} data-tab="Activity" onClick={onTabClickHandler}>Мероприятия</p>
-            </div>
+            
+                <PageHeadTab
+                    currentTab={currentTab}
+                    onTabClickHandler={onTabClickHandler}
+                    roleId={roleId}
+                />
+            
             <div className="news-page-content">
                 {currentTab === 'TechNews' && renderNews('Тех. новости')}
                 {currentTab !== 'All' && currentTab !== 'TechNews' && renderNews(newsTypeList[currentTab])}
                 {currentTab === 'All' && renderAll()}
             </div>
-            {filteredItems.length > itemsPerPage || currentPage > 1 ? (
+            {(filteredItems.length > itemsPerPage || currentPage > 1) && (
                 <ul className="pagination">
                     {renderPageNumbers}
                 </ul>
-            ) : null}
+            )}
         </div>
     );
 };

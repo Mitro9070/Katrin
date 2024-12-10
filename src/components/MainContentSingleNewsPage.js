@@ -10,7 +10,8 @@ import imgIconArrowIcon from '../images/arrow-left.png';
 import imgEyeIcon from '../images/folder.svg';
 import imgAttachIcon from '../images/attach.svg';
 
-import photo from '../images/photo-news.png';
+// Импортируем изображение по умолчанию
+import defaultImage from '../images/News.png'; 
 
 function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
     const [currentImage, setCurrentImage] = useState(0);
@@ -60,7 +61,15 @@ function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
                         }
                     }
                 }));
-                setImageUrls(urls);
+
+                // Проверяем, если массив URL пуст, устанавливаем изображение по умолчанию
+                if (urls.length === 0 || urls.every(url => url === null)) {
+                    setImageUrls([defaultImage]); // Используем изображение по умолчанию
+                } else {
+                    setImageUrls(urls.filter(url => url !== null)); // Фильтруем только существующие URL
+                }
+            } else {
+                setImageUrls([defaultImage]); // Используем изображение по умолчанию, если нет изображений
             }
         };
 
@@ -82,36 +91,22 @@ function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
         };
 
         const fetchCreator = async () => {
-            console.log("newsData.organizer:", newsData?.organizer);
-
             if (newsData?.organizer) {
-                console.log("Organizer exists:", newsData.organizer);
-                
-                if (typeof newsData.organizer === 'string' && newsData.organizer.trim() !== '') {
-                    console.log("Organizer is a non-empty string");
-                    try {
-                        const userRef = dbRef(database, `Users/${newsData.organizer}`);
-                        console.log("Fetching user data for:", newsData.organizer);
-                        const userSnapshot = await get(userRef);
-                        
-                        if (userSnapshot.exists()) {
-                            const userData = userSnapshot.val();
-                            console.log("User data found:", userData);
-                            setCreator(`${userData.surname} ${userData.Name} ${userData.lastname}`);
-                        } else {
-                            console.log("User not found in database");
-                            setCreator('Пользователь не найден');
-                        }
-                    } catch (error) {
-                        console.error("Error fetching user data:", error);
-                        setCreator('Ошибка при загрузке данных');
+                try {
+                    const userRef = dbRef(database, `Users/${newsData.organizer}`);
+                    const userSnapshot = await get(userRef);
+                    
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.val();
+                        setCreator(`${userData.surname} ${userData.Name} ${userData.lastname}`);
+                    } else {
+                        setCreator('Пользователь не найден');
                     }
-                } else {
-                    console.log("Organizer is not a valid string:", newsData.organizer);
-                    setCreator(newsData.organizer);
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    setCreator('Ошибка при загрузке данных');
                 }
             } else {
-                console.log("Organizer data is missing");
                 setCreator('Нет данных');
             }
         };
@@ -149,7 +144,7 @@ function MainContentSingleNewsPage({ linkTo, onClick, data, status }) {
                     {imageUrls.length > 0 && (
                         <>
                             <div className="single-bid-content-image-container">
-                                <img src={imageUrls[currentImage] || photo} alt="" />
+                                <img src={imageUrls[currentImage]} alt="News" />
                             </div>
                             <div className="single-bid-tags-carousel-container">
                                 <div className="single-bid-tags">

@@ -111,6 +111,7 @@ const SingleDevicesPage = () => {
 
             setWebdavFiles(filteredFiles.length ? filteredFiles : []);
             setCurrentPath(path);
+            
             setWebdavError(null);
         } catch (error) {
             console.error('Ошибка при подключении к WebDAV:', error);

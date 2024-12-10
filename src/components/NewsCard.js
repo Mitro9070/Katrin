@@ -1,19 +1,10 @@
-import { useEffect, useState } from 'react';
-import '../styles/StandartCard.css';
+import React from 'react';
+import '../styles/NewsCard.css'; // Импортируем стили для NewsCard
+import defaultImage from '../images/News.png'; // Импортируем изображение по умолчанию
 
-function StandartCard({ status, eventType, publicDate, title, text, images, isEvents = false }) {
-    const [imageUrl, setImageUrl] = useState('');
-
-    useEffect(() => {
-        if (images && images.length > 0) {
-            const mainImage = images.find(img => img.includes('Main')) || images[0];
-            setImageUrl(mainImage);
-        }
-    }, [images]);
-
-    // Создаём временный элемент для извлечения текста из HTML
+function NewsCard({ status, eventType, publicDate, title, text, images }) {
     const tempElement = document.createElement('div');
-    tempElement.innerHTML = text;
+    tempElement.innerHTML = text; // Создаем временный элемент для извлечения текста из HTML
     const extractedText = tempElement.innerText || tempElement.textContent;
 
     // Форматирование статуса
@@ -29,11 +20,16 @@ function StandartCard({ status, eventType, publicDate, title, text, images, isEv
         }
     }
 
+    // Получаем главное изображение или используем изображение по умолчанию
+    const imageUrl = (images && images.length > 0)
+        ? images.find(img => img.includes('Main')) || images[0]
+        : defaultImage; // Используем изображение по умолчанию, если нет доступных изображений
+
     return (
-        <div className="standart-card">
+        <div className="news-card">
             <div className="bid-list-card-info-bar">
                 <div className="bid-list-info-bar-card-column-2">
-                    {!isEvents && eventType && (
+                    {!eventType && (
                         <p className="bid-card-info-bar-event-type"><i>{eventType}</i></p>
                     )}
                     {publicDate && (
@@ -43,15 +39,10 @@ function StandartCard({ status, eventType, publicDate, title, text, images, isEv
             </div>
             <div className="bid-list-card-content">
                 <div className="bid-list-card-img-container">
-                    {imageUrl ? (
-                        <img
-                            src={imageUrl}
-                            alt="News"
-                            loading="lazy"
-                        />
-                    ) : (
-                        <p>Изображение не найдено</p>
-                    )}
+                    <img
+                        src={imageUrl} // Используем выбранное изображение или изображение по умолчанию
+                        alt="News"
+                    />
                 </div>
                 <div className="bid-list-card-content-column-2">
                     <p className={`bid-list-card-title ${status ? 'with-status' : ''}`}>
@@ -64,4 +55,4 @@ function StandartCard({ status, eventType, publicDate, title, text, images, isEv
     );
 }
 
-export default StandartCard;
+export default NewsCard;
