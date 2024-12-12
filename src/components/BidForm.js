@@ -210,6 +210,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         images: photosUrls || [],
                         files: filesUrls || [],
                         links: n_links || [],
+                        display_up_to: document?.getElementById('display_up_to')?.value || '', // Получаем значение из поля display_up_to
                         fixed: isImportant,
                         postData: new Date().toLocaleString('ru-RU')
                     };

@@ -204,7 +204,10 @@ const MainPage = observer(() => {
                 <img src={iconPencilImg} alt="" className="edit-main-page-img" onClick={setShowEditMainMenuPushHandler} />
             </div>
             <div className="main-page-content">
+                {/* Блок закрепленных объявлений */}
                 <MainPageBlockAds />
+                
+                {/* Блок новостей */}
                 <NewsBlockSlide 
                     name={'Новости'} 
                     data={publishedNews.length > 0 ? publishedNews : [
@@ -217,6 +220,8 @@ const MainPage = observer(() => {
                     ]} 
                     className="news" 
                 />
+                
+                {/* Блок событий */}
                 <EventsBlockSlide 
                     name={'События'} 
                     data={publishedEvents.length > 0 ? publishedEvents : [
@@ -227,16 +232,23 @@ const MainPage = observer(() => {
                         }
                     ]} 
                 />
+                
+                {/* Список дней рождения */}
                 <MainPageBlockList name={'Дни рождения'} list={birthdays} isBirthday />
+                {/* Список новых сотрудников */}
                 <MainPageBlockList name={'Новые сотрудники'} list={newEmployees} />
+                
+                {/* Кнопка для задать вопрос */}
                 <div className="main-page-btn main-page-btn-red" onClick={setShowQuestionPushHandler}>
                     <img src={iconHintImg} alt="" />
                     <p>Задать вопрос</p>
                 </div>
+                {/* Кнопка для предложить инициативу */}
                 <div className="main-page-btn" onClick={setShowInitiativePushHandler}>
                     <img src={iconMainInImg} alt="" />
                     <p>Предложить инициативу</p>
                 </div>
+                {/* Кнопка для пройти опрос */}
                 <a href="#">
                     <div className="main-page-btn">
                         <img src={iconBatchImg} alt="" />
@@ -244,12 +256,16 @@ const MainPage = observer(() => {
                     </div>
                 </a>
             </div>
+            
+            {/* Показать редактирование главного меню, если флаг установлен */}
             {ShowEditMainMenuPush && (
                 <EditMainMenuPush setShowEditMainMenuPush={setShowEditMainMenuPushHandler} />
             )}
+            {/* Показать вопрос, если флаг установлен */}
             {ShowQuestionPush && (
                 <QuestionPush setShowQuestionPush={setShowQuestionPushHandler} />
             )}
+            {/* Показать инициативу, если флаг установлен */}
             {ShowInitiativePush && (
                 <InitiativePush setShowInitiativePush={setShowInitiativePushHandler} />
             )}

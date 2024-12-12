@@ -7,17 +7,17 @@ import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import BidForm from './BidForm';
-import TableComponent from './TableComponent'; // Импорт TableComponent
-import EditBidForm from './EditBidPage'; // Импорт EditBidForm
+import TableComponent from './TableComponent'; 
+import EditBidForm from './EditBidPage'; 
 
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
 const ContentPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
-    const [editMode, setEditMode] = useState(false); // Режим редактирования
-    const [editTypeForm, setEditTypeForm] = useState(''); // Тип формы для редактирования
-    const [editBidId, setEditBidId] = useState(null); // ID редактируемой заявки
+    const [editMode, setEditMode] = useState(false); 
+    const [editTypeForm, setEditTypeForm] = useState('');
+    const [editBidId, setEditBidId] = useState(null); 
     const [currentTab, setCurrentTab] = useState('News');
     const [newsData, setNewsData] = useState([]);
     const [eventsData, setEventsData] = useState([]);
@@ -41,20 +41,15 @@ const ContentPage = () => {
 
             setLoading(true);
 
+            // Проверка прав доступа для разных ролей
             switch (roleId) {
                 case '1': // Администратор
-                    if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
+                case '4': // Контент менеджер
+                    // Разрешения для администратора и контент менеджера здесь
                     break;
                 case '3': // Авторизованный пользователь
                 case '6': // Техник
                     if (!permissions.submissionNews && !permissions.submissionEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
-                    break;
-                case '4': // Контент менеджер
-                    if (!permissions.processingNews && !permissions.processingEvents) {
                         throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
                     }
                     break;
@@ -85,6 +80,7 @@ const ContentPage = () => {
                     const organizer = users[item.organizer];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
+                    // Проверка доступа для просмотра новостей
                     if ((roleId === '3' || roleId === '6') && item.organizer !== userId) continue;
                     filteredNewsData.push({
                         ...item,
@@ -92,6 +88,9 @@ const ContentPage = () => {
                         id: key
                     });
                 }
+
+                // Сортировка новостей по полю postData
+                filteredNewsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
             }
 
             // Обработка данных событий
@@ -113,13 +112,17 @@ const ContentPage = () => {
                         }
                     }
 
-                    if ((roleId === '3' || roleId === '4' || roleId === '6') && item.organizer !== userId) continue;
+                    // Проверка доступа для просмотра событий
+                    if ((roleId === '3'  || roleId === '6') && item.organizer !== userId) continue;
                     filteredEventsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                         id: key
                     });
                 }
+
+                // Сортировка событий по полю postData
+                filteredEventsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
             }
 
             setNewsData(filteredNewsData);

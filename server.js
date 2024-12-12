@@ -138,10 +138,13 @@ app.get('/api/webdav/download', async (req, res) => {
   }
 });
 
-const PORT = 4000;
+/* const PORT = 4000;
 const httpsOptions = {
   key: fs.readFileSync('/etc/ssl/private/private.key'),
   cert: fs.readFileSync('/etc/ssl/certs/__corp_katusha-it_ru.crt')
 };
 
-https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => log(`Сервер запущен на порту ${PORT}`));
+https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => log(`Сервер запущен на порту ${PORT}`)); */
+const PORT = 4000;
+
+app.listen(PORT, '0.0.0.0', () => log(`Сервер запущен на порту ${PORT}`));

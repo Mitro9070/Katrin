@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import { Link } from 'react-router-dom';
-
 import '../styles/MainPageBlockAds.css';
-
 import imgFixedIcon from '../images/fixed.svg';
 import Loader from "./Loader";
 
@@ -26,17 +24,35 @@ function MainPageBlockAds() {
                 ]);
 
                 const importantAds = [];
+                const today = new Date();
 
                 if (newsSnapshot.exists()) {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
                         const displayUpToDate = new Date(item.display_up_to);
-                        const today = new Date();
-                        if (item.status === 'Опубликовано' && item.elementType === 'Объявления' && displayUpToDate >= today) {
-                            importantAds.push({
-                                ...item,
-                                id: childSnapshot.key
-                            });
+                        const postDate = new Date(item.postData);
+
+                        // Добавляем логику для фильтрации и отображения
+                        if (item.status === 'Опубликовано' && item.elementType === 'Объявления') {
+                            if (item.fixed) {
+                                // Если display_up_to не задано, показываем на 2 дня с момента postData
+                                if (!item.display_up_to && (postDate <= today && postDate >= new Date(today.getTime() - (2 * 24 * 60 * 60 * 1000)))) {
+                                    importantAds.push({
+                                        ...item,
+                                        id: childSnapshot.key
+                                    });
+                                } else if (displayUpToDate >= today) {
+                                    importantAds.push({
+                                        ...item,
+                                        id: childSnapshot.key
+                                    });
+                                }
+                            } else if (displayUpToDate >= today) {
+                                importantAds.push({
+                                    ...item,
+                                    id: childSnapshot.key
+                                });
+                            }
                         }
                     });
                 }
@@ -45,7 +61,6 @@ function MainPageBlockAds() {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
                         const displayUpToDate = new Date(item.display_up_to);
-                        const today = new Date();
                         if (item.status === 'Опубликовано' && item.elementType === 'Объявления' && displayUpToDate >= today) {
                             importantAds.push({
                                 ...item,
@@ -55,18 +70,10 @@ function MainPageBlockAds() {
                     });
                 }
 
-                // Разделение на фиксированные и обычные объявления
-                const fixedAds = importantAds.filter(ad => ad.fixed);
-                const regularAds = importantAds.filter(ad => !ad.fixed);
+                // Сортировка фиксированных объявлений от новых к старым
+                importantAds.sort((a, b) => new Date(b.postData) - new Date(a.postData));
 
-                // Сортировка фиксированных и обычных объявлений по дате
-                const sortedFixedAds = fixedAds.sort((a, b) => new Date(b.postData) - new Date(a.postData));
-                const sortedRegularAds = regularAds.sort((a, b) => new Date(b.postData) - new Date(a.postData));
-
-                // Объединение фиксированных и обычных объявлений
-                const sortedAds = [...sortedFixedAds, ...sortedRegularAds];
-
-                setImportantAds(sortedAds);
+                setImportantAds(importantAds);
             } catch (err) {
                 setError('Не удалось загрузить данные');
             } finally {
@@ -81,8 +88,8 @@ function MainPageBlockAds() {
         // Логика для обработки скролла, если необходима
     };
 
-    if (loading) return <div className="main-page-block-ads custom-scrollbar main-page-block-ads-loader"><Loader /></div>; // Состояние загрузки
-    if (error) return <p>{error}</p>; // Обработка ошибок
+    if (loading) return <div className="main-page-block-ads custom-scrollbar main-page-block-ads-loader"><Loader /></div>;
+    if (error) return <p>{error}</p>;
 
     return (
         <div className="main-page-block-ads custom-scrollbar" ref={adsWrapperRef} onScroll={handleScroll}>
