@@ -3,6 +3,7 @@ import { database, storage } from '../firebaseConfig';
 import { ref as databaseRef, set } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid';
+import InputMask from 'react-input-mask';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -27,7 +28,7 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' key={uuidv4()} />]);
     const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' key={uuidv4()} />]);
-    
+
     const [isAdsChecked, setIsAdsChecked] = useState(false);
     const [isDeviceChecked, setIsDeviceChecked] = useState(false);
     const [isEventChecked, setIsEventChecked] = useState(false);
@@ -37,8 +38,9 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [CarouselPosition, setCarouselPosition] = useState(0);
     const [coverImageURL, setCoverImageURL] = useState('');
     const [imageURLs, setImageURLs] = useState([]);
+    const [email, setEmail] = useState(''); // Начальное значение
 
-    
+
 
 
     const addImageURL = (url) => {
@@ -76,12 +78,22 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
         if (parts.length === 2) return parts.pop().split(';').shift();
     };
 
+    const handleEmailChange = (e) => {
+        let { value } = e.target;
+
+        // Удаляем недопустимые символы (например, русские буквы)
+        value = value.replace(/[^\w@._-]/g, ''); // позволяет латинские буквы, цифры, знаки @, ., _ и -
+
+        setEmail(value); // Устанавливаем текущее значение e-mail
+
+    };
+
     const addBidHandler = async () => {
         setLoading(true);
         try {
             const newBidKey = uuidv4();
             const userId = getUserIdFromCookie();
-            
+
             console.log("Сгенерирован новый ключ:", newBidKey);
 
             const uploadFiles = async (files, folder) => {
@@ -98,33 +110,41 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             };
 
             // Проверка обязательных полей (название и формат)
-                const title = document.getElementById('bid-title').value;
-                if (!title) {
-                    toast.error("Укажите название новости.");
+            const title = document.getElementById('bid-title').value;
+            if (!title) {
+                toast.error("Укажите название новости.");
+                setLoading(false);
+                return;
+            }
+
+            // Валидация электронной почты
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                alert('Пожалуйста, введите корректный адрес электронной почты.');
+                setLoading(false);
+                return;
+            }
+
+            let selectedFormats = [];
+            if (typeForm === 'TechNews') {
+                selectedFormats = ['Тех. новости']; // Автоматически устанавливаем для TechNews
+            } else if (typeForm === 'Events') {
+                selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
+                if (!selectedFormats.length) {
+                    toast.error("Выберите тип События.");
                     setLoading(false);
                     return;
                 }
-
-                let selectedFormats = [];
-                if (typeForm === 'TechNews') {
-                    selectedFormats = ['Тех. новости']; // Автоматически устанавливаем для TechNews
-                } else if (typeForm === 'Events') {
-                    selectedFormats = Array.from(document.querySelectorAll('input[type="radio"][name="bid-format"]:checked')).map(rb => rb?.value);
-                    if (!selectedFormats.length) {
-                        toast.error("Выберите тип События.");
-                        setLoading(false);
-                        return;
-                    }
-                } else {
-                    selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
-                    if (!selectedFormats.length) {
-                        toast.error("Выберите тип Новости.");
-                        setLoading(false);
-                        return;
-                    }
+            } else {
+                selectedFormats = Array.from(document.querySelectorAll('input[type="checkbox"][name="bid-format"]:checked')).map(cb => cb?.value);
+                if (!selectedFormats.length) {
+                    toast.error("Выберите тип Новости.");
+                    setLoading(false);
+                    return;
                 }
+            }
             // Собираем файлы
-            
+
             let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]).filter(Boolean);
             let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
 
@@ -278,57 +298,57 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
             <div className="bid-form-body">
                 <CustomInput width='100%' placeholder='Название' id='bid-title' />
                 <div className="bid-form-body-oneline">
-                    <CustomInput width='50%' placeholder='Теги'  id='bid-tags' />
+                    <CustomInput width='50%' placeholder='Теги' id='bid-tags' />
                     {typeForm !== 'TechNews' && typeForm !== 'Events' && (
                         <div className="bid-form-format-container">
-                        <>
-                            <label className='bid-form-format-element'>
-                                <input
-                                    type="checkbox"
-                                    name="bid-format"
-                                    id="bid-format-ads"
-                                    value="Объявления"
-                                    checked={isAdsChecked}
-                                    onChange={() => {
-                                        setIsAdsChecked(true); // Устанавливаем выбранный элемент
-                                        setIsDeviceChecked(false); // Снимаем выбор с других элементов
-                                        setIsEventChecked(false);
-                                    }}
-                                />
-                                <p><img src={imgCheckmark} alt="" />Объявления</p>
-                            </label>
-                            <label className='bid-form-format-element'>
-                                <input
-                                    type="checkbox"
-                                    name="bid-format"
-                                    id="bid-format-device"
-                                    value="Устройства и ПО"
-                                    checked={isDeviceChecked}
-                                    onChange={() => {
-                                        setIsAdsChecked(false); // Снимаем выбор с других элементов
-                                        setIsDeviceChecked(true); // Устанавливаем выбранный элемент
-                                        setIsEventChecked(false);
-                                    }}
-                                />
-                                <p><img src={imgCheckmark} alt="" />Устройства и ПО</p>
-                            </label>
-                            <label className='bid-form-format-element'>
-                                <input
-                                    type="checkbox"
-                                    name="bid-format"
-                                    id="bid-format-events"
-                                    value="Мероприятия"
-                                    checked={isEventChecked}
-                                    onChange={() => {
-                                        setIsAdsChecked(false); // Снимаем выбор с других элементов
-                                        setIsDeviceChecked(false);
-                                        setIsEventChecked(true); // Устанавливаем выбранный элемент
-                                    }}
-                                />
-                                <p><img src={imgCheckmark} alt="" />Мероприятия</p>
-                            </label>
-                        </>
-                    </div>
+                            <>
+                                <label className='bid-form-format-element'>
+                                    <input
+                                        type="checkbox"
+                                        name="bid-format"
+                                        id="bid-format-ads"
+                                        value="Объявления"
+                                        checked={isAdsChecked}
+                                        onChange={() => {
+                                            setIsAdsChecked(true); // Устанавливаем выбранный элемент
+                                            setIsDeviceChecked(false); // Снимаем выбор с других элементов
+                                            setIsEventChecked(false);
+                                        }}
+                                    />
+                                    <p><img src={imgCheckmark} alt="" />Объявления</p>
+                                </label>
+                                <label className='bid-form-format-element'>
+                                    <input
+                                        type="checkbox"
+                                        name="bid-format"
+                                        id="bid-format-device"
+                                        value="Устройства и ПО"
+                                        checked={isDeviceChecked}
+                                        onChange={() => {
+                                            setIsAdsChecked(false); // Снимаем выбор с других элементов
+                                            setIsDeviceChecked(true); // Устанавливаем выбранный элемент
+                                            setIsEventChecked(false);
+                                        }}
+                                    />
+                                    <p><img src={imgCheckmark} alt="" />Устройства и ПО</p>
+                                </label>
+                                <label className='bid-form-format-element'>
+                                    <input
+                                        type="checkbox"
+                                        name="bid-format"
+                                        id="bid-format-events"
+                                        value="Мероприятия"
+                                        checked={isEventChecked}
+                                        onChange={() => {
+                                            setIsAdsChecked(false); // Снимаем выбор с других элементов
+                                            setIsDeviceChecked(false);
+                                            setIsEventChecked(true); // Устанавливаем выбранный элемент
+                                        }}
+                                    />
+                                    <p><img src={imgCheckmark} alt="" />Мероприятия</p>
+                                </label>
+                            </>
+                        </div>
                     )}
                     {typeForm === 'Events' && (
                         <div className="bid-form-format-container">
@@ -355,8 +375,8 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                             style={{ width: '308px' }}
                         />
                         <label className="bid-form-format-element" >
-                            <input type="checkbox"  name="important" onChange={(e) => setIsImportant(e.target.checked)} />
-                            <p style={{ marginLeft:'30px' }}><img src={imgCheckmark} alt="" />Закрепить объявление</p>
+                            <input type="checkbox" name="important" onChange={(e) => setIsImportant(e.target.checked)} />
+                            <p style={{ marginLeft: '30px' }}><img src={imgCheckmark} alt="" />Закрепить объявление</p>
                         </label>
                     </div>
                 )}
@@ -392,10 +412,10 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                         <div className="wrapper-bid-form">
                             <div className="bid-form-photoes-carousel">
                                 <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
-                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
-                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
-                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
-                                <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                    <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                    <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                    <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
+                                    <CustomPhotoBox name='bid-image' onImageUpload={(url) => addImageURL(url)} />
                                     {componentsCarousel.map((component) => component)}
                                 </div>
                             </div>
@@ -409,8 +429,24 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 {typeForm === 'Events' && (
                     <div className="bid-form-body-oneline">
                         <CustomInput width='420px' placeholder='Организатор мероприятия' type='text' id='bid-organizer' />
-                        <CustomInput width='308px' placeholder='Телефон' type='phone' id='organizer-phone' />
-                        <CustomInput width='307px' placeholder='Почта' type='email' id='organizer-email' />
+
+                        <InputMask
+                            mask="+7(999)999-99-99"
+                            id='organizer-phone'
+                            className="custom-input"
+                            placeholder='Телефон'
+
+                            style={{ width: '308px' }}
+                        />
+                        <input
+                            type='email'
+                            id='organizer-email'
+                            className="custom-input"
+                            placeholder='Почта'
+                            value={email}
+                            onChange={handleEmailChange}
+                            style={{ width: '308px' }}
+                        />
                     </div>
                 )}
                 <p className='title-bid-form'>Файлы</p>
