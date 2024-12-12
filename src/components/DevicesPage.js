@@ -10,6 +10,7 @@ import Loader from './Loader'; // Импорт компонента Loader дл�
 import DeviceForm from './DeviceForm'; // Импорт формы для добавления устройства
 import { getPermissions } from '../utils/Permissions'; // Импорт функции getPermissions для получения разрешений
 import trashIcon from '../images/trash-delete.png'; // Импорт иконки удаления
+import noPhotoImg from '../images/nofoto2.jpg'; // Импорт заглушки изображения
 
 const DevicesPage = () => {
     const [currentTab, setCurrentTab] = useState('All'); // Состояние для текущей вкладки
@@ -140,7 +141,13 @@ const DevicesPage = () => {
         return currentDevices.map(e => (
             <div key={e.id} className="device-card-wrapper">
                 <Link to={`/devices/${e.id}`} key={e.id}>
-                    <StandartCard title={e.id} text={e.description} status={e.options_all_type_of_automatic_document_feeder} publicDate={e.postData} images={e.images} />
+                <StandartCard
+                    title={e.id}
+                    text={e.description}
+                    status={e.options_all_type_of_automatic_document_feeder}
+                    publicDate={e.postData}
+                    images={e.images && e.images.length > 0 ? e.images : [noPhotoImg]} // Заглушка
+                />
                 </Link>
                 {roleId === '1' && (
                     <img

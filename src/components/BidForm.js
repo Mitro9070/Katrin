@@ -27,13 +27,19 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
     const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([<CustomFileSelect name='bid-file' key={uuidv4()} />]);
     const [linksList, setLinksList] = useState([<CustomInput width='308px' placeholder='Ссылка' name='bid-link' key={uuidv4()} />]);
+    
     const [isAdsChecked, setIsAdsChecked] = useState(false);
+    const [isDeviceChecked, setIsDeviceChecked] = useState(false);
+    const [isEventChecked, setIsEventChecked] = useState(false);
+
     const [isImportant, setIsImportant] = useState(false);
     const [loading, setLoading] = useState(false);
-
     const [CarouselPosition, setCarouselPosition] = useState(0);
     const [coverImageURL, setCoverImageURL] = useState('');
     const [imageURLs, setImageURLs] = useState([]);
+
+    
+
 
     const addImageURL = (url) => {
         setImageURLs((prevURLs) => [...prevURLs, url]);
@@ -275,21 +281,54 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                     <CustomInput width='50%' placeholder='Теги'  id='bid-tags' />
                     {typeForm !== 'TechNews' && typeForm !== 'Events' && (
                         <div className="bid-form-format-container">
-                            <>
-                                <label className='bid-form-format-element'>
-                                    <input type="checkbox" name="bid-format" id="bid-format-ads" value="Объявления" onChange={handleAdsCheckboxChange} />
-                                    <p><img src={imgCheckmark} alt="" />Объявления</p>
-                                </label>
-                                <label className='bid-form-format-element'>
-                                    <input type="checkbox" name="bid-format" id="bid-format-device" value="Устройства и ПО" />
-                                    <p><img src={imgCheckmark} alt="" />Устройства и ПО</p>
-                                </label>
-                                <label className='bid-form-format-element'>
-                                    <input type="checkbox" name="bid-format" id="bid-format-events" value="Мероприятия" />
-                                    <p><img src={imgCheckmark} alt="" />Мероприятия</p>
-                                </label>
-                            </>
-                        </div>
+                        <>
+                            <label className='bid-form-format-element'>
+                                <input
+                                    type="checkbox"
+                                    name="bid-format"
+                                    id="bid-format-ads"
+                                    value="Объявления"
+                                    checked={isAdsChecked}
+                                    onChange={() => {
+                                        setIsAdsChecked(true); // Устанавливаем выбранный элемент
+                                        setIsDeviceChecked(false); // Снимаем выбор с других элементов
+                                        setIsEventChecked(false);
+                                    }}
+                                />
+                                <p><img src={imgCheckmark} alt="" />Объявления</p>
+                            </label>
+                            <label className='bid-form-format-element'>
+                                <input
+                                    type="checkbox"
+                                    name="bid-format"
+                                    id="bid-format-device"
+                                    value="Устройства и ПО"
+                                    checked={isDeviceChecked}
+                                    onChange={() => {
+                                        setIsAdsChecked(false); // Снимаем выбор с других элементов
+                                        setIsDeviceChecked(true); // Устанавливаем выбранный элемент
+                                        setIsEventChecked(false);
+                                    }}
+                                />
+                                <p><img src={imgCheckmark} alt="" />Устройства и ПО</p>
+                            </label>
+                            <label className='bid-form-format-element'>
+                                <input
+                                    type="checkbox"
+                                    name="bid-format"
+                                    id="bid-format-events"
+                                    value="Мероприятия"
+                                    checked={isEventChecked}
+                                    onChange={() => {
+                                        setIsAdsChecked(false); // Снимаем выбор с других элементов
+                                        setIsDeviceChecked(false);
+                                        setIsEventChecked(true); // Устанавливаем выбранный элемент
+                                    }}
+                                />
+                                <p><img src={imgCheckmark} alt="" />Мероприятия</p>
+                            </label>
+                        </>
+                    </div>
                     )}
                     {typeForm === 'Events' && (
                         <div className="bid-form-format-container">
