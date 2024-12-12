@@ -348,7 +348,39 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
             return;
         }
 
+
+
         try {
+            // **Добавленная проверка дат**
+
+            const currentDate = new Date();
+            const oneYearLater = new Date();
+            oneYearLater.setFullYear(currentDate.getFullYear() + 1);
+
+            const startDateInput = document.getElementById('bid-start-date')?.value;
+            const endDateInput = document.getElementById('bid-end-date')?.value;
+            const displayUpToInput = document.getElementById('display_up_to')?.value;
+
+            const validateDate = (dateStr, fieldName) => {
+                if (dateStr) {
+                    const date = new Date(dateStr);
+                    if (date < currentDate || date > oneYearLater) {
+                        alert(`Дата в поле "${fieldName}" должна быть в пределах от текущей даты до одного года вперёд.`);
+                        setLoading(false);
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            // Проверяем даты
+            if (!validateDate(startDateInput, 'Дата начала') ||
+                !validateDate(endDateInput, 'Дата окончания') ||
+                !validateDate(displayUpToInput, 'Отображать до')) {
+                return;
+            }
+
+
             const newBidKey = bidData?.id || uuidv4();
             const newCoverImage = document.getElementById('bid-cover')?.files[0];
 

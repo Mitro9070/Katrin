@@ -158,6 +158,37 @@ function BidForm({ setIsAddPage, typeForm, maxPhotoCnt = 6 }) {
                 selectedFormats = ['Тех. новости'];
             }
 
+            // Валидация дат
+            const currentDate = new Date();
+            const oneYearLater = new Date();
+            oneYearLater.setFullYear(currentDate.getFullYear() + 1);
+
+            const startDateInput = document.getElementById('bid-start-date')?.value;
+            const endDateInput = document.getElementById('bid-end-date')?.value;
+            const displayUpToInput = document.getElementById('display_up_to')?.value;
+
+            const validateDate = (dateStr, fieldName) => {
+                if (dateStr) {
+                    const date = new Date(dateStr);
+                    if (date < currentDate || date > oneYearLater) {
+                        alert(`Дата в поле "${fieldName}" должна быть в пределах от текущей даты до одного года вперёд.`);
+                        setLoading(false);
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            // Проверяем даты
+            if (!validateDate(startDateInput, 'Дата начала') ||
+                !validateDate(endDateInput, 'Дата окончания') ||
+                !validateDate(displayUpToInput, 'Отображать до')) {
+                return;
+            }
+
+
+            //Другие форматы
+
             for (let format of selectedFormats) {
                 console.log("Обработка формата:", format);
 
