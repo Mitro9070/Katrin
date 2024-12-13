@@ -61,7 +61,7 @@ const BidPage = () => {
                     newsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
                         // Администратор видит все, остальные пользователи видят только свои
-                        if (roleId !== '1' && item.organizer !== userId) return;
+                        if (roleId !== '1' && item.owner !== userId) return;
                         newsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -73,7 +73,7 @@ const BidPage = () => {
                     eventsSnapshot.forEach((childSnapshot) => {
                         const item = childSnapshot.val();
                         // Администратор видит все, остальные пользователи видят только свои
-                        if (roleId !== '1' && item.organizer !== userId) return;
+                        if (roleId !== '1' && item.owner !== userId) return;
                         eventsData.push({
                             ...item,
                             id: childSnapshot.key
@@ -127,10 +127,10 @@ const BidPage = () => {
             const newNewsRef = push(newsRef);
             await set(newNewsRef, {
                 ...newsItem,
-                organizer: userId,
+                owner: userId,
                 organizer_email: userEmail
             });
-            setNewsData([...newsData, { ...newsItem, id: newNewsRef.key, organizer: userId, organizer_email: userEmail }]);
+            setNewsData([...newsData, { ...newsItem, id: newNewsRef.key, owner: userId, organizer_email: userEmail }]);
         } catch (error) {
             console.error("Ошибка при добавлении новости:", error);
         }
@@ -142,10 +142,10 @@ const BidPage = () => {
             const newEventRef = push(eventsRef);
             await set(newEventRef, {
                 ...eventItem,
-                organizer: userId,
+                owner: userId,
                 organizer_email: userEmail
             });
-            setEventsData([...eventsData, { ...eventItem, id: newEventRef.key, organizer: userId, organizer_email: userEmail }]);
+            setEventsData([...eventsData, { ...eventItem, id: newEventRef.key, owner: userId, organizer_email: userEmail }]);
         } catch (error) {
             console.error("Ошибка при добавлении события:", error);
         }
@@ -165,7 +165,7 @@ const BidPage = () => {
 
     const renderNews = (status) => {
         return newsData
-            .filter(news => news.status === status && (roleId === '1' || news.organizer === userId))
+            .filter(news => news.status === status && (roleId === '1' || news.owner === userId))
             .sort((a, b) => new Date(b.postData) - new Date(a.postData)) // сортировка от новых к старым
             .map(news => (
                 <div key={news.id} className="news-card-container">
@@ -202,7 +202,7 @@ const BidPage = () => {
 
     const renderEvents = (status) => {
         return eventsData
-            .filter(event => event.status === status && (roleId === '1' || event.organizer === userId))
+            .filter(event => event.status === status && (roleId === '1' || event.owner === userId))
             .sort((a, b) => new Date(b.postData) - new Date(a.postData)) // сортировка от новых к старым
             .map(event => (
                 <div key={event.id} className="news-card-container">

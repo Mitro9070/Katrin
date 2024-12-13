@@ -77,11 +77,11 @@ const ContentPage = () => {
                 const newsData = newsSnapshot.val();
                 for (const key in newsData) {
                     const item = newsData[key];
-                    const organizer = users[item.organizer];
+                    const organizer = users[item.owner];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
                     // Проверка доступа для просмотра новостей
-                    if ((roleId === '3' || roleId === '6') && item.organizer !== userId) continue;
+                    if ((roleId === '3' || roleId === '6') && item.owner !== userId) continue;
                     filteredNewsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
@@ -100,20 +100,20 @@ const ContentPage = () => {
                     const item = eventsData[key];
                     let organizerName = "Неизвестно";
 
-                    if (item.organizer) {
-                        const userRef = ref(database, `Users/${item.organizer}`);
+                    if (item.owner) {
+                        const userRef = ref(database, `Users/${item.owner}`);
                         const snapshot = await get(userRef);
 
                         if (snapshot.exists()) {
                             const userData = snapshot.val();
                             organizerName = `${userData.surname || ''} ${userData.Name ? userData.Name.charAt(0) + '.' : ''}`.trim();
                         } else {
-                            organizerName = item.organizer;
+                            organizerName = item.owner;
                         }
                     }
 
                     // Проверка доступа для просмотра событий
-                    if ((roleId === '3'  || roleId === '6') && item.organizer !== userId) continue;
+                    if ((roleId === '3'  || roleId === '6') && item.owner !== userId) continue;
                     filteredEventsData.push({
                         ...item,
                         organizerName: organizerName !== '' ? organizerName : 'Неизвестно',

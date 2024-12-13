@@ -440,6 +440,7 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                 images: imagesUrls,
                 files: filesUrls,
                 links: links,
+                editor: userId, 
             };
 
             // Сохранение данных в базе данных

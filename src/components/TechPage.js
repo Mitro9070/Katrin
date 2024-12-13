@@ -63,7 +63,7 @@ const TechPage = () => {
             if (newsSnapshot.exists()) {
                 newsSnapshot.forEach((childSnapshot) => {
                     const item = childSnapshot.val();
-                    const organizer = users[item.organizer];
+                    const organizer = users[item.owner];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
                     if (item.status === 'Архив') {
@@ -73,7 +73,7 @@ const TechPage = () => {
                             organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
                             id: childSnapshot.key
                         });
-                    } else if (roleId !== '5' || item.organizer === userId) {
+                    } else if (roleId !== '5' || item.owner === userId) {
                         // Технические новости не в архиве
                         filteredNewsData.push({
                             ...item,
