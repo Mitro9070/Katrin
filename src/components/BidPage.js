@@ -12,6 +12,8 @@ import EditBidPage from './EditBidPage';
 import imgFilterIcon from '../images/filter.svg';
 import imgEyeOpened from '../images/eye-opened.svg';
 import imgEdit from '../images/edit.png';
+import noFoto from '../images/nofoto2.jpg';
+import eventsPlaceholder from '../images/events.jpg';
 
 import '../styles/BidPage.css';
 import BidForm from './BidForm';
@@ -34,7 +36,6 @@ const BidPage = () => {
     const userId = Cookies.get('userId');
     const userEmail = Cookies.get('userEmail');
 
-    // useEffect для загрузки данных по приему ролей и прав
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -163,71 +164,77 @@ const BidPage = () => {
     };
 
     const renderNews = (status) => {
-        return newsData.filter(news => news.status === status && (roleId === '1' || news.organizer === userId)).map(news => (
-            <div key={news.id} className="news-card-container">
-                <StandartCard
-                    status={news.status}
-                    publicDate={news.postData}
-                    title={news.title}
-                    text={news.text}
-                    images={news.images}
-                />
-                <div className="news-card-actions">
-                    <Link to={`/news/${news.id}`} className="news-card-eye-link" title="Посмотреть новость">
-                        <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
-                    </Link>
-                    {status === 'На модерации' && (
-                        <img 
-                            src={imgEdit} 
-                            alt="Редактировать" 
-                            className="news-card-edit-icon" 
-                            title="Редактировать новость" 
-                            onClick={() => handleEdit('News', news.id)} 
-                        />
-                    )}
-                    {status === 'Архив' && (
-                        <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено', 'News')}>
-                            <img src={imgEyeOpened} alt="Из архива" />
-                            <span>Из архива</span>
-                        </button>
-                    )}
+        return newsData
+            .filter(news => news.status === status && (roleId === '1' || news.organizer === userId))
+            .sort((a, b) => new Date(b.postData) - new Date(a.postData)) // сортировка от новых к старым
+            .map(news => (
+                <div key={news.id} className="news-card-container">
+                    <StandartCard
+                        //status={news.status}
+                        publicDate={news.postData}
+                        title={news.title}
+                        text={news.text}
+                        images={news.images && news.images.length > 0 ? news.images : [noFoto]}  // добавление заглушки, если изображений нет
+                    />
+                    <div className="news-card-actions">
+                        <Link to={`/news/${news.id}`} className="news-card-eye-link" title="Посмотреть новость">
+                            <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
+                        </Link>
+                        {status === 'На модерации' && (
+                            <img 
+                                src={imgEdit} 
+                                alt="Редактировать" 
+                                className="news-card-edit-icon" 
+                                title="Редактировать новость" 
+                                onClick={() => handleEdit('News', news.id)} 
+                            />
+                        )}
+                        {status === 'Архив' && (
+                            <button className="view-btn" onClick={() => handleStatusChange(news.id, 'Одобрено', 'News')}>
+                                <img src={imgEyeOpened} alt="Из архива" />
+                                <span>Из архива</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
-            </div>
-        ));
+            ));
     };
 
     const renderEvents = (status) => {
-        return eventsData.filter(event => event.status === status && (roleId === '1' || event.organizer === userId)).map(event => (
-            <div key={event.id} className="news-card-container">
-                <StandartCard
-                    status={event.status}
-                    publicDate={event.postData}
-                    title={event.title}
-                    text={event.text}
-                    images={event.images}
-                />
-                <div className="news-card-actions">
-                    <Link to={`/events/${event.id}`} className="news-card-eye-link" title="Посмотреть событие">
-                        <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
-                    </Link>
-                    {status === 'На модерации' && (
-                        <img 
-                            src={imgEdit} 
-                            alt="Редактировать" 
-                            className="news-card-edit-icon" 
-                            title="Редактировать событие" 
-                            onClick={() => handleEdit('Events', event.id)} 
-                        />
-                    )}
-                    {status === 'Архив' && (
-                        <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено', 'Events')}>
-                            <img src={imgEyeOpened} alt="Из архива" />
-                            <span>Из архива</span>
-                        </button>
-                    )}
+        return eventsData
+            .filter(event => event.status === status && (roleId === '1' || event.organizer === userId))
+            .sort((a, b) => new Date(b.postData) - new Date(a.postData)) // сортировка от новых к старым
+            .map(event => (
+                <div key={event.id} className="news-card-container">
+                    <StandartCard
+                        //status={event.status}
+                        publicDate={event.postData}
+                        title={event.title}
+                        text={event.text}
+                        images={event.images && event.images.length > 0 ? event.images : [eventsPlaceholder]}  // добавление заглушки, если изображений нет
+                    />
+                    <div className="news-card-actions">
+                        <Link to={`/events/${event.id}`} className="news-card-eye-link" title="Посмотреть событие">
+                            <img src={imgEyeOpened} alt="Посмотреть" className="news-card-eye-icon" />
+                        </Link>
+                        {status === 'На модерации' && (
+                            <img 
+                                src={imgEdit} 
+                                alt="Редактировать" 
+                                className="news-card-edit-icon" 
+                                title="Редактировать событие" 
+                                onClick={() => handleEdit('Events', event.id)} 
+                            />
+                        )}
+                        {status === 'Архив' && (
+                            <button className="view-btn" onClick={() => handleStatusChange(event.id, 'Одобрено', 'Events')}>
+                                <img src={imgEyeOpened} alt="Из архива" />
+                                <span>Из архива</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
-            </div>
-        ));
+            ));
     };
 
     if (loading) return <Loader/>;
@@ -262,7 +269,7 @@ const BidPage = () => {
                     </div>
                     <div className="bid-page-head-2 noselect">
                         <div className="filter">
-                            <img src={imgFilterIcon} alt="" />
+                            <img src={imgFilterIcon} alt="Фильтр" />
                             <p>Фильтр</p>
                         </div>
                     </div>
@@ -292,7 +299,6 @@ const BidPage = () => {
                             </>
                         )}
                     </div>
-                   
                 </>
             )}
         </div>

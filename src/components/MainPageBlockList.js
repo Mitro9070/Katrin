@@ -83,7 +83,7 @@ function MainPageBlockList({ name, list, isBirthday }) {
                     {content.length > 0 ? content : (
                         <div className="block-list-plug">
                             <img src={imgSettingsIcon} alt="settings icon" />
-                            <p>Блок в разработке</p>
+                            
                         </div>
                     )}
                 </div>
