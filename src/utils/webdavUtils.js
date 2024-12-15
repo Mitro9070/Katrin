@@ -4,8 +4,8 @@ const log = (message) => {
 };
 
 //const serverUrl = 'http://45.12.73.86:4000'; // для моего сервера
-//const serverUrl = 'http://localhost:4000'; // для локального
-const serverUrl = '';  // для сервера
+const serverUrl = 'http://localhost:4000'; // для локального
+//const serverUrl = '';  // для сервера
 
 export const connectToWebDAV = async () => {
   log('Начало подключения к WebDAV...');
