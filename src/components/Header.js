@@ -6,6 +6,7 @@ import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import notificationImg from '../images/notification.svg';
 import NotificationPush from './NotificationPush';
+import SearchBar from './SearchBar';
 import Cookies from 'js-cookie';
 
 function Header({ setShowAuthPush }) {
@@ -15,7 +16,7 @@ function Header({ setShowAuthPush }) {
     const [userColor, setUserColor] = useState('');
     const [roleName, setRoleName] = useState('');
     const navigate = useNavigate();
-   
+
 
     useEffect(() => {
         const storedUserId = Cookies.get('userId');
@@ -66,7 +67,7 @@ function Header({ setShowAuthPush }) {
     return (
         <div className="header">
             <div className="header-search">
-                <p>Поиск</p>
+                <SearchBar />
             </div>
             <div className="header-user" onClick={() => setShowUserMenu(!showUserMenu)}>
                 {user ? (

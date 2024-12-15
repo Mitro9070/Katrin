@@ -1,0 +1,47 @@
+   /* Стили для контейнера поиска */
+   .search-bar {
+    position: relative;
+    width: 100%;
+}
+
+/* Стили для поля ввода */
+.search-bar input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Стили для выпадающего списка результатов */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    border-top: none;
+}
+
+/* Стили для элемента результата */
+.search-result-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Стили для типа результата */
+.result-type {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #555;
+}

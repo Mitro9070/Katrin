@@ -25,6 +25,55 @@
     width: 308px;
     justify-content: space-between;
     color: #2C2C2C;
+    display: flex;
+    align-items: center;
+    position: relative; /* Для позиционирования результатов поиска */
+}
+
+.header-search-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0 12px;
+    font-size: 16px;
+    border-radius: 20px;
+    color: #2C2C2C;
+    background-color: transparent;
+}
+
+/* Стили для выпадающего списка результатов */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #A9A9A9;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    border-radius: 0 0 20px 20px;
+}
+
+/* Стили для элемента результата */
+.search-result-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Стили для типа результата */
+.result-type {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #555;
 }
 
 .header-follow {
