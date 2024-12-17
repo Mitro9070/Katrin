@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, get, set } from 'firebase/database';
+import { ref, get, set, remove } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
 import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
 import BidForm from './BidForm';
-import TableComponent from './TableComponentTech'; // Импорт TableComponent
+import TableComponent from './TableComponentTech'; // Импорт TableComponentTech
 import EditBidForm from './EditBidPage';
 
 import imgFilterIcon from '../images/filter.svg';
@@ -17,6 +17,7 @@ const TechPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
     const [currentTab, setCurrentTab] = useState('TechNews');
     const [newsData, setNewsData] = useState([]);
+    const [deletedNewsData, setDeletedNewsData] = useState([]);
     const [subTab, setSubTab] = useState('Draft');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -53,12 +54,14 @@ const TechPage = () => {
             }
 
             const newsRef = ref(database, 'News');
+            const deletedNewsRef = ref(database, 'Deleted/News');
             const usersRef = ref(database, 'Users');
 
-            const [newsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(usersRef)]);
+            const [newsSnapshot, deletedNewsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(deletedNewsRef), get(usersRef)]);
             const users = usersSnapshot.val();
 
             const filteredNewsData = [];
+            const filteredDeletedNewsData = [];
 
             if (newsSnapshot.exists()) {
                 newsSnapshot.forEach((childSnapshot) => {
@@ -66,25 +69,30 @@ const TechPage = () => {
                     const organizer = users[item.owner];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
 
-                    if (item.status === 'Архив') {
-                        // Технические новости в архиве
-                        filteredNewsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    } else if (roleId !== '5' || item.owner === userId) {
-                        // Технические новости не в архиве
-                        filteredNewsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    }
+                    filteredNewsData.push({
+                        ...item,
+                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                        id: childSnapshot.key
+                    });
+                });
+            }
+
+            if (deletedNewsSnapshot.exists()) {
+                deletedNewsSnapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const organizer = users[item.owner];
+                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+
+                    filteredDeletedNewsData.push({
+                        ...item,
+                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                        id: childSnapshot.key
+                    });
                 });
             }
 
             setNewsData(filteredNewsData);
+            setDeletedNewsData(filteredDeletedNewsData);
         } catch (err) {
             console.error('Ошибка при загрузке данных:', err);
             setError('Не удалось загрузить данные');
@@ -116,12 +124,58 @@ const TechPage = () => {
                 const newsItem = newsSnapshot.val();
                 newsItem.status = newStatus;
                 await set(newsRef, newsItem);
-
-                // Перезагружаем данные после изменения статуса
                 await fetchData();
             }
         } catch (error) {
             console.error("Ошибка при изменении статуса:", error);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const currentDate = new Date().toISOString();
+            const deleteInitiator = userId;
+
+            const newsRef = ref(database, `News/${id}`);
+            const newsSnapshot = await get(newsRef);
+            if (newsSnapshot.exists()) {
+                const newsItem = newsSnapshot.val();
+                newsItem.deletedDate = currentDate;
+                newsItem.deleteInitiator = deleteInitiator;
+
+                const deletedNewsRef = ref(database, `Deleted/News/${id}`);
+                await set(deletedNewsRef, newsItem);
+                await remove(newsRef);
+            }
+
+            await fetchData();
+        } catch (error) {
+            console.error('Ошибка при удалении:', error);
+        }
+    };
+
+    const handleRestore = async (id) => {
+        try {
+            const restoreInitiator = userId;
+
+            const deletedNewsRef = ref(database, `Deleted/News/${id}`);
+            const deletedNewsSnapshot = await get(deletedNewsRef);
+            if (deletedNewsSnapshot.exists()) {
+                const newsItem = deletedNewsSnapshot.val();
+                newsItem.restoredInitiator = restoreInitiator;
+                delete newsItem.deletedDate;
+                delete newsItem.deleteInitiator;
+
+                const newsRef = ref(database, `News/${id}`);
+                await set(newsRef, newsItem);
+                await remove(deletedNewsRef);
+            }
+
+            await fetchData();
+            // Переключаем на вкладку "Черновик"
+            setSubTab('Draft');
+        } catch (error) {
+            console.error('Ошибка при восстановлении:', error);
         }
     };
 
@@ -131,6 +185,12 @@ const TechPage = () => {
     };
 
     const sortedNewsData = newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData)); // Сортировка новостей по postData
+
+    const handleView = (typeForm, id) => {
+        // Реализует логику перехода на страницу просмотра
+
+        navigate(`/news/${id}`);
+    };
 
     return (
         <div className="content-page page-content">
@@ -161,25 +221,30 @@ const TechPage = () => {
                     </div>
                     <div className="content-page-content">
                         <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
-                        {subTab === 'Archive' ? (
+                        {subTab === 'Trash' ? (
                             <TableComponent
-                                items={sortedNewsData.filter(item => item.status === 'Архив' && (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости'))}
-                                onStatusChange={handleStatusChange}
+                                items={deletedNewsData}
+                                onRestore={handleRestore}
+                                onView={handleView}
                                 currentTab={currentTab}
                                 subTab={subTab}
                                 setShowMenuId={setShowMenuId}
                                 showMenuId={showMenuId}
-                                handleEdit={handleEdit}
                             />
                         ) : (
                             <TableComponent
-                                items={sortedNewsData.filter(item => item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')}
+                                items={sortedNewsData.filter(
+                                    item => (subTab === 'Archive' ? item.status === 'Архив' : item.status !== 'Архив') &&
+                                        (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')
+                                )}
                                 onStatusChange={handleStatusChange}
+                                onDelete={handleDelete}
+                                onEdit={handleEdit}
+                                onView={handleView}
                                 currentTab={currentTab}
                                 subTab={subTab}
                                 setShowMenuId={setShowMenuId}
                                 showMenuId={showMenuId}
-                                handleEdit={handleEdit}
                             />
                         )}
                     </div>

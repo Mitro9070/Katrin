@@ -8,7 +8,7 @@ import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
 import EditBidForm from './EditBidPage';
 
-const TableComponentTech = ({ items, onStatusChange, currentTab, subTab, setShowMenuId, showMenuId, handleEdit }) => {
+const TableComponentTech = ({ items, onStatusChange, onDelete, onRestore, currentTab, subTab, setShowMenuId, showMenuId, handleEdit, onView }) => {
     const location = useLocation();
     const [isEditPage, setIsEditPage] = useState(false);
     const [editBidId, setEditBidId] = useState(null);
@@ -79,7 +79,7 @@ const TableComponentTech = ({ items, onStatusChange, currentTab, subTab, setShow
                                 }}>
                                     {item.organizerName !== 'Неизвестно' && item.organizerName}
                                 </td>
-                                {subTab !== 'Archive' && (
+                                {subTab !== 'Archive' && subTab !== 'Trash' && (
                                     <td style={{ padding: '10px' }}>
                                         {item.status === 'На модерации' && (
                                             <div className="custom-approve-reject-buttons">
@@ -123,28 +123,31 @@ const TableComponentTech = ({ items, onStatusChange, currentTab, subTab, setShow
                                     {showMenuId === item.id && (
                                         <div className="comments-menu">
                                             <div className="comments-menu-item">
-                                                {currentTab === 'News' || item.elementType === 'Технические новости' || item.elementType === 'Тех. новости' ? (
-                                                    <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                ) : (
-                                                    <Link to={`/events/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-                                                        Посмотреть
-                                                    </Link>
-                                                )}
+                                                <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+                                                    Посмотреть
+                                                </Link>
                                             </div>
-                                            {subTab !== 'Archive' && (
-                                                <div className="comments-menu-item" onClick={() => {
-                                                    setIsEditPage(true);
-                                                    setEditBidId(item.id);
-                                                    handleEdit(currentTab, item.id, location.pathname + location.search);
-                                                }}>
-                                                    Редактировать
-                                                </div>
+                                            {subTab !== 'Archive' && subTab !== 'Trash' && (
+                                                <>
+                                                    <div className="comments-menu-item" onClick={() => {
+                                                        setIsEditPage(true);
+                                                        setEditBidId(item.id);
+                                                        handleEdit(currentTab, item.id, location.pathname + location.search);
+                                                    }}>
+                                                        Редактировать
+                                                    </div>
+                                                    <div className="comments-menu-item" onClick={() => onDelete(item.id)}>
+                                                        Удалить
+                                                    </div>
+                                                </>
                                             )}
-                                            {subTab === 'Archive' ? (
+                                            {subTab === 'Archive' && (
                                                 <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Одобрено')}>Из архива</div>
-                                            ) : (
+                                            )}
+                                            {subTab === 'Trash' && (
+                                                <div className="comments-menu-item" onClick={() => onRestore(item.id)}>Восстановить</div>
+                                            )}
+                                            {subTab !== 'Trash' && (
                                                 <div className="comments-menu-item" onClick={() => onStatusChange(item.id, 'Архив')}>В архив</div>
                                             )}
                                         </div>
