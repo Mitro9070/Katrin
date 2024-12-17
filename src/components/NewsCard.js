@@ -22,7 +22,7 @@ function NewsCard({ status, eventType, publicDate, title, text, images }) {
 
     // Получаем главное изображение или используем изображение по умолчанию
     const imageUrl = (images && images.length > 0)
-        ? images.find(img => img.includes('Main')) || images[0]
+        ? images.find(img => img.includes('Main') && img.trim() !== '') || images[0] || defaultImage  // Добавлено условие img.trim() !== '' и fallback на defaultImage
         : defaultImage; // Используем изображение по умолчанию, если нет доступных изображений
 
     return (

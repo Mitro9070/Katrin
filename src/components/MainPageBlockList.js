@@ -1,5 +1,5 @@
 import '../styles/MainPageBlockList.css';
-import imgSettingsIcon from '../images/settings.svg';
+import imgSettingsIcon from '../images/birthday.png';
 import { formatBirthday, formatNewEmployee } from '../utils/formatDate';
 import { useNavigate } from 'react-router-dom';
 
@@ -82,9 +82,8 @@ function MainPageBlockList({ name, list, isBirthday }) {
                 <div className="content">
                     {content.length > 0 ? content : (
                         <div className="block-list-plug">
-                            <img src={imgSettingsIcon} alt="settings icon" />
-                            
-                        </div>
+                        <img src={imgSettingsIcon} alt="settings icon" style={{ width: '50px', height: '50px' }} />
+                    </div>
                     )}
                 </div>
             </div>
