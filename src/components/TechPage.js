@@ -54,7 +54,7 @@ const TechPage = () => {
             }
 
             const newsRef = ref(database, 'News');
-            const deletedNewsRef = ref(database, 'Deleted/News');
+            const deletedNewsRef = ref(database, 'DeletedTech');
             const usersRef = ref(database, 'Users');
 
             const [newsSnapshot, deletedNewsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(deletedNewsRef), get(usersRef)]);
@@ -143,7 +143,7 @@ const TechPage = () => {
                 newsItem.deletedDate = currentDate;
                 newsItem.deleteInitiator = deleteInitiator;
 
-                const deletedNewsRef = ref(database, `Deleted/News/${id}`);
+                const deletedNewsRef = ref(database, `DeletedTech/${id}`);
                 await set(deletedNewsRef, newsItem);
                 await remove(newsRef);
             }
@@ -158,7 +158,7 @@ const TechPage = () => {
         try {
             const restoreInitiator = userId;
 
-            const deletedNewsRef = ref(database, `Deleted/News/${id}`);
+            const deletedNewsRef = ref(database, `DeletedTech/${id}`);
             const deletedNewsSnapshot = await get(deletedNewsRef);
             if (deletedNewsSnapshot.exists()) {
                 const newsItem = deletedNewsSnapshot.val();

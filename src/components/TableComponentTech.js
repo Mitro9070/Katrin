@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import imgChatGroupIcon from '../images/chat-group.png';
 import imgMoreHorIcon from '../images/more-hor.png';
@@ -8,10 +8,25 @@ import imgLocationIcon from '../images/location.png';
 import imgRefreshRepeatIcon from '../images/refresh repeat.png';
 import EditBidForm from './EditBidPage';
 
-const TableComponentTech = ({ items, onStatusChange, onDelete, onRestore, currentTab, subTab, setShowMenuId, showMenuId, handleEdit, onView }) => {
+const TableComponentTech = ({ items, onStatusChange, onDelete, onRestore, currentTab, subTab, setShowMenuId, showMenuId, handleEdit, handleView }) => {
     const location = useLocation();
     const [isEditPage, setIsEditPage] = useState(false);
     const [editBidId, setEditBidId] = useState(null);
+
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowMenuId(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const parseDate = (dateString) => {
         const [date, time] = dateString.split(', ');
@@ -121,7 +136,7 @@ const TableComponentTech = ({ items, onStatusChange, onDelete, onRestore, curren
                                         </button>
                                     </div>
                                     {showMenuId === item.id && (
-                                        <div className="comments-menu">
+                                        <div className="comments-menu" ref={menuRef}>
                                             <div className="comments-menu-item">
                                                 <Link to={`/news/${item.id}?referrer=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
                                                     Посмотреть
