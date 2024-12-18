@@ -7,20 +7,89 @@ p{
   justify-items: center
 }
 
-.App{
+
+
+
+
+/* Общие стили для всех разрешений */
+.App {
   position: relative;
-  width: 1440px;
-  height: 976px;
+  margin: 0 auto; /* Центрируем приложение по горизонтали */
 }
 
-.page-content{
-  width: 1095px;
+.page-content {
   position: absolute;
-  top: 125px;
-  left: 285px;
+  top: 70px; /* Отступ сверху под шапку */
   display: flex;
   flex-direction: column;
 }
+
+/* Стили для разрешения 1920x1080 */
+@media screen and (min-width: 1920px) {
+  .App {
+    width: 1920px;
+    height: auto;
+  }
+
+  .page-content {
+    width: 1600px;
+    left: 160px;
+  }
+}
+
+/* Стили для разрешения 1680x1050 */
+@media screen and (min-width: 1680px) and (max-width: 1919px) {
+  .App {
+    width: 1680px;
+  }
+
+  .page-content {
+    width: 1400px;
+    left: 140px;
+  }
+}
+
+/* Стили для разрешения 1440x900 */
+@media screen and (min-width: 1440px) and (max-width: 1679px) {
+  .App {
+    width: 1440px;
+  }
+
+  .page-content {
+    width: 1095px;
+    left: 125px;
+  }
+}
+
+/* Стили для разрешения 1366x768 */
+@media screen and (min-width: 1366px) and (max-width: 1439px) {
+  .App {
+    width: 1366px;
+  }
+
+  .page-content {
+    width: 1000px;
+    left: 100px;
+  }
+}
+
+/* Стили для разрешения 1280x720 */
+@media screen and (max-width: 1365px) {
+  .App {
+    width: 1280px;
+  }
+
+  .page-content {
+    width: 960px;
+    left: 80px;
+  }
+}
+
+
+
+
+
+
 
 .bg-close{
   position: fixed;
@@ -32,12 +101,7 @@ p{
   z-index: 25;
 }
 
-.plug{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
+
 
 .icon-container{
   height: 40px;
@@ -46,6 +110,13 @@ p{
   justify-content: center;
   align-items: center;
   cursor: pointer;
+}
+
+.plug{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .icon-container img{
@@ -92,4 +163,3 @@ background-color: #A9A9A9;
 border-radius: 20px;
 border: 3px solid #A9A9A9;
 }
-

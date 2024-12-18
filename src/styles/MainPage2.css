@@ -1,0 +1,14 @@
+.main-page-head {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.welcome-text {
+    font-size: 28px;
+}
+
+.edit-main-page-img:hover {
+    filter: invert(30%) sepia(100%) saturate(5000%) hue-rotate(190deg) brightness(95%);
+}
+

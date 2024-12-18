@@ -4,7 +4,7 @@ import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
 
-import '../styles/MainPage.css';
+import '../styles/MainPage2.css';
 import MainPageBlockList from './MainPageBlockList';
 import NewsBlockSlide from './NewsBlockSlide';
 import EventsBlockSlide from './EventsBlockSlide';
@@ -118,8 +118,8 @@ const MainPage = observer(() => {
                     const nextMonth = new Date(today);
                     nextMonth.setDate(today.getDate() + 30);
 
-                    today.setHours(0, 0, 0, 0); 
-                    nextMonth.setHours(23, 59, 59, 999); 
+                    today.setHours(0, 0, 0, 0);
+                    nextMonth.setHours(23, 59, 59, 999);
 
                     const lastMonth = new Date(today);
                     lastMonth.setDate(today.getDate() - 30);
@@ -198,7 +198,14 @@ const MainPage = observer(() => {
     if (error) return <p>{error}</p>;
 
     return (
-        <div className="main-page page-content noselect">
+        <div className="main-page page-content noselect"
+            style={{
+                width: '100%',
+                margin: '0',
+                padding: '0',
+                boxSizing: 'border-box',
+            }}
+        >
             <div className="main-page-head">
                 <p className="welcome-text">{`Добрый день, ${userName}!`}</p>
                 <img src={iconPencilImg} alt="" className="edit-main-page-img" onClick={setShowEditMainMenuPushHandler} />
@@ -206,57 +213,170 @@ const MainPage = observer(() => {
             <div className="main-page-content">
                 {/* Блок закрепленных объявлений */}
                 <MainPageBlockAds />
-                
+
                 {/* Блок новостей */}
-                <NewsBlockSlide 
-                    name={'Новости'} 
-                    data={publishedNews.length > 0 ? publishedNews : [
-                        {
-                            id: 'no-news',
-                            title: 'Отсутствие новостей - уже хорошие новости!',
-                            images: [noNewsImage],
-                            postData: new Date().toISOString()
-                        }
-                    ]} 
-                    className="news" 
-                />
-                
-                {/* Блок событий */}
-                <EventsBlockSlide 
-                    name={'События'} 
-                    data={publishedEvents.length > 0 ? publishedEvents : [
-                        {
-                            id: 'no-events',
-                            title: 'Иногда отсутствие чего-то говорит о многом',
-                            start_date: new Date().toISOString()
-                        }
-                    ]} 
-                />
-                
-                {/* Список дней рождения */}
-                <MainPageBlockList name={'Дни рождения'} list={birthdays} isBirthday />
-                {/* Список новых сотрудников */}
-                <MainPageBlockList name={'Новые сотрудники'} list={newEmployees} />
-                
-                {/* Кнопка для задать вопрос */}
-                <div className="main-page-btn main-page-btn-red" onClick={setShowQuestionPushHandler}>
-                    <img src={iconHintImg} alt="" />
-                    <p>Задать вопрос</p>
+                <div
+                    style={{
+                        marginTop: '10px',
+                    }}
+                >
+                    <NewsBlockSlide
+
+                        name={'Новости'}
+                        data={publishedNews.length > 0 ? publishedNews : [
+                            {
+                                id: 'no-news',
+                                title: 'Отсутствие новостей - уже хорошие новости!',
+                                images: [noNewsImage],
+                                postData: new Date().toISOString()
+                            }
+                        ]}
+                        className="news"
+                    />
                 </div>
-                {/* Кнопка для предложить инициативу */}
-                <div className="main-page-btn" onClick={setShowInitiativePushHandler}>
-                    <img src={iconMainInImg} alt="" />
-                    <p>Предложить инициативу</p>
-                </div>
-                {/* Кнопка для пройти опрос */}
-                <a href="#">
-                    <div className="main-page-btn">
-                        <img src={iconBatchImg} alt="" />
-                        <p>Пройти опрос</p>
+
+
+                {/* Контейнер для блоков */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        width: '108%',
+                        margin: '0',
+                        padding: '0',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    <div
+                        style={{
+                            flex: '1 1 33%',
+                            maxWidth: '33%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                        }}
+                    >
+                        {/* Блок событий */}
+                        <EventsBlockSlide
+                            name={'События'}
+                            data={
+                                publishedEvents.length > 0
+                                    ? publishedEvents
+                                    : [
+                                        {
+                                            id: 'no-events',
+                                            title: 'Иногда отсутствие чего-то говорит о многом',
+                                            start_date: new Date().toISOString(),
+                                        },
+                                    ]
+                            }
+                        />
                     </div>
-                </a>
+                    <div
+                        style={{
+                            flex: '1 1 33%',
+                            maxWidth: '33%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                        }}
+                    >
+                        {/* Список дней рождения */}
+                        <MainPageBlockList name={'Дни рождения'} list={birthdays} isBirthday />
+                    </div>
+                    <div
+                        style={{
+                            flex: '1 1 30%',
+                            maxWidth: '30%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                        }}
+                    >
+                        {/* Список новых сотрудников */}
+                        <MainPageBlockList name={'Новые сотрудники'} list={newEmployees} />
+                    </div>
+                </div>
+
+                {/* Контейнер для кнопок */}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        marginTop: '20px',
+                    }}
+                >
+                    <div
+                        onClick={setShowQuestionPushHandler}
+                        style={{
+                            flex: '1 1 30%',
+                            maxWidth: '30%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #C73B3B',
+                            color: '#C73B3B',
+                            cursor: 'pointer',
+                            height: '40px',
+                            borderRadius: '20px',
+                            gap: '5px',
+                        }}
+                    >
+                        <img src={iconHintImg} alt="" />
+                        <p>Задать вопрос</p>
+                    </div>
+                    <div
+                        onClick={setShowInitiativePushHandler}
+                        style={{
+                            flex: '1 1 30%',
+                            maxWidth: '30%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #A9A9A9',
+                            cursor: 'pointer',
+                            height: '40px',
+                            borderRadius: '20px',
+                            gap: '5px',
+                        }}
+                    >
+                        <img src={iconMainInImg} alt="" />
+                        <p>Предложить инициативу</p>
+                    </div>
+                    <a
+                        href="#"
+                        style={{
+                            flex: '1 1 30%',
+                            maxWidth: '30%',
+                            boxSizing: 'border-box',
+                            margin: '10px 0',
+                            textDecoration: 'none',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                height: '40px',
+                                border: '1px solid #A9A9A9',
+                                borderRadius: '20px',
+                                cursor: 'pointer',
+                                gap: '5px',
+                            }}
+                        >
+                            <img src={iconBatchImg} alt="" />
+                            <p>Пройти опрос</p>
+                        </div>
+                    </a>
+                </div>
+
             </div>
-            
+
             {/* Показать редактирование главного меню, если флаг установлен */}
             {ShowEditMainMenuPush && (
                 <EditMainMenuPush setShowEditMainMenuPush={setShowEditMainMenuPushHandler} />

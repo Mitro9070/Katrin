@@ -5,17 +5,19 @@
 }
 
 .menu {
-    height: 916px;
-    width: 195px;
+    position: fixed; /* Меню фиксированное */
+    top: 30px; /* Отступ от верхней части страницы */
+    left: 60px; /* Отступ от левого края */
+    width: 195px; /* Фиксированная ширина меню */
+    height: calc(100vh - 30px); /* Высота на весь экран с учетом отступа сверху */
     background-color: #F2F3F4;
     border-radius: 20px;
-    position: absolute;
-    top: 30px;
-    left: 60px;
+    z-index: 1000; /* Убедимся, что меню над хедером */
+    overflow-y: auto; /* Добавляем прокрутку, если контент не помещается */
 }
 
 .menu-logo {
-    margin-top: 30px;
+    margin-top: 20px;
     justify-content: center;
     border-radius: 200px;
     width: 117px;
@@ -24,7 +26,7 @@
 }
 
 .menu-tabs {
-    margin-top: 74px;
+    margin-top: 40px;
     gap: 5px;
 }
 
@@ -68,16 +70,11 @@
 }
 
 .menu-profile {
-    margin-top: 423px;
-    
-    height: 40px;
-    width: 155px;
-    justify-content: center;
-   
-    cursor: pointer;
+    margin-top: auto; /* Располагаем профиль внизу меню */
+    margin-bottom: 20px; /* Добавляем отступ снизу */
+    width: 100%;
+    align-items: center;
 }
-
-
 
 .menu-divider {
     width: 165px;

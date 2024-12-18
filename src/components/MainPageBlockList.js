@@ -77,7 +77,17 @@ function MainPageBlockList({ name, list, isBirthday }) {
     });
 
     return (
-        <div className="block-list">
+        <div className="block-list"
+        style={{
+            width: '345px',
+            height: '237px',
+            border: '1px solid #A9A9A9',
+            borderRadius: '20px',
+            position: 'relative',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+        }}
+        >
             <div className="wrapper">
                 <div className="content">
                     {content.length > 0 ? content : (

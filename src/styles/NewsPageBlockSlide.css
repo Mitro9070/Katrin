@@ -1,0 +1,147 @@
+.block-slide {
+    width: 100%;
+    max-height: 400px; 
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.block-slide:hover {
+    border: 1px solid #0C8CE9;
+}
+
+.block-slide:hover .name-block-list {
+    color: #0C8CE9;
+}
+
+.name-block-list {
+    color: #A9A9A9;
+    font-size: 24px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    position: absolute;
+    top: 15px;
+    left: -2px;
+}
+
+.wrapper {
+    position: relative;
+    overflow-y: auto;
+    /* Устанавливаем фиксированную высоту для появления скролла */
+    height: 35px; /* Вы можете настроить эту высоту под свои нужды */
+    width: 100%;
+    scroll-behavior: smooth;
+    padding: 15px;
+}
+
+@-moz-document url-prefix() {
+    .wrapper {
+        scrollbar-width: thin;
+        scrollbar-color: #A9A9A9 transparent;
+        scrollbar-arrow-color: transparent;
+    }
+}
+
+.wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+    background: transparent;
+    border: 1px solid #A9A9A9;
+    border-radius: 20px;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+    background-color: #A9A9A9;
+    border-radius: 20px;
+}
+
+.content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.block-slide-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.block-slide-text {
+    flex: 1;
+    overflow: hidden;
+}
+
+.block-slide-img-container {
+    flex: 0 0 208px;
+    max-width: 208px;
+    max-height: 208px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.block-slide-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.datatime-slide {
+    color: #2C2C2C;
+    /* Основа/Выделение */
+    font-family: "PF DinText Pro";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.title-slide {
+    color: #2C2C2C;
+    /* Заголовок/Третий (3) */
+    font-family: "PF DinText Pro";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 10px;
+}
+
+.description-slide {
+    color: #2C2C2C;
+    /* Основа/Основа */
+    font-family: "PF DinText Pro";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.description-slide, .title-slide-news, .title-slide-events {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.title-slide-news {
+    -webkit-line-clamp: 2;
+}
+
+.title-slide-events {
+    -webkit-line-clamp: 5;
+}
+
+.event-separator {
+    width: 90%;
+    height: 1px;
+    background: #A9A9A9;
+    margin: 12px 0;
+}

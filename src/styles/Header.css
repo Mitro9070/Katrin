@@ -1,11 +1,54 @@
 .header {
-    position: absolute;
-    top: 30px;
-    left: 285px;
-    justify-content: end;
+    position: fixed; /* Фиксируем хедер в верхней части */
+    top: 0; /* Закрепляем хедер вверху */
+    left: 285px; /* Отступ от левой стороны экрана (ширина меню) */
+    width: calc(100% - 285px); /* Ширина остается по размерам всего окна браузера, минус ширина меню */
+    height: 70px; /* Высота хедера */
+    display: flex;
+    justify-content: flex-end; /* Выравнивание содержимого по правому краю */
+    align-items: center; /* Вертикальное выравнивание по центру */
+    background-color: #FFFFFF; /* Фон хедера для контрастности */
+    z-index: 999; /* Хедер ниже по сравнению с меню */
+}
+
+/* Стили для разрешения 1920x1080 */
+@media screen and (min-width: 1920px) {
+  .header {
+    left: 160px;
+    width: 1600px;
+  }
+}
+
+/* Стили для разрешения 1680x1050 */
+@media screen and (min-width: 1680px) and (max-width: 1919px) {
+  .header {
+    left: 140px;
+    width: 1400px;
+  }
+}
+
+/* Стили для разрешения 1440x900 */
+@media screen and (min-width: 1440px) and (max-width: 1679px) {
+  .header {
+    left: 125px;
     width: 1095px;
-    height: 40px;
-    font-size: 16px;
+  }
+}
+
+/* Стили для разрешения 1366x768 */
+@media screen and (min-width: 1366px) and (max-width: 1439px) {
+  .header {
+    left: 100px;
+    width: 1000px;
+  }
+}
+
+/* Стили для разрешения 1280x720 */
+@media screen and (max-width: 1365px) {
+  .header {
+    left: 80px;
+    width: 960px;
+  }
 }
 
 .header, .header-follow, .header-search, .header-notifications, .header-user {

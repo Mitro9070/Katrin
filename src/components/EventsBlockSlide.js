@@ -51,6 +51,7 @@ function EventsBlockSlide({ name, data, className = '' }) {
                     display: 'flex',
                     flexDirection: 'column',
                     overflowY: 'auto',
+                    marginLeft: '35px',
                     scrollSnapType: 'y mandatory',
                     scrollBehavior: 'smooth',
                     height: '217px',
