@@ -1,4 +1,3 @@
-import '../styles/Header.css';
 import { useState, useEffect, useRef } from 'react';  // Импорт useRef для доступа к DOM
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +5,7 @@ import { ref, get } from 'firebase/database';
 import { database } from '../firebaseConfig';
 import notificationImg from '../images/notification.svg';
 import NotificationPush from './NotificationPush';
+import '../styles/Header.css';
 import Cookies from 'js-cookie';
 import SearchBar from './SearchBar'; // Импортируем компонент поиска
 
@@ -84,42 +84,140 @@ function Header({ setShowAuthPush }) {
     }, []);
 
     return (
-        <div className="header">
-            <SearchBar />
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                position: 'fixed',
+                top: 0,
+                left: '285px',
+                width: 'calc(100% - 285px)',
+                height: '70px',
+                backgroundColor: '#FFFFFF',
+                zIndex: 999,
+                padding: '0 30px', // Отступы по горизонтали
+            }}
+        >
+            {/* Поиск */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                <SearchBar />
+            </div>
+
+            {/* Колокольчик уведомлений */}
             <div
-                className="header-user"
+                onClick={setShowNotificationsSettingsHandler}
+                style={{
+                    cursor: 'pointer',
+                    marginRight: '30px', // Отступ справа между колокольчиком и иконкой пользователя
+                }}
+            >
+                <img
+                    src={notificationImg}
+                    alt="Notifications"
+                    style={{ width: '34px', height: '34px' }}
+                />
+            </div>
+
+            {/* Аватар пользователя или кнопка "Войти" */}
+            <div
                 onClick={() => setShowUserMenu(!showUserMenu)}
+                style={{
+                    cursor: 'pointer',
+                    position: 'relative',
+                }}
             >
                 {user ? (
                     user.image ? (
                         <img
                             src={user.image}
                             alt="User"
-                            className="header-user-img"
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                marginRight: '140px'
+                            }}
                         />
                     ) : (
                         <div
-                            className="header-user-initials"
-                            style={{ backgroundColor: userColor }}
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                backgroundColor: userColor,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                fontSize: '18px',
+                                fontWeight: '500',
+                                color: '#FFFFFF',
+                            }}
                         >
                             {getInitials(user.Name, user.surname)}
                         </div>
                     )
                 ) : (
                     <div
-                        className="header-follow"
                         onClick={() => setShowAuthPush(true)}
+                        style={{
+                            border: '1px solid #0C8CE9',
+                            borderRadius: '20px',
+                            padding: '7px 20px',
+                            color: '#0C8CE9',
+                            cursor: 'pointer',
+                        }}
                     >
-                        <p>Войти</p>
+                        <p style={{ margin: 0 }}>Войти</p>
                     </div>
                 )}
                 {showUserMenu && user && (
-                    <div className="header-user-menu" ref={userMenuRef}>
-                        <div className="header-user-menu-item">{`${user.Name || ''} ${user.surname || ''}`}</div>
-                        <div className="header-user-menu-item">{roleName}</div>
-                        <div className="header-user-menu-item">Мой профиль</div>
+                    <div
+                        ref={userMenuRef}
+                        style={{
+                            position: 'absolute',
+                            top: '50px',
+                            right: 0,
+                            backgroundColor: '#FFFFFF',
+                            border: '1px solid #ddd',
+                            borderRadius: '5px',
+                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                            zIndex: 100,
+                            width: '200px',
+                        }}
+                    >
                         <div
-                            className="header-user-menu-item"
+                            style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #ddd',
+                            }}
+                        >
+                            {`${user.Name || ''} ${user.surname || ''}`}
+                        </div>
+                        <div
+                            style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #ddd',
+                            }}
+                        >
+                            {roleName}
+                        </div>
+                        <div
+                            style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #ddd',
+                            }}
+                        >
+                            Мой профиль
+                        </div>
+                        <div
+                            style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                            }}
                             onClick={handleSignOut}
                         >
                             Выход
@@ -127,12 +225,8 @@ function Header({ setShowAuthPush }) {
                     </div>
                 )}
             </div>
-            <div
-                className="header-notifications"
-                onClick={() => setShowNotificationsSettingsHandler()}
-            >
-                <img src={notificationImg} alt="Notifications" />
-            </div>
+
+            {/* Компонент уведомлений (если открыт) */}
             {ShowNotificationsSettings && (
                 <NotificationPush
                     setShowAuthPush={setShowAuthPush}
@@ -143,4 +237,5 @@ function Header({ setShowAuthPush }) {
     );
 }
 
+// Add this line at the end to export the Header component
 export default Header;

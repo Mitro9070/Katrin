@@ -20,9 +20,7 @@
     font-size: 24px;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    position: relative;
-    margin-top: 15px;
-    margin-left: 15px;
+    position: absolute;
     top: 15px;
     left: 21px;
 }
@@ -36,9 +34,9 @@
 .wrapper{
     position: absolute;
     top: 15px;
-    left: 22px;
+    left: 59px;
     overflow: auto;
-    height: 200px;
+    height: 207px;
     /* height: 100px; */
     width: 287px;
 }
@@ -68,7 +66,6 @@ border: 3px solid #A9A9A9;
 .content-block-list-row{
     display: grid;
     gap: 2px;
-    margin-left: 40px;
     width: 271px;
 }
 
