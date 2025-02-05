@@ -77,8 +77,8 @@ function MainPageBlockList({ name, list, isBirthday }) {
     });
 
     return (
-        <div className="block-list" style={{ width: '100%', height: '237px' }}>
-            <div className="wrapper" style={{ width: '85%' , marginLeft: '5px'}}>
+        <div className="block-list">
+            <div className="wrapper">
                 <div className="content">
                     {content.length > 0 ? content : (
                         <div className="block-list-plug">

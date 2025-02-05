@@ -7,9 +7,13 @@ function CustomCropper({ imageSrc, onCancel, onSave }) {
 
   const handleSaveClick = () => {
     const cropper = cropperRef.current.cropper;
-    cropper.getCroppedCanvas().toBlob((blob) => {
-      onSave(blob);
-    });
+    cropper.getCroppedCanvas().toBlob(
+      (blob) => {
+        onSave(blob);
+      },
+      'image/jpeg',
+      1
+    );
   };
 
   return (

@@ -1,24 +1,28 @@
+// src/components/Profile.js
+
 import React, { useState, useEffect } from 'react';
-import { ref as databaseRef, get, set } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { database, storage } from '../firebaseConfig';
-import { createPortal } from 'react-dom';
-import CustomCropper from './CustomCropper';
 import Cookies from 'js-cookie';
 import Loader from './Loader';
-import Footer from './Footer';
+import CustomCropper from './CustomCropper';
 import '../styles/Profile.css';
 import { useParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { getCroppedImg } from '../utils/cropImage';
+import { fetchUserById, updateUserById, uploadUserImage } from '../Controller/UsersController';
+import { fetchRoleById } from '../Controller/RolesController';
+import { fetchOffices } from '../Controller/OfficesController';
+
+const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 
 const Profile = () => {
     const { userId } = useParams();
     const currentUserId = Cookies.get('userId');
     const [currentTab, setCurrentTab] = useState('PersonalData');
     const [loading, setLoading] = useState(true);
-    const [loadingImage, setLoadingImage] = useState(false); 
+    const [loadingImage, setLoadingImage] = useState(false);
     const [userData, setUserData] = useState({});
     const [roleName, setRoleName] = useState('');
-    const [offices, setOffices] = useState({});
+    const [offices, setOffices] = useState([]);
     const [inputData, setInputData] = useState({});
     const [isFormChanged, setIsFormChanged] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
@@ -29,46 +33,54 @@ const Profile = () => {
         console.log("Profile userId:", userId); 
         const fetchData = async () => {
             try {
-                const userRef = databaseRef(database, `Users/${userId}`);
-                const userSnapshot = await get(userRef);
-
-                if (userSnapshot.exists()) {
-                    const userData = userSnapshot.val();
+                console.log("Fetching user data...");
+                const userData = await fetchUserById(userId);
+                console.log("Fetched userData:", userData);
+    
+                if (userData) {
+                    // Извлекаем только дату из полученной строки
+                    const formattedBirthday = userData.birthday ? userData.birthday.slice(0, 10) : '';
                     setUserData(userData);
-                    setInputData(userData);
-                    setImageUrl(userData.image || null); 
-
+                    setInputData({
+                        ...userData,
+                        birthday: formattedBirthday,
+                    });
+                    setImageUrl(userData.image || null);
+    
                     if (userData.role) {
-                        const roleRef = databaseRef(database, `Roles/${userData.role}`);
-                        const roleSnapshot = await get(roleRef);
-
-                        if (roleSnapshot.exists()) {
-                            setRoleName(roleSnapshot.val().rusname);
-                        }
+                        console.log("Fetching role data for role ID:", userData.role);
+                        const roleData = await fetchRoleById(userData.role);
+                        console.log("Fetched roleData:", roleData);
+                        setRoleName(roleData.rusname || 'Роль не указана');
+                    } else {
+                        setRoleName('Роль не указана');
                     }
+                } else {
+                    console.error('Пользователь не найден');
                 }
-
-                const officesRef = databaseRef(database, 'Offices');
-                const officesSnapshot = await get(officesRef);
-                if (officesSnapshot.exists()) {
-                    setOffices(officesSnapshot.val());
-                }
-
+    
+                console.log("Fetching offices data...");
+                const officesData = await fetchOffices();
+                console.log("Fetched officesData:", officesData);
+                setOffices(officesData);
+    
             } catch (err) {
-                console.error('Error fetching user data:', err);
+                console.error('Ошибка при загрузке данных:', err);
             } finally {
                 setLoading(false);
             }
         };
-
+    
         fetchData();
     }, [userId]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        console.log(`Input change - ${name}: ${value}`);
+    
         setInputData({
             ...inputData,
-            [name]: value,
+            [name]: value, // Сохраняем значение как есть
         });
         setIsFormChanged(true);
     };
@@ -76,16 +88,21 @@ const Profile = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const userRef = databaseRef(database, `Users/${userId}`);
-            await set(userRef, {
-                ...userData,
+            console.log("Saving user data:", inputData);
+    
+            const updatedData = {
                 ...inputData,
                 image: imageUrl,
-            });
-            setUserData(inputData);
+            };
+    
+            console.log("Updated data being sent to server:", updatedData);
+    
+            await updateUserById(userId, updatedData);
+            setUserData(updatedData);
             setIsFormChanged(false);
+            console.log("User data saved successfully");
         } catch (err) {
-            console.error('Error saving user data:', err);
+            console.error('Ошибка при сохранении данных пользователя:', err);
         } finally {
             setLoading(false);
         }
@@ -94,47 +111,74 @@ const Profile = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-          const reader = new FileReader();
-          reader.addEventListener('load', () => {
-            setImageSrc(reader.result);
-            setShowCropper(true);
-          });
-          reader.readAsDataURL(file);
+            console.log("Selected file:", file);
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                setImageSrc(reader.result);
+                setShowCropper(true);
+            });
+            reader.readAsDataURL(file);
         }
-      };
+    };
 
-
-      const handleCropCancel = () => {
+    const handleCropCancel = () => {
         setShowCropper(false);
         setImageSrc(null);
-      };
-   
-      const handleCropSave = async (croppedBlob) => {
+    };
+
+    const handleCropSave = async (croppedImageBlob) => {
         setShowCropper(false);
         setImageSrc(null);
         setLoadingImage(true);
         try {
-          const imgRef = storageRef(storage, `employee-photos/${userId}.jpg`);
-          await uploadBytes(imgRef, croppedBlob);
-          const url = await getDownloadURL(imgRef);
-          setImageUrl(url);
-          setIsFormChanged(true);
-        } catch (error) {
-          console.error('Error uploading image:', error);
-        } finally {
-          setLoadingImage(false);
-        }
-      };
+            console.log('Получен croppedImageBlob:', croppedImageBlob);
 
+            // Создаём уникальное имя файла для изображения
+            const fileName = `profile_${userId}_${Date.now()}.jpg`;
+
+            // Создаём объект File из Blob
+            const croppedImageFile = new File([croppedImageBlob], fileName, { type: 'image/jpeg' });
+
+            // Обновляем данные пользователя, включая изображение
+            const updatedData = {
+                ...inputData,
+                image: croppedImageFile, // Передаём файл изображения
+            };
+
+            // Вызываем функцию обновления пользователя
+            const updatedUser = await updateUserById(userId, updatedData);
+
+            console.log('Изображение загружено, обновлённые данные пользователя:', updatedUser);
+
+            // Обновляем состояние компонента
+            setUserData(updatedUser);
+            setInputData(updatedUser);
+            setImageUrl(updatedUser.image || null);
+            setIsFormChanged(false);
+        } catch (error) {
+            console.error('Ошибка при загрузке изображения:', error);
+        } finally {
+            setLoadingImage(false);
+        }
+    };
 
     const changeCurrentTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
+        console.log("Changing tab to:", selectedTab);
         setCurrentTab(selectedTab);
     };
 
-    if (loading) return <Loader />;
+    const getImageUrl = (imageUrl) => {
+        return `${serverUrl}/api/webdav/image?url=${encodeURIComponent(imageUrl)}`;
+    };
+
+    if (loading) {
+        console.log("Loading...");
+        return <Loader />;
+    }
 
     const isCurrentUser = currentUserId === userId;
+    console.log("isCurrentUser:", isCurrentUser);
 
     return (
         <div className="content-page page-content">
@@ -163,7 +207,7 @@ const Profile = () => {
                             <div className="photo-container" onClick={() => isCurrentUser && document.getElementById('file-input').click()}>
                                 {loadingImage && <Loader />}
                                 {!imageUrl && !loadingImage && <p>Добавьте ваше фото</p>}
-                                {imageUrl && !loadingImage && <img src={imageUrl} alt="Фото пользователя" />}
+                                {imageUrl && !loadingImage && <img src={getImageUrl(imageUrl)} alt="Фото пользователя" />}
                             </div>
                             <div className="role-label">
                                 Роль: {roleName}
@@ -176,16 +220,16 @@ const Profile = () => {
                                 name="surname"
                                 value={inputData.surname || ''}
                                 onChange={handleInputChange}
-                                className={`custom-input ${!inputData.surname && 'input-error'}`}
+                                className={`custom-input ${!inputData.surname ? 'input-error' : ''}`}
                                 readOnly={!isCurrentUser}
                             />
                             <label>Имя</label>
                             <input
                                 type="text"
-                                name="Name"
-                                value={inputData.Name || ''}
+                                name="name"
+                                value={inputData.name || ''}
                                 onChange={handleInputChange}
-                                className={`custom-input ${!inputData.Name && 'input-error'}`}
+                                className={`custom-input ${!inputData.name ? 'input-error' : ''}`}
                                 readOnly={!isCurrentUser}
                             />
                             <label>Отчество</label>
@@ -206,8 +250,8 @@ const Profile = () => {
                                 disabled={!isCurrentUser}
                             >
                                 <option value="" disabled>Выбрать пол</option>
-                                <option value="Мужчина">Мужчина</option>
-                                <option value="Женщина">Женщина</option>
+                                <option value="Мужской">Мужской</option>
+                                <option value="Женский">Женский</option>
                             </select>
                             <label>Email</label>
                             <input
@@ -215,7 +259,7 @@ const Profile = () => {
                                 name="email"
                                 value={inputData.email || ''}
                                 onChange={handleInputChange}
-                                className={`custom-input ${(!inputData.email || !validateEmail(inputData.email)) && 'input-error'}`}
+                                className={`custom-input ${(!inputData.email || !validateEmail(inputData.email)) ? 'input-error' : ''}`}
                                 readOnly={!isCurrentUser}
                             />
                             <label>Телефон</label>
@@ -235,13 +279,13 @@ const Profile = () => {
                                 name="office"
                                 value={inputData.office || ''}
                                 onChange={handleInputChange}
-                                className={`custom-input ${!inputData.office && 'input-error'}`}
+                                className={`custom-input ${!inputData.office ? 'input-error' : ''}`}
                                 disabled={!isCurrentUser}
                             >
                                 <option value="" disabled>Выбрать офис</option>
-                                {Object.keys(offices).map((officeId) => (
-                                    <option key={officeId} value={officeId}>
-                                        {offices[officeId]}
+                                {offices && offices.map((office) => (
+                                    <option key={office.id} value={office.id}>
+                                        {office.name_office}
                                     </option>
                                 ))}
                             </select>
@@ -251,7 +295,7 @@ const Profile = () => {
                                 name="position"
                                 value={inputData.position || ''}
                                 onChange={handleInputChange}
-                                className={`custom-input ${!inputData.position && 'input-error'}`}
+                                className={`custom-input ${!inputData.position ? 'input-error' : ''}`}
                                 style={{ marginTop: '3px' }}
                                 readOnly={!isCurrentUser}
                             />
@@ -280,6 +324,7 @@ const Profile = () => {
                             type="file"
                             onChange={handleFileChange}
                             style={{ display: 'none' }}
+                            accept="image/*"
                             disabled={!isCurrentUser}
                         />
                     </div>
@@ -293,20 +338,20 @@ const Profile = () => {
 
                 {showCropper && createPortal(
                     <CustomCropper
-                    imageSrc={imageSrc}
-                    onCancel={handleCropCancel}
-                    onSave={handleCropSave}
+                        imageSrc={imageSrc}
+                        onCancel={handleCropCancel}
+                        onSave={handleCropSave}
                     />,
                     document.body
                 )}
             </div>
-            
         </div>
     );
 };
 
+// Функция для проверки правильности email
 const validateEmail = (email) => {
-    const re = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
 };
 

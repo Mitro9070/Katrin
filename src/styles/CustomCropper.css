@@ -1,52 +1,31 @@
-.custom-cropper-overlay {
+.cropper-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
-.custom-cropper {
-    background: white;
-    padding: 20px;
-    border-radius: 4px;
-    max-width: 400px;
-    width: 100%;
-}
-
-.image-container {
+.cropper-container {
     position: relative;
-    width: 350px;
-    height: 350px;
-    overflow: hidden;
-    cursor: grab;
 }
 
-.image-container img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-origin: top left;
+.cropper-buttons {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.cropper-buttons button {
+    margin: 0 5px;
 }
 
 .crop-area {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 195px;
-    height: 195px;
-    transform: translate(-50%, -50%);
     border: 2px dashed #fff;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-}
-
-.cropper-controls {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.3);
 }

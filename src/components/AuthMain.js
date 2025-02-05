@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import '../styles/AuthPush.css';
 import { useNavigate } from 'react-router-dom';
-import { ref, get } from 'firebase/database';
-import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
+
+const serverUrl = process.env.REACT_APP_SERVER_AUTH || '';
 
 function AuthMain({ setStage, setShowAuthPush }) {
     const [email, setEmail] = useState('');
@@ -13,35 +13,47 @@ function AuthMain({ setStage, setShowAuthPush }) {
     const navigate = useNavigate();
 
     const handleLogin = async () => {
-        const auth = getAuth();
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+            const response = await fetch(`${serverUrl}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                }),
+            });
 
-            // Удаляем старые куки
-            Cookies.remove('userId');
-            Cookies.remove('roleId');
-            Cookies.remove('roleName');
-
-            // Получаем данные пользователя и его роль
-            const userRef = ref(database, `Users/${user.uid}`);
-            const userSnapshot = await get(userRef);
-            if (userSnapshot.exists()) {
-                const userData = userSnapshot.val();
-                const roleRef = ref(database, `Roles/${userData.role}`);
-                const roleSnapshot = await get(roleRef);
-                if (roleSnapshot.exists()) {
-                    const roleData = roleSnapshot.val();
-                    // Сохраняем ID пользователя, ID роли и название роли в куки
-                    Cookies.set('userId', user.uid);
-                    Cookies.set('roleId', userData.role);
-                    //Cookies.set('roleName', roleData.rusname);
-                }
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.message || 'Ошибка при входе в систему. Проверьте логин и пароль.');
+                return;
             }
 
+            const data = await response.json();
+
+            // Получаем токен из ответа
+            const token = data.token;
+
+            // Сохраняем токен в куки
+            Cookies.set('token', token);
+
+            // Декодируем токен для получения userId, email и role
+            const decodedToken = jwtDecode(token);
+
+            // Сохраняем данные в куки
+            Cookies.set('userId', decodedToken.userId);
+            Cookies.set('email', decodedToken.email);
+            Cookies.set('roleId', decodedToken.role);
+
+
+
+            // Закрываем окно аутентификации и обновляем страницу
             setShowAuthPush(false);
             navigate(0); // Перезагрузка страницы
         } catch (error) {
+            console.error('Ошибка при входе в систему:', error);
             setError('Ошибка при входе в систему. Проверьте логин и пароль.');
         }
     };

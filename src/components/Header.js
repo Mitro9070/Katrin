@@ -1,77 +1,132 @@
-import { useState, useEffect, useRef } from 'react';  // Импорт useRef для доступа к DOM
-import { getAuth, signOut } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
-import { ref, get } from 'firebase/database';
-import { database } from '../firebaseConfig';
-import notificationImg from '../images/notification.svg';
-import NotificationPush from './NotificationPush';
 import '../styles/Header.css';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import notificationImg from '../images/notification.svg';
+import mailIcon from '../images/mail.png';
+import openEmailIcon from '../images/open-email.png';
+import trashIcon from '../images/trash-delete.png';
 import Cookies from 'js-cookie';
-import SearchBar from './SearchBar'; // Импортируем компонент поиска
+import SearchBar from './SearchBar';
+import NotificationsListener from '../utils/NotificationsListener';
+import Modal from '../modal/Modal';
+
+const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 
 function Header({ setShowAuthPush }) {
-    const [ShowNotificationsSettings, setShowNotificationsSettings] = useState(false);
     const [user, setUser] = useState(null);
-    const [showUserMenu, setShowUserMenu] = useState(false);
-    const [userColor, setUserColor] = useState('');
     const [roleName, setRoleName] = useState('');
+    const [userColor, setUserColor] = useState('');
+    const [userImageSrc, setUserImageSrc] = useState(null);
+    const [showUserMenu, setShowUserMenu] = useState(false);
     const navigate = useNavigate();
-
-    // Используем useRef для определения области меню пользователя
     const userMenuRef = useRef(null);
 
-    useEffect(() => {
-        const storedUserId = Cookies.get('userId');
+    const userId = Cookies.get('userId');
+    const token = Cookies.get('token');
+    const roleId = Cookies.get('roleId') || '2'; // Получаем роль пользователя из куки
+    console.log('айдишечкапользователя2:', roleId);
 
-        if (storedUserId) {
-            const userRef = ref(database, `Users/${storedUserId}`);
-            get(userRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotificationsList, setShowNotificationsList] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedNotifications, setSelectedNotifications] = useState([]);
+    const [areAllChecked, setAreAllChecked] = useState(false);
+    const notificationsRef = useRef(null);
+
+    useEffect(() => {
+        if (userId && token) {
+            const fetchUserData = async () => {
+                try {
+                    const response = await fetch(`${serverUrl}/api/users/${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Ошибка при получении данных пользователя');
+                    }
+
+                    const userData = await response.json();
                     setUser(userData);
+
+                    // Случайный цвет для аватара без изображения
                     setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
 
-                    const roleRef = ref(database, `Roles/${userData.role}`);
-                    get(roleRef).then((roleSnapshot) => {
-                        if (roleSnapshot.exists()) {
-                            const roleData = roleSnapshot.val();
-                            setRoleName(roleData.rusname);
-                            Cookies.set('roleName', roleData.rusname);
-                        }
-                    });
-                }
-            });
-        }
-    }, []);
+                    // Если у пользователя есть изображение, загружаем его
+                    if (userData.image) {
+                        const imageResponse = await fetch(`${serverUrl}/api/webdav/image?url=${encodeURIComponent(userData.image)}`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            },
+                        });
 
-    const setShowNotificationsSettingsHandler = () => {
-        setShowNotificationsSettings(!ShowNotificationsSettings);
-    };
+                        if (imageResponse.ok) {
+                            const blob = await imageResponse.blob();
+                            const imageObjectUrl = URL.createObjectURL(blob);
+                            setUserImageSrc(imageObjectUrl);
+                        } else {
+                            console.error('Ошибка при загрузке изображения пользователя');
+                        }
+                    }
+
+                    // Получаем название роли на русском языке
+                    const roleResponse = await fetch(`${serverUrl}/api/roles/${userData.role}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (roleResponse.ok) {
+                        const roleData = await roleResponse.json();
+                        setRoleName(roleData.rusname);
+                        Cookies.set('roleName', roleData.rusname);
+                    } else {
+                        console.error('Ошибка при получении данных роли');
+                    }
+                } catch (error) {
+                    console.error('Ошибка при загрузке данных пользователя:', error);
+                }
+            };
+
+            fetchUserData();
+        }
+    }, [userId, token]);
+
+    useEffect(() => {
+        // Обновляем количество непрочитанных уведомлений
+        const unread = notifications.filter((notif) => !notif.read).length;
+        setAreAllChecked(selectedNotifications.length === notifications.length && notifications.length > 0);
+        setUnreadCount(unread);
+    }, [selectedNotifications, notifications]);
 
     const handleSignOut = () => {
-        const auth = getAuth();
-        signOut(auth)
-            .then(() => {
-                setUser(null);
-                Cookies.remove('userId');
-                Cookies.remove('roleId');
-                Cookies.remove('roleName');
-                navigate('/'); // Перенаправляем на главную страницу
-            })
-            .catch((error) => {
-                console.error('Error signing out:', error);
-            });
+        // Удаляем данные пользователя из состояния и куков
+        setUser(null);
+        Cookies.remove('userId');
+        Cookies.remove('token');
+        Cookies.remove('email');
+        Cookies.remove('role');
+        Cookies.remove('roleName');
+        navigate('/'); // Перенаправляем на главную страницу
     };
 
     const getInitials = (name, surname) => {
         if (!name || !surname) return '';
-        return `${name[0]}${surname[0]}`;
+        return `${name[0]}${surname[0]}`.toUpperCase();
     };
 
     const handleClickOutside = (event) => {
-        // Закрываем меню, если клик был вне его области
+        // Закрываем меню, если клик был вне области меню пользователя или уведомлений
         if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
             setShowUserMenu(false);
+        }
+        if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+            setShowNotificationsList(false);
         }
     };
 
@@ -83,141 +138,176 @@ function Header({ setShowAuthPush }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const handleNotificationClick = async (notification) => {
+        console.log('Clicked notification:', notification);
+
+        try {
+            // Помечаем уведомление как прочитанное
+            await fetch(`${serverUrl}/api/notifications/mark-as-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ notificationIds: [notification.id] }),
+            });
+
+            // Обновляем локальное состояние
+            setNotifications((prevNotifications) =>
+                prevNotifications.map((notif) =>
+                    notif.id === notification.id ? { ...notif, read: true } : notif
+                )
+            );
+
+            setShowNotificationsList(false);
+
+            // Обрабатываем навигацию в зависимости от типа уведомления
+            const notificationType = notification.type.toLowerCase();
+
+            switch (notificationType) {
+                case 'новость':
+                    navigate(`/news/${notification.targetid}`);
+                    break;
+                case 'событие':
+                    navigate(`/events/${notification.targetid}`);
+                    break;
+                case 'устройство':
+                case 'новое устройство':
+                    navigate(`/devices/${notification.targetid}`);
+                    break;
+                case 'сотрудник':
+                    navigate(`/profile/${notification.targetid}`);
+                    break;
+                default:
+                    console.warn('Неизвестный тип уведомления:', notification.type);
+                    break;
+            }
+        } catch (error) {
+            console.error('Ошибка при обработке клика по уведомлению:', error);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        const unreadNotifications = notifications.filter((notif) => !notif.read);
+        if (unreadNotifications.length === 0) return;
+
+        const notificationIds = unreadNotifications.map((notif) => notif.id);
+
+        try {
+            await fetch(`${serverUrl}/api/notifications/mark-as-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ notificationIds }),
+            });
+
+            // Обновляем локальное состояние
+            setNotifications((prevNotifications) =>
+                prevNotifications.map((notif) => ({ ...notif, read: true }))
+            );
+        } catch (error) {
+            console.error('Ошибка при пометке всех уведомлений как прочитанных:', error);
+        }
+    };
+
+    const handleDeleteSelectedNotifications = () => {
+        if (selectedNotifications.length === 0) return;
+
+        // Показать модальное окно подтверждения
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteSelectedNotifications = async () => {
+        try {
+            await fetch(`${serverUrl}/api/notifications`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ notificationIds: selectedNotifications }),
+            });
+
+            // Обновляем локальное состояние
+            setNotifications((prevNotifications) =>
+                prevNotifications.filter((notif) => !selectedNotifications.includes(notif.id))
+            );
+            setSelectedNotifications([]);
+            setAreAllChecked(false);
+            setShowDeleteModal(false);
+        } catch (error) {
+            console.error('Ошибка при удалении уведомлений:', error);
+        }
+    };
+
+    const handleCheckboxChange = (e, notificationId) => {
+        e.stopPropagation();
+        let updatedSelectedNotifications;
+        if (e.target.checked) {
+            updatedSelectedNotifications = [...selectedNotifications, notificationId];
+        } else {
+            updatedSelectedNotifications = selectedNotifications.filter(id => id !== notificationId);
+        }
+        setSelectedNotifications(updatedSelectedNotifications);
+    };
+
+    const handleSelectAll = (e) => {
+        const checked = e.target.checked;
+        setAreAllChecked(checked);
+        if (checked) {
+            const allNotificationIds = notifications.map(notification => notification.id);
+            setSelectedNotifications(allNotificationIds);
+        } else {
+            setSelectedNotifications([]);
+        }
+    };
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                position: 'fixed',
-                top: 0,
-                left: '285px',
-                width: 'calc(100% - 285px)',
-                height: '70px',
-                backgroundColor: '#FFFFFF',
-                zIndex: 999,
-                padding: '0 30px', // Отступы по горизонтали
-            }}
-        >
-            {/* Поиск */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                <SearchBar />
-            </div>
+        <div className="header">
+            {/* Подключаем NotificationsListener */}
+            <NotificationsListener setNotifications={setNotifications} />
 
-            {/* Колокольчик уведомлений */}
+            <SearchBar />
             <div
-                onClick={setShowNotificationsSettingsHandler}
-                style={{
-                    cursor: 'pointer',
-                    marginRight: '30px', // Отступ справа между колокольчиком и иконкой пользователя
-                }}
-            >
-                <img
-                    src={notificationImg}
-                    alt="Notifications"
-                    style={{ width: '34px', height: '34px' }}
-                />
-            </div>
-
-            {/* Аватар пользователя или кнопка "Войти" */}
-            <div
+                className="header-user"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                style={{
-                    cursor: 'pointer',
-                    position: 'relative',
-                }}
             >
                 {user ? (
-                    user.image ? (
+                    userImageSrc ? (
                         <img
-                            src={user.image}
+                            src={userImageSrc}
                             alt="User"
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                objectFit: 'cover',
-                                marginRight: '140px'
-                            }}
+                            className="header-user-img"
                         />
                     ) : (
                         <div
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                backgroundColor: userColor,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                fontSize: '18px',
-                                fontWeight: '500',
-                                color: '#FFFFFF',
-                            }}
+                            className="header-user-initials"
+                            style={{ backgroundColor: userColor }}
                         >
-                            {getInitials(user.Name, user.surname)}
+                            {getInitials(user.name, user.surname)}
                         </div>
                     )
                 ) : (
                     <div
+                        className="header-follow"
                         onClick={() => setShowAuthPush(true)}
-                        style={{
-                            border: '1px solid #0C8CE9',
-                            borderRadius: '20px',
-                            padding: '7px 20px',
-                            color: '#0C8CE9',
-                            cursor: 'pointer',
-                        }}
                     >
-                        <p style={{ margin: 0 }}>Войти</p>
+                        <p>Войти</p>
                     </div>
                 )}
                 {showUserMenu && user && (
-                    <div
-                        ref={userMenuRef}
-                        style={{
-                            position: 'absolute',
-                            top: '50px',
-                            right: 0,
-                            backgroundColor: '#FFFFFF',
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                            zIndex: 100,
-                            width: '200px',
-                        }}
-                    >
+                    <div className="header-user-menu" ref={userMenuRef}>
+                        <div className="header-user-menu-item">{`${user.name || ''} ${user.surname || ''}`}</div>
+                        <div className="header-user-menu-item">{roleName}</div>
                         <div
-                            style={{
-                                padding: '10px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #ddd',
-                            }}
-                        >
-                            {`${user.Name || ''} ${user.surname || ''}`}
-                        </div>
-                        <div
-                            style={{
-                                padding: '10px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #ddd',
-                            }}
-                        >
-                            {roleName}
-                        </div>
-                        <div
-                            style={{
-                                padding: '10px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #ddd',
-                            }}
+                            className="header-user-menu-item"
+                            onClick={() => navigate(`/profile/${userId}`)}
                         >
                             Мой профиль
                         </div>
                         <div
-                            style={{
-                                padding: '10px',
-                                cursor: 'pointer',
-                            }}
+                            className="header-user-menu-item"
                             onClick={handleSignOut}
                         >
                             Выход
@@ -225,17 +315,101 @@ function Header({ setShowAuthPush }) {
                     </div>
                 )}
             </div>
+            {/* Блок уведомлений */}
+            <div
+                className="header-notifications"
+                onClick={() => setShowNotificationsList(!showNotificationsList)}
+                ref={notificationsRef}
+            >
+                <img src={notificationImg} alt="Notifications" />
+                {unreadCount > 0 && (
+                    <div className="notification-count">{unreadCount}</div>
+                )}
+                {showNotificationsList && (
+                    <div className="notifications-list" ref={notificationsRef}>
+                        {/* Заголовок уведомлений */}
+                        <div className="notifications-header">
+                            <div className="notifications-header-left">
+                                <input
+                                    type="checkbox"
+                                    checked={areAllChecked}
+                                    onChange={handleSelectAll}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <span>Уведомления</span>
+                            </div>
+                            <div className="notifications-actions">
+                                <img
+                                    src={openEmailIcon}
+                                    alt="Отметить все как прочитанные"
+                                    className="mark-all-read-icon"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMarkAllAsRead();
+                                    }}
+                                    title="Отметить все как прочитанные"
+                                />
+                                <img
+                                    src={trashIcon}
+                                    alt="Удалить выбранные"
+                                    className={`delete-selected-icon ${selectedNotifications.length === 0 ? 'disabled' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteSelectedNotifications();
+                                    }}
+                                    title="Удалить выбранные"
+                                    style={{ cursor: selectedNotifications.length === 0 ? 'not-allowed' : 'pointer' }}
+                                />
+                            </div>
+                        </div>
 
-            {/* Компонент уведомлений (если открыт) */}
-            {ShowNotificationsSettings && (
-                <NotificationPush
-                    setShowAuthPush={setShowAuthPush}
-                    setShowNotiPush={setShowNotificationsSettingsHandler}
-                />
+                        {/* Список уведомлений */}
+                        <div className="notifications-list-content">
+                            {notifications.map((notification) => (
+                                <div
+                                    key={notification.id}
+                                    className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                                    onClick={() => handleNotificationClick(notification)}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedNotifications.includes(notification.id)}
+                                        onChange={(e) => handleCheckboxChange(e, notification.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <img
+                                        src={!notification.read ? mailIcon : openEmailIcon}
+                                        alt="Notification Icon"
+                                        className="notification-icon"
+                                    />
+                                    <div className="notification-content">
+                                        <span className="notification-message">{notification.message}</span>
+                                        <span className="notification-timestamp">
+                                            {new Date(notification.timestamp).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    {notification.imageurl && (
+                                        <img
+                                            src={notification.imageurl}
+                                            alt="Notification"
+                                            className="notification-image"
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+            {/* Модальное окно для подтверждения удаления */}
+            {showDeleteModal && (
+                <Modal onClose={() => setShowDeleteModal(false)}>
+                    <p>{`Вы уверены, что хотите удалить выбранные сообщения (${selectedNotifications.length})?`}</p>
+                    <button onClick={confirmDeleteSelectedNotifications}>Да</button>
+                    <button onClick={() => setShowDeleteModal(false)}>Нет</button>
+                </Modal>
             )}
         </div>
     );
 }
-
-// Add this line at the end to export the Header component
 export default Header;

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import { database } from '../firebaseConfig';
+import Cookies from 'js-cookie';
+import jwt_decode from 'jwt-decode';
+
+const serverUrl = process.env.REACT_APP_SERVER_AUTH || '';
 
 function AuthRegister({ setStage }) {
     const [email, setEmail] = useState('');
@@ -10,20 +11,45 @@ function AuthRegister({ setStage }) {
     const [error, setError] = useState('');
 
     const handleRegister = async () => {
-        const auth = getAuth();
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Сохраняем пользователя в Realtime Database
-            await set(ref(database, `Users/${user.uid}`), {
-                Name: name,
-                email: email,
-                role: 'user' // Присваиваем роль по умолчанию
+            const response = await fetch(`${serverUrl}/api/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    name: name,
+                }),
             });
-
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.message || 'Ошибка при регистрации. Попробуйте снова.');
+                return;
+            }
+    
+            const data = await response.json();
+    
+            // Получаем токен из ответа
+            const token = data.token;
+    
+            // Сохраняем токен в куки
+            Cookies.set('token', token);
+    
+            // Декодируем токен для получения userId, email и role
+            const decodedToken = jwt_decode(token);
+    
+            // Сохраняем данные в куки
+            Cookies.set('userId', decodedToken.userId);
+            Cookies.set('email', decodedToken.email);
+            Cookies.set('role', decodedToken.role);
+    
+            // Переходим на главную страницу или закрываем окно регистрации
             setStage('AuthMain');
         } catch (error) {
+            console.error('Ошибка при регистрации:', error);
             setError('Ошибка при регистрации. Попробуйте снова.');
         }
     };

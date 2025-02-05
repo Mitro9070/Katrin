@@ -39,6 +39,7 @@ class NewsContentStore {
                             tags: item.tags ? (Array.isArray(item.tags) ? item.tags : item.tags.split(', ')) : [],
                             files: item.files || [],
                             links: item.links || [],
+                            owner: item.owner || [],
                             fixed: item.fixed || false,
                             display_up_to: item.display_up_to,
                             manager: item.manager || '',

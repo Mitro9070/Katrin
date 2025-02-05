@@ -125,7 +125,7 @@ const CustomFileManager = ({ files, onFolderClick, onFileClick, breadcrumbs, onB
                 dataSource={isEmpty ? [] : dataToColumns(files)} // Проверяем на пустоту и отображаем пустую таблицу или данные
                 pagination={false}
                 scroll={{ y: 250 }}
-                locale={{ emptyText: 'Папка пуста' }} // Используем встроенную аннотацию Locale, чтобы отобразить сообщение, когда данные пусты
+                
             />
         </div>
     );

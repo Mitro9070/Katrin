@@ -4,8 +4,11 @@ const log = (message) => {
 };
 
 //const serverUrl = 'http://45.12.73.86:4000'; // для моего сервера
-const serverUrl = 'http://localhost:4000'; // для локального
+//const serverUrl = 'http://localhost:4000'; // для локального
 //const serverUrl = '';  // для сервера
+
+const serverUrl = process.env.REACT_APP_SERVER_URL || '';
+console.log('Значение serverUrl:', serverUrl);
 
 export const connectToWebDAV = async () => {
   log('Начало подключения к WebDAV...');

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/NewsCard.css'; // Импортируем стили для NewsCard
 import defaultImage from '../images/News.png'; // Импортируем изображение по умолчанию
 
-function NewsCard({ status, eventType, publicDate, title, text, images }) {
+function NewsCard({ status, eventType, publicDate, title, text, images, authorName }) {
+    // Создаем временный элемент для извлечения текста из HTML
+    console.log('Данные пользователя в новой карточке:', authorName);
+    console.log('Данные пользователя заголовок:', title);
     const tempElement = document.createElement('div');
-    tempElement.innerHTML = text; // Создаем временный элемент для извлечения текста из HTML
+    tempElement.innerHTML = text;
     const extractedText = tempElement.innerText || tempElement.textContent;
 
     // Форматирование статуса
@@ -21,15 +24,23 @@ function NewsCard({ status, eventType, publicDate, title, text, images }) {
     }
 
     // Получаем главное изображение или используем изображение по умолчанию
-    const imageUrl = (images && images.length > 0)
-        ? images.find(img => img.includes('Main') && img.trim() !== '') || images[0] || defaultImage  // Добавлено условие img.trim() !== '' и fallback на defaultImage
-        : defaultImage; // Используем изображение по умолчанию, если нет доступных изображений
+    const initialImageUrl = (images && images.length > 0)
+        ? images.find(img => img.includes('Main') && img.trim() !== '') || images[0]
+        : defaultImage;
+
+    const [imageUrl, setImageUrl] = useState(initialImageUrl);
+
+    // Обработчик ошибок загрузки изображения
+    const handleImageError = () => {
+        setImageUrl(defaultImage);
+    };
 
     return (
         <div className="news-card">
+            {/* Информационная панель карточки */}
             <div className="bid-list-card-info-bar">
                 <div className="bid-list-info-bar-card-column-2">
-                    {!eventType && (
+                    {eventType && (
                         <p className="bid-card-info-bar-event-type"><i>{eventType}</i></p>
                     )}
                     {publicDate && (
@@ -37,11 +48,13 @@ function NewsCard({ status, eventType, publicDate, title, text, images }) {
                     )}
                 </div>
             </div>
+            {/* Содержимое карточки */}
             <div className="bid-list-card-content">
                 <div className="bid-list-card-img-container">
                     <img
                         src={imageUrl} // Используем выбранное изображение или изображение по умолчанию
                         alt="News"
+                        onError={handleImageError} // Обработка ошибки загрузки изображения
                     />
                 </div>
                 <div className="bid-list-card-content-column-2">
@@ -49,6 +62,10 @@ function NewsCard({ status, eventType, publicDate, title, text, images }) {
                         {status ? `${status} ${title}` : title}
                     </p>
                     <p className="bid-list-card-text">{extractedText}</p>
+                    {/* Отображение имени автора внизу мелким шрифтом */}
+                    {authorName && (
+                        <p className="bid-list-card-author">Автор: {authorName}</p>
+                    )}
                 </div>
             </div>
         </div>

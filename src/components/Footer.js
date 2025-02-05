@@ -1,7 +1,7 @@
 function Footer() {
     return (
         <div style={{
-            width: '120%',
+            width: '1200px',
             display: 'grid',
             gridTemplateColumns: '33% 33% 33%',
             gridGap: '10px',

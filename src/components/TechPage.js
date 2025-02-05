@@ -33,11 +33,13 @@ const TechPage = () => {
 
     const fetchData = async () => {
         try {
+            // Проверяем, авторизован ли пользователь
             if (!userId) {
                 navigate('/');
                 return;
             }
-
+    
+            // Проверяем права доступа на основе роли пользователя
             switch (roleId) {
                 case '1': // Администратор
                     if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
@@ -52,45 +54,53 @@ const TechPage = () => {
                 default:
                     throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
             }
-
+    
             const newsRef = ref(database, 'News');
             const deletedNewsRef = ref(database, 'DeletedTech');
             const usersRef = ref(database, 'Users');
-
+    
+            // Получаем данные из Firebase
             const [newsSnapshot, deletedNewsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(deletedNewsRef), get(usersRef)]);
             const users = usersSnapshot.val();
-
+    
             const filteredNewsData = [];
             const filteredDeletedNewsData = [];
-
+    
             if (newsSnapshot.exists()) {
                 newsSnapshot.forEach((childSnapshot) => {
                     const item = childSnapshot.val();
                     const organizer = users[item.owner];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                    filteredNewsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: childSnapshot.key
-                    });
+    
+                    // Фильтруем новости: техники видят только свои новости, остальные роли видят все
+                    if (roleId !== '6' || item.owner === userId) {
+                        filteredNewsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
+                    }
                 });
             }
-
+    
             if (deletedNewsSnapshot.exists()) {
                 deletedNewsSnapshot.forEach((childSnapshot) => {
                     const item = childSnapshot.val();
                     const organizer = users[item.owner];
                     const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                    filteredDeletedNewsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: childSnapshot.key
-                    });
+    
+                    // Аналогично фильтруем удаленные новости
+                    if (roleId !== '6' || item.owner === userId) {
+                        filteredDeletedNewsData.push({
+                            ...item,
+                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
+                            id: childSnapshot.key
+                        });
+                    }
                 });
             }
-
+    
+            // Устанавливаем отфильтрованные данные в состояние
             setNewsData(filteredNewsData);
             setDeletedNewsData(filteredDeletedNewsData);
         } catch (err) {

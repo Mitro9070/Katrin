@@ -12,6 +12,11 @@ class NavigationStore {
         makeAutoObservable(this)
     }
 
+    resetEventsFilters() {
+        this.currentEventDate = '';
+        console.log('Events filters reset');
+    }
+
     setCurrentBidTab(tab){
         this.currentBidTab = tab
         console.log('Bid tab changed:', this.currentBidTab)

@@ -41,7 +41,7 @@ function EventsBlockSlide({ name, data, className = '' }) {
     };
 
     return (
-        <div className={"block-slide " + className} style={{ width: '100%', height: '237px' }}>
+        <div className={"block-slide " + className} style={{ width: '345px', height: '237px' }}>
             <div
                 id="events-slide-wrapper"
                 className="wrapper"
@@ -54,8 +54,7 @@ function EventsBlockSlide({ name, data, className = '' }) {
                     scrollSnapType: 'y mandatory',
                     scrollBehavior: 'smooth',
                     height: '217px',
-                    width: '86%',
-                    marginLeft: '2px',
+                    width: '287px',
                     gap: '37px',
                 }}
             >

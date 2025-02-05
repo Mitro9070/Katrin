@@ -1,77 +1,54 @@
+// EventsPage.js
+
 import { useEffect, useState } from "react";
 import Calendar from "./Calendar";
 import '../styles/EventsPage.css';
 import StandartCard from "./StandartCard";
 import { Link, useNavigate } from 'react-router-dom';
 import imgFilterIcon from '../images/filter.svg';
-import defaultEventImage from '../images/events.jpg'; // Импортируем изображение по умолчанию
+import defaultEventImage from '../images/events.jpg';
 import Loader from "./Loader";
 import Cookies from 'js-cookie';
-import { ref, get } from 'firebase/database';
-import { database } from '../firebaseConfig';
 import { getPermissions } from '../utils/Permissions';
-import formatDate from '../utils/formatDate'; // Убедитесь, что этот импорт существует
+import formatDate from '../utils/formatDate';
+import { fetchEvents } from '../Controller/EventsController';
+import { getImageUrl } from '../utils/getImageUrl';
 
 const EventsPage = () => {
     const [IsFilterBlock, setIsFilterBlock] = useState(false);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [pastEvents, setPastEvents] = useState(false);
+    const [pastEvents, setPastEvents] = useState(true);
     const [elementType, setElementType] = useState('');
     const [eventsData, setEventsData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const [modalMessage, setModalMessage] = useState('');
     const [selectedDate, setSelectedDate] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const userId = Cookies.get('userId');
-                const roleId = Cookies.get('roleId') || '2'; // Default role ID for "Гость"
+                const roleId = Cookies.get('roleId') || '2';
                 const permissions = getPermissions(roleId);
 
-                // Проверка прав доступа
-                switch (roleId) {
-                    case '1': // Администратор
-                    case '3': // Авторизованный пользователь
-                        if (!permissions.calendarevents) {
-                            throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                        }
-                        break;
-                    case '2': // Гость
-                    case '4': // Контент-менеджер
-                    case '5': // Менеджер событий
-                    case '6': // Техник
-                        if (!permissions.calendarevents) {
-                            setModalMessage('У вас недостаточно прав для просмотра этой страницы. Пожалуйста, авторизуйтесь в системе.');
-                            setShowModal(true);
-                            return;
-                        }
-                        break;
-                    default:
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                }
+                // Проверка прав доступа (если необходимо)
 
-                const eventsRef = ref(database, 'Events');
-                const snapshot = await get(eventsRef);
-                if (snapshot.exists()) {
-                    const eventsData = [];
-                    snapshot.forEach(childSnapshot => {
-                        const item = childSnapshot.val();
-                        // Добавляем только опубликованные события
-                        if (item.status === "Опубликовано") {
-                            eventsData.push({
-                                ...item,
-                                id: childSnapshot.key,
-                                images: item.images && Array.isArray(item.images) ? item.images : [defaultEventImage]
-                            });
-                        }
-                    });
-                    setEventsData(eventsData);
-                }
+                // Загрузить события с бэкенда
+                const eventsResponse = await fetchEvents(); // Загрузим все события
+
+                const eventsData = eventsResponse
+                    .filter(event => event.status === "Опубликовано") // Фильтруем опубликованные события
+                    .map(event => ({
+                        ...event,
+                        images: event.image
+                            ? [getImageUrl(event.image)]
+                            : [defaultEventImage],
+                    }));
+
+                setEventsData(eventsData);
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
                 setError('Не удалось загрузить данные');
@@ -87,39 +64,37 @@ const EventsPage = () => {
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-        setStartDate(today.toISOString().split("T")[0]); // Формат YYYY-MM-DD
-        setEndDate(thirtyDaysFromNow.toISOString().split("T")[0]); // Формат YYYY-MM-DD
+        setStartDate(today.toISOString().split("T")[0]);
+        setEndDate(thirtyDaysFromNow.toISOString().split("T")[0]);
+        setPastEvents(true); // Галочка установлена по умолчанию
     }, [navigate]);
 
     const handleFilterChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, checked } = e.target;
         if (name === "startDate") setStartDate(value);
         if (name === "endDate") setEndDate(value);
-        if (name === "pastEvents") setPastEvents(e.target.checked);
+        if (name === "pastEvents") setPastEvents(checked);
         if (name === "elementType") setElementType(value);
     };
 
-    // Функция для сброса фильтров
     const resetFilters = () => {
         const today = new Date();
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-        setStartDate(today.toISOString().split("T")[0]); // Формат YYYY-MM-DD
-        setEndDate(thirtyDaysFromNow.toISOString().split("T")[0]); // Формат YYYY-MM-DD
-        setPastEvents(false); // Сбросим фильтр прошедших событий
-        setElementType(''); // Сбросим тип события
-        setSelectedDate(null); // Сбросим выбранную дату
+        setStartDate(today.toISOString().split("T")[0]);
+        setEndDate(thirtyDaysFromNow.toISOString().split("T")[0]);
+        setPastEvents(true);
+        setElementType('');
+        setSelectedDate(null);
     };
 
-    // Функция для нормализации даты (обнуление времени)
     const normalizeDate = (date) => {
         const normalized = new Date(date);
         normalized.setHours(0, 0, 0, 0);
         return normalized;
     };
 
-    // Функция для форматирования даты события
     const formatEventDate = (dateString) => {
         const date = new Date(dateString);
         const today = new Date();
@@ -132,61 +107,57 @@ const EventsPage = () => {
         } else if (date.getTime() === tomorrow.getTime()) {
             return 'Завтра';
         } else {
-            return formatDate(dateString, true); // Используем вашу функцию formatDate
+            return formatDate(dateString, true);
         }
     };
 
-    const filteredEvents = eventsData.filter(item => {
-        const eventStartDate = normalizeDate(item.start_date);
-        const eventEndDate = normalizeDate(item.end_date);
-        const today = normalizeDate(new Date());
+    const filterEvents = (eventsArray) => {
+        return eventsArray.filter(item => {
+            const eventStartDate = normalizeDate(item.start_date);
+            const eventEndDate = normalizeDate(item.end_date);
+            const today = normalizeDate(new Date());
 
-        // Фильтрация по прошедшим событиям
-        if (!pastEvents && eventEndDate < today) {
-            return false;
-        }
-
-        // Фильтрация по диапазону дат
-        if (startDate && endDate) {
-            const start = normalizeDate(startDate);
-            const end = normalizeDate(endDate);
-            if (eventStartDate > end || eventEndDate < start) {
+            // Фильтрация по типу события
+            if (elementType && item.elementtype !== elementType) {
                 return false;
             }
-        }
 
-        // Фильтрация по типу события
-        if (elementType && item.elementType !== elementType) {
-            return false;
-        }
+            // Если галочка "Прошедшие события" установлена
+            if (pastEvents) {
+                return true;
+            } else {
+                // Если галочка не установлена, показываем только будущие события в заданном диапазоне дат
+                if (eventEndDate < today) {
+                    return false;
+                }
+                if (startDate && endDate) {
+                    const start = normalizeDate(startDate);
+                    const end = normalizeDate(endDate);
+                    if (eventStartDate > end || eventEndDate < start) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+    };
 
-        return true;
-    });
+    const calendarEvents = filterEvents(eventsData);
 
-    // Обработчик выбора даты в календаре
     const handleDateSelect = (date) => {
-        // Нормализуем выбранную дату
         const normalizedDate = normalizeDate(date);
         setSelectedDate(normalizedDate);
     };
 
-    // Фильтрация событий по выбранной дате
     const eventsForSelectedDate = selectedDate
-        ? filteredEvents.filter(event => {
+        ? calendarEvents.filter(event => {
             const eventStartDate = normalizeDate(event.start_date);
             const eventEndDate = normalizeDate(event.end_date);
             return (
                 eventStartDate <= selectedDate && eventEndDate >= selectedDate
             );
         })
-        : filteredEvents.filter(event => {
-            const eventStartDate = normalizeDate(event.start_date);
-            const today = normalizeDate(new Date());
-            const thirtyDaysFromNow = new Date(today);
-            thirtyDaysFromNow.setDate(today.getDate() + 30);
-            const endDate = normalizeDate(thirtyDaysFromNow);
-            return eventStartDate >= today && eventStartDate <= endDate;
-        });
+        : calendarEvents;
 
     // Сортировка событий по дате начала
     eventsForSelectedDate.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
@@ -197,7 +168,7 @@ const EventsPage = () => {
     return (
         <div className="page-content events-page">
             <div className="events-content-calendar">
-                <Calendar events={filteredEvents} onDateSelect={handleDateSelect} />
+                <Calendar events={calendarEvents} onDateSelect={handleDateSelect} />
                 <div className="events-content-calendar-legend">
                     <div className="events-external-legend">
                         <div></div>
@@ -272,8 +243,8 @@ const EventsPage = () => {
                                 text={e.text}
                                 publicDate={formatEventDate(e.start_date)}
                                 isEvents={true}
-                                eventType={e.elementType}
-                                images={e.images}
+                                eventType={e.elementtype}
+                                images={e.images} // Передаём массив изображений
                             />
                         </Link>
                     ))}

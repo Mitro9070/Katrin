@@ -1,59 +1,16 @@
 .header {
-    position: fixed; /* Фиксируем хедер в верхней части */
-    top: 0; /* Закрепляем хедер вверху */
-    left: 285px; /* Отступ от левой стороны экрана (ширина меню) */
-    width: calc(100% - 285px); /* Ширина остается по размерам всего окна браузера, минус ширина меню */
-    height: 70px; /* Высота хедера */
-    display: flex;
-    justify-content: flex-end; /* Выравнивание содержимого по правому краю */
-    align-items: center; /* Вертикальное выравнивание по центру */
-    background-color: #FFFFFF; /* Фон хедера для контрастности */
-    z-index: 999; /* Хедер ниже по сравнению с меню */
-}
-
-/* Стили для разрешения 1920x1080 */
-@media screen and (min-width: 1920px) {
-  .header {
-    left: 160px;
-    width: 1600px;
-  }
-}
-
-/* Стили для разрешения 1680x1050 */
-@media screen and (min-width: 1680px) and (max-width: 1919px) {
-  .header {
-    left: 140px;
-    width: 1400px;
-  }
-}
-
-/* Стили для разрешения 1440x900 */
-@media screen and (min-width: 1440px) and (max-width: 1679px) {
-  .header {
-    left: 125px;
+    position: absolute;
+    top: 30px;
+    left: 285px;
+    justify-content: end;
     width: 1095px;
-  }
+    height: 40px;
+    font-size: 16px;
 }
 
-/* Стили для разрешения 1366x768 */
-@media screen and (min-width: 1366px) and (max-width: 1439px) {
-  .header {
-    left: 100px;
-    width: 1000px;
-  }
-}
-
-/* Стили для разрешения 1280x720 */
-@media screen and (max-width: 1365px) {
-  .header {
-    left: 80px;
-    width: 960px;
-  }
-}
-
-.header-follow, .header-search, .header-notifications, .header-user {
+.header, .header-follow, .header-search, .header-notifications, .header-user {
     display: flex;
-    align-items: center;
+    gap: 60px;
 }
 
 .header-search, .header-follow, .header-notifications, .header-user {
@@ -65,7 +22,6 @@
 }
 
 .header-search {
-    
     width: 308px;
     justify-content: space-between;
     color: #2C2C2C;
@@ -143,10 +99,10 @@
 }
 
 .header-notifications {
-    margin-right: 0px;
-    width: 100px;
+    width: 60px;
     border: none;
     cursor: pointer;
+    position: relative;
 }
 
 .header-search p {
@@ -160,7 +116,6 @@
 .header img {
     width: 34px;
     height: 34px;
-   
 }
 
 .header-user {
@@ -208,4 +163,169 @@
 
 .header-user-menu-item:hover {
     background-color: #f1f1f1;
+}
+
+/* Стили для красного кружочка с количеством уведомлений */
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: 3px;
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+/* Стили для контейнера уведомлений */
+.notifications-list {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 350px;
+    max-height: 400px;
+    background-color: white;
+    border: 1px solid #A9A9A9;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden; 
+    z-index: 1000;
+    /* Добавляем padding-top для учета высоты заголовка */
+    padding-top: 50px;
+}
+
+/* Стили для заголовка уведомлений */
+.notifications-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px; /* Высота заголовка */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+    background-color: #f5f5f5;
+    z-index: 1;
+}
+
+.notifications-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notifications-actions img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.notifications-actions img.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.notifications-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notifications-list-content {
+    margin-top: 23px; /* Equal to the header's height */
+    max-height: calc(400px - 60px); /* Total max-height minus header height */
+    overflow-y: auto;
+}
+
+
+.mark-all-read-icon,
+.delete-all-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.notifications-header span {
+    font-size: 16px;
+}
+
+.delete-all-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Стили для отдельного уведомления */
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.notification-item:hover {
+    background-color: #f9f9f9;
+}
+
+.notification-item img.notification-image {
+    pointer-events: none; /* Отключаем взаимодействие с изображением */
+}
+
+.notification-item:hover img.notification-image {
+    filter: none; /* Отменяем любые фильтры при наведении на изображение */
+}
+
+.notification-item.unread {
+    background-color: #e6f7ff;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.notification-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.notification-timestamp {
+    font-size: 12px;
+    color: #999;
+}
+
+.notification-image {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Стили для чекбоксов */
+.notifications-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.delete-selected-icon.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
