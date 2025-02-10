@@ -37,24 +37,14 @@ export const fetchEventById = async (id) => {
 };
 
 // Функция для добавления нового события
-export const addEvent = async (eventItem) => {
+export const addEvent = async (formData) => {
     const token = Cookies.get('token');
-    const formData = new FormData();
-
-    for (const key in eventItem) {
-        if (key === 'images' && Array.isArray(eventItem.images)) {
-            eventItem.images.forEach((image) => {
-                formData.append('images', image);
-            });
-        } else {
-            formData.append(key, eventItem[key]);
-        }
-    }
 
     const response = await fetch(`${serverUrl}/api/events`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
+            // Не устанавливаем 'Content-Type'
         },
         body: formData,
     });
@@ -64,7 +54,7 @@ export const addEvent = async (eventItem) => {
     }
 
     const data = await response.json();
-    return data; // Возвращаем данные ответа, содержащие id события
+    return data;
 };
 
 // Функция для редактирования события
@@ -107,7 +97,6 @@ export const deleteEvent = async (id) => {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
         },
     });
 

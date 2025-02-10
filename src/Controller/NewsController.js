@@ -27,9 +27,8 @@ export const fetchNews = async (page = 1, elementType = '') => {
     return data; // Возвращаем весь объект данных
 };
 
-// получение новости по ID
+// Получение новости по ID
 export const fetchNewsById = async (id) => {
-    const token = Cookies.get('token');
     const response = await fetch(`${serverUrl}/api/news/${id}`, {
         method: 'GET',
         headers: {
@@ -37,6 +36,7 @@ export const fetchNewsById = async (id) => {
             'Authorization': `Bearer ${token}`,
         },
     });
+
     if (!response.ok) {
         throw new Error('Ошибка при загрузке новости');
     }
@@ -45,24 +45,14 @@ export const fetchNewsById = async (id) => {
 };
 
 // Функция для добавления новой новости
-export const addNews = async (newsItem) => {
+export const addNews = async (formData) => {
     const token = Cookies.get('token');
-    const formData = new FormData();
-
-    for (const key in newsItem) {
-        if (key === 'images' && Array.isArray(newsItem.images)) {
-            newsItem.images.forEach((image) => {
-                formData.append('images', image);
-            });
-        } else {
-            formData.append(key, newsItem[key]);
-        }
-    }
 
     const response = await fetch(`${serverUrl}/api/news`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
+            // Не устанавливаем 'Content-Type', браузер сам выставит корректный заголовок для FormData
         },
         body: formData,
     });
@@ -72,7 +62,7 @@ export const addNews = async (newsItem) => {
     }
 
     const data = await response.json();
-    return data; // Возвращаем данные ответа, содержащие id новости
+    return data;
 };
 
 // Функция для редактирования новости
@@ -115,7 +105,6 @@ export const deleteNews = async (id) => {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
         },
     });
 

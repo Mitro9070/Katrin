@@ -1,61 +1,107 @@
-import { useState, useRef } from 'react';
-import { storage } from '../firebaseConfig';
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+// src/components/CustomPhotoBox.js
+
+import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import CustomCropper from './CustomCropper';
 import '../styles/CustomPhotoBox.css';
 
 import imgAddIcon from '../images/add.svg';
 import imgTrashIcon from '../images/edit.png';
 
-function CustomPhotoBox({ name = '', id = '', defaultValue = '' }) {
-    const [ImagePath, setImagePath] = useState(defaultValue ? defaultValue : '');
-    const [ignoreNextClick, setIgnoreNextClick] = useState(false);
+function CustomPhotoBox({ name = '', id = '', defaultValue = '', onFileSelect, index }) {
+    const [imagePreview, setImagePreview] = useState(defaultValue ? defaultValue : '');
+    const [showCropper, setShowCropper] = useState(false);
+    const [imageSrc, setImageSrc] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const fileInputRef = useRef(null);
 
-    const onChangeHandler = async (e) => {
+    const onChangeHandler = (e) => {
         if (e.target.files[0]) {
             const file = e.target.files[0];
-            const fileRef = storageRef(storage, `images/${file.name}`);
-            await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(fileRef);
-            setImagePath(url);
-            localStorage.setItem(file.name, url);
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                setImageSrc(reader.result);
+                setShowCropper(true);
+            });
+            reader.readAsDataURL(file);
         }
     };
 
     const onDeleteHandler = (e) => {
         e.stopPropagation();
         fileInputRef.current.value = '';
-        setImagePath('');
-        setIgnoreNextClick(true);
+        setSelectedFile(null);
+        setImagePreview('');
+        onFileSelect && onFileSelect(null, index); // Удаляем файл в родительском компоненте
     };
 
     const onInputClickHandler = (e) => {
         e.stopPropagation();
-        ignoreNextClick && setIgnoreNextClick(false);
-        !ignoreNextClick && fileInputRef.current.click();
+        if (!showCropper) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+    };
+
+    const handleCropSave = async (croppedBlob) => {
+        setShowCropper(false);
+
+        // Создаём объект URL для предварительного просмотра
+        const croppedImageUrl = URL.createObjectURL(croppedBlob);
+        setImagePreview(croppedImageUrl);
+        setSelectedFile(croppedBlob);
+
+        // Передаём файл (Blob) в родительский компонент
+        if (onFileSelect) {
+            // Преобразуем Blob в File, чтобы сохранить оригинальное имя файла и тип
+            const file = new File([croppedBlob], `cropped_${Date.now()}.jpg`, { type: croppedBlob.type });
+            onFileSelect(file, index);
+        }
     };
 
     return (
-        <label className="custom-photobox-container">
-            <input
-                ref={fileInputRef}
-                type="file"
-                onChange={onChangeHandler}
-                accept='image/*'
-                onClick={onInputClickHandler}
-                style={{ display: ImagePath ? 'none' : 'block' }}
-                id={id}
-                name={name}
-            />
-            <img className="custom-photobox-selected-photo" src={ImagePath} alt="" />
-            <img className={`custom-photobox-icon ${ImagePath ? 'custom-photobox-icon-selected' : ''}`} src={imgAddIcon} alt="" />
-            {ImagePath && (
-                <div className="icon-container bid-image-delete-container" onClick={onDeleteHandler}>
-                    <img src={imgTrashIcon} alt="" className="bid-image-delete" />
-                </div>
+        <div className="custom-photobox-container-wrapper">
+            <label className="custom-photobox-container">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    onChange={onChangeHandler}
+                    accept='image/*'
+                    style={{ display: 'none' }}
+                    id={id}
+                    name={name}
+                />
+                {imagePreview ? (
+                    <img
+                        className="custom-photobox-selected-photo"
+                        src={imagePreview}
+                        alt=""
+                        onClick={onInputClickHandler}
+                    />
+                ) : (
+                    <div className="custom-photobox-placeholder" onClick={onInputClickHandler}>
+                        <img className="custom-photobox-icon" src={imgAddIcon} alt="" />
+                    </div>
+                )}
+                {imagePreview && (
+                    <div className="icon-container bid-image-delete-container" onClick={onDeleteHandler}>
+                        <img src={imgTrashIcon} alt="" className="bid-image-delete" />
+                    </div>
+                )}
+            </label>
+            {showCropper && createPortal(
+                <CustomCropper
+                    imageSrc={imageSrc}
+                    onCancel={handleCropCancel}
+                    onSave={handleCropSave}
+                />,
+                document.body
             )}
-        </label>
+        </div>
     );
 }
 
