@@ -1,8 +1,9 @@
+// src/components/ContentPage.js
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ref, get, set, remove, onValue } from 'firebase/database';
-import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
+
 import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
@@ -13,6 +14,10 @@ import EditBidForm from './EditBidPage';
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
+import { fetchNews, deleteNews, editNews } from '../Controller/NewsController';
+import { fetchEvents, deleteEvent, editEvent } from '../Controller/EventsController';
+import { fetchUsers } from '../Controller/UsersController';
+
 const ContentPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -21,8 +26,6 @@ const ContentPage = () => {
     const [currentTab, setCurrentTab] = useState('News');
     const [newsData, setNewsData] = useState([]);
     const [eventsData, setEventsData] = useState([]);
-    const [deletedNewsData, setDeletedNewsData] = useState([]);
-    const [deletedEventsData, setDeletedEventsData] = useState([]);
     const [subTab, setSubTab] = useState('Draft');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,9 +45,11 @@ const ContentPage = () => {
 
             setLoading(true);
 
+            // Проверка прав доступа
             switch (roleId) {
                 case '1':
                 case '4':
+                    // Администратор и контент-менеджер
                     break;
                 case '3':
                 case '6':
@@ -61,135 +66,48 @@ const ContentPage = () => {
                     throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
             }
 
-            const newsRef = ref(database, 'News');
-            const eventsRef = ref(database, 'Events');
-            const deletedNewsRef = ref(database, 'Deleted/News');
-            const deletedEventsRef = ref(database, 'Deleted/Events');
-            const usersRef = ref(database, 'Users');
+            // Загрузка данных пользователей
+            const users = await fetchUsers();
 
-            const [
-                newsSnapshot,
-                eventsSnapshot,
-                deletedNewsSnapshot,
-                deletedEventsSnapshot,
-                usersSnapshot
-            ] = await Promise.all([
-                get(newsRef),
-                get(eventsRef),
-                get(deletedNewsRef),
-                get(deletedEventsRef),
-                get(usersRef)
-            ]);
+            // Загрузка данных новостей
+            const newsResponse = await fetchNews();
+            let newsItems = newsResponse.news || [];
 
-            const users = usersSnapshot.val();
+            // Загрузка данных событий
+            const eventsResponse = await fetchEvents();
+            let eventsItems = eventsResponse.events || [];
 
-            const filteredNewsData = [];
-            const filteredEventsData = [];
-            const filteredDeletedNewsData = [];
-            const filteredDeletedEventsData = [];
+            // Фильтрация данных по роли пользователя
+            if (roleId !== '1' && roleId !== '4') {
+                newsItems = newsItems.filter(item => item.owner === userId);
+                eventsItems = eventsItems.filter(item => item.owner === userId);
+            }
 
             // Обработка данных новостей
-            if (newsSnapshot.exists()) {
-                const newsData = newsSnapshot.val();
-                for (const key in newsData) {
-                    const item = newsData[key];
-                    const organizer = users[item.owner];
-                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
+            const processedNewsData = newsItems.map(item => {
+                const organizer = users.find(user => user.id === item.owner);
+                const organizerName = organizer ? `${organizer.surname || ''} ${organizer.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
 
-                    if ((roleId === '3' || roleId === '6') && item.owner !== userId) continue;
-                    filteredNewsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: key
-                    });
-                }
-
-                filteredNewsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
-            }
-
-            // Обработка данных удалённых новостей
-            if (deletedNewsSnapshot.exists()) {
-                const deletedNews = deletedNewsSnapshot.val();
-                for (const key in deletedNews) {
-                    const item = deletedNews[key];
-                    const organizer = users[item.owner];
-                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-
-                    if ((roleId === '3' || roleId === '6') && item.owner !== userId) continue;
-                    filteredDeletedNewsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: key
-                    });
-                }
-
-                filteredDeletedNewsData.sort((a, b) => new Date(b.deletedDate) - new Date(a.deletedDate));
-            }
+                return {
+                    ...item,
+                    organizerName,
+                };
+            });
 
             // Обработка данных событий
-            if (eventsSnapshot.exists()) {
-                const eventsData = eventsSnapshot.val();
-                for (const key in eventsData) {
-                    const item = eventsData[key];
-                    let organizerName = 'Неизвестно';
+            const processedEventsData = eventsItems.map(item => {
+                const organizer = users.find(user => user.id === item.owner);
+                const organizerName = organizer ? `${organizer.surname || ''} ${organizer.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
 
-                    if (item.owner) {
-                        const userRef = ref(database, `Users/${item.owner}`);
-                        const snapshot = await get(userRef);
+                return {
+                    ...item,
+                    organizerName,
+                };
+            });
 
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-                            organizerName = `${userData.surname || ''} ${userData.Name ? userData.Name.charAt(0) + '.' : ''}`.trim();
-                        } else {
-                            organizerName = item.owner;
-                        }
-                    }
+            setNewsData(processedNewsData);
+            setEventsData(processedEventsData);
 
-                    if ((roleId === '3' || roleId === '6') && item.owner !== userId) continue;
-                    filteredEventsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: key
-                    });
-                }
-
-                filteredEventsData.sort((a, b) => new Date(b.postData) - new Date(a.postData));
-            }
-
-            // Обработка данных удалённых событий
-            if (deletedEventsSnapshot.exists()) {
-                const deletedEvents = deletedEventsSnapshot.val();
-                for (const key in deletedEvents) {
-                    const item = deletedEvents[key];
-                    let organizerName = 'Неизвестно';
-
-                    if (item.owner) {
-                        const userRef = ref(database, `Users/${item.owner}`);
-                        const snapshot = await get(userRef);
-
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-                            organizerName = `${userData.surname || ''} ${userData.Name ? userData.Name.charAt(0) + '.' : ''}`.trim();
-                        } else {
-                            organizerName = item.owner;
-                        }
-                    }
-
-                    if ((roleId === '3' || roleId === '6') && item.owner !== userId) continue;
-                    filteredDeletedEventsData.push({
-                        ...item,
-                        organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                        id: key
-                    });
-                }
-
-                filteredDeletedEventsData.sort((a, b) => new Date(b.deletedDate) - new Date(a.deletedDate));
-            }
-
-            setNewsData(filteredNewsData);
-            setEventsData(filteredEventsData);
-            setDeletedNewsData(filteredDeletedNewsData);
-            setDeletedEventsData(filteredDeletedEventsData);
         } catch (err) {
             console.error('Ошибка при загрузке данных:', err);
             setError('Не удалось загрузить данные');
@@ -214,30 +132,58 @@ const ContentPage = () => {
     };
 
     const handleView = (typeForm, id) => {
-        
         navigate(`/${typeForm.toLowerCase()}/${id}`);
-      };
+    };
 
-    const handleStatusChange = async (id, newStatus) => {
+    const handleStatusChange = async (id, newStatus, typeForm) => {
         try {
-            if (currentTab === 'News') {
-                const newsRef = ref(database, `News/${id}`);
-                const newsSnapshot = await get(newsRef);
-                if (newsSnapshot.exists()) {
-                    const newsItem = newsSnapshot.val();
-                    newsItem.status = newStatus;
-                    await set(newsRef, newsItem);
-                }
-            } else if (currentTab === 'Events') {
-                const eventRef = ref(database, `Events/${id}`);
-                const eventSnapshot = await get(eventRef);
-                if (eventSnapshot.exists()) {
-                    const eventItem = eventSnapshot.val();
-                    eventItem.status = newStatus;
-                    await set(eventRef, eventItem);
+            // Находим элемент в данных
+            let item;
+            if (typeForm === 'News') {
+                item = newsData.find(newsItem => newsItem.id === id);
+            } else if (typeForm === 'Events') {
+                item = eventsData.find(eventItem => eventItem.id === id);
+            }
+    
+            if (!item) {
+                console.error('Элемент не найден');
+                return;
+            }
+    
+            // Создаём новый объект FormData
+            const formData = new FormData();
+    
+            // Заполняем FormData всеми полями существующей записи, кроме вычисляемых или лишних полей
+            for (const key in item) {
+                if (item.hasOwnProperty(key) && key !== 'id' && key !== 'organizerName' && item[key] !== null && item[key] !== undefined) {
+                    if (key === 'images' || key === 'existingImages') {
+                        // Пропускаем обработку изображений здесь, если они не меняются
+                        continue;
+                    } else if (Array.isArray(item[key])) {
+                        formData.append(key, JSON.stringify(item[key]));
+                    } else {
+                        formData.append(key, item[key]);
+                    }
                 }
             }
-
+    
+            // Обрабатываем изображения, если нужно
+            if (item.image) {
+                const existingImages = [];
+                existingImages.push(item.image);
+                formData.append('existingImages', JSON.stringify(existingImages));
+            }
+    
+            // Обновляем статус
+            formData.set('status', newStatus);
+    
+            // Отправляем данные на сервер
+            if (typeForm === 'News') {
+                await editNews(id, formData);
+            } else if (typeForm === 'Events') {
+                await editEvent(id, formData);
+            }
+    
             await fetchData();
         } catch (error) {
             console.error('Ошибка при изменении статуса:', error);
@@ -256,35 +202,12 @@ const ContentPage = () => {
         setEditBidId(null);
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (id, typeForm) => {
         try {
-            const currentDate = new Date().toISOString();
-            const deleteInitiator = userId;
-
-            if (currentTab === 'News') {
-                const newsRef = ref(database, `News/${id}`);
-                const newsSnapshot = await get(newsRef);
-                if (newsSnapshot.exists()) {
-                    const newsItem = newsSnapshot.val();
-                    newsItem.deletedDate = currentDate;
-                    newsItem.deleteInitiator = deleteInitiator;
-
-                    const deletedNewsRef = ref(database, `Deleted/News/${id}`);
-                    await set(deletedNewsRef, newsItem);
-                    await remove(newsRef);
-                }
-            } else if (currentTab === 'Events') {
-                const eventRef = ref(database, `Events/${id}`);
-                const eventSnapshot = await get(eventRef);
-                if (eventSnapshot.exists()) {
-                    const eventItem = eventSnapshot.val();
-                    eventItem.deletedDate = currentDate;
-                    eventItem.deleteInitiator = deleteInitiator;
-
-                    const deletedEventsRef = ref(database, `Deleted/Events/${id}`);
-                    await set(deletedEventsRef, eventItem);
-                    await remove(eventRef);
-                }
+            if (typeForm === 'News') {
+                await deleteNews(id);
+            } else if (typeForm === 'Events') {
+                await deleteEvent(id);
             }
 
             await fetchData();
@@ -293,43 +216,9 @@ const ContentPage = () => {
         }
     };
 
-    const handleRestore = async (id) => {
-        try {
-            const restoreInitiator = userId;
-
-            if (currentTab === 'News') {
-                const deletedNewsRef = ref(database, `Deleted/News/${id}`);
-                const deletedNewsSnapshot = await get(deletedNewsRef);
-                if (deletedNewsSnapshot.exists()) {
-                    const newsItem = deletedNewsSnapshot.val();
-                    newsItem.restoredInitiator = restoreInitiator;
-                    delete newsItem.deletedDate;
-                    delete newsItem.deleteInitiator;
-
-                    const newsRef = ref(database, `News/${id}`);
-                    await set(newsRef, newsItem);
-                    await remove(deletedNewsRef);
-                }
-            } else if (currentTab === 'Events') {
-                const deletedEventsRef = ref(database, `Deleted/Events/${id}`);
-                const deletedEventSnapshot = await get(deletedEventsRef);
-                if (deletedEventSnapshot.exists()) {
-                    const eventItem = deletedEventSnapshot.val();
-                    eventItem.restoredInitiator = restoreInitiator;
-                    delete eventItem.deletedDate;
-                    delete eventItem.deleteInitiator;
-
-                    const eventRef = ref(database, `Events/${id}`);
-                    await set(eventRef, eventItem);
-                    await remove(deletedEventsRef);
-                }
-            }
-
-            await fetchData();
-            setSubTab('Draft');
-        } catch (error) {
-            console.error('Ошибка при восстановлении:', error);
-        }
+    const handleRestore = async (id, typeForm) => {
+        // Логика для восстановления новости или события из архива или корзины
+        // Нужно реализовать соответствующий метод на бэкенде
     };
 
     return (
@@ -340,15 +229,19 @@ const ContentPage = () => {
                     typeForm={currentTab === 'News' ? 'News' : 'Events'}
                 />
             )}
-            {editMode && <EditBidForm typeForm={editTypeForm} id={editBidId} />}
+            {editMode && (
+                <EditBidForm
+                    typeForm={editTypeForm}
+                    id={editBidId}
+                    setIsEditPage={handleCloseEdit}
+                />
+            )}
             {!isAddPage && !editMode && (
                 <>
                     <div className="content-page-head noselect">
                         {(roleId === '1' || roleId === '4') && (
                             <p
-                                className={`content-page-head-tab ${
-                                    currentTab === 'News' ? 'content-page-head-tab-selected' : ''
-                                }`}
+                                className={`content-page-head-tab ${currentTab === 'News' ? 'content-page-head-tab-selected' : ''}`}
                                 data-tab="News"
                                 onClick={changeCurrentTabHandler}
                             >
@@ -357,9 +250,7 @@ const ContentPage = () => {
                         )}
                         {(roleId === '1' || roleId === '4' || roleId === '5') && (
                             <p
-                                className={`content-page-head-tab ${
-                                    currentTab === 'Events' ? 'content-page-head-tab-selected' : ''
-                                }`}
+                                className={`content-page-head-tab ${currentTab === 'Events' ? 'content-page-head-tab-selected' : ''}`}
                                 data-tab="Events"
                                 onClick={changeCurrentTabHandler}
                             >
@@ -417,256 +308,80 @@ const ContentPage = () => {
                             <>
                                 {currentTab === 'News' && (
                                     <>
-                                        {/* Раздел "Объявления" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Объявления
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedNewsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Объявления'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? newsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              item.elementType === 'Объявления'
-                                                      )
-                                                    : newsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Объявления' &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
-                                        {/* Раздел "Устройства и ПО" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Устройства и ПО
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedNewsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Устройства и ПО'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? newsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              item.elementType === 'Устройства и ПО'
-                                                      )
-                                                    : newsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Устройства и ПО' &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
-                                        {/* Раздел "Мероприятия" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Мероприятия
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedNewsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Мероприятия'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? newsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              item.elementType === 'Мероприятия'
-                                                      )
-                                                    : newsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Мероприятия' &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
-                                        {/* Раздел "Технические новости" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Технические новости
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedNewsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Тех. новости' ||
-                                                              item.elementType === 'Технические новости'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? newsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              (item.elementType === 'Тех. новости' ||
-                                                                  item.elementType ===
-                                                                      'Технические новости')
-                                                      )
-                                                    : newsData.filter(
-                                                          (item) =>
-                                                              (item.elementType === 'Тех. новости' ||
-                                                                  item.elementType ===
-                                                                      'Технические новости') &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
+                                        {/* Разделы новостей по типу */}
+                                        {['Объявления', 'Устройства и ПО', 'Мероприятия', 'Тех. новости'].map((elementType) => (
+                                            <div key={elementType}>
+                                                <h2
+                                                    style={{
+                                                        color: '#525252',
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: '18px',
+                                                        fontWeight: '600',
+                                                    }}
+                                                >
+                                                    {elementType}
+                                                </h2>
+                                                <TableComponent
+                                                    items={
+                                                        newsData.filter(
+                                                            (item) =>
+                                                                item.elementtype === elementType &&
+                                                                ((subTab === 'Trash' && item.status === 'Удалено') ||
+                                                                    (subTab === 'Archive' && item.status === 'Архив') ||
+                                                                    (subTab === 'Draft' && item.status !== 'Архив' && item.status !== 'Удалено'))
+                                                        )
+                                                    }
+                                                    onStatusChange={(id, newStatus) => handleStatusChange(id, newStatus, 'News')}
+                                                    onDelete={(id) => handleDelete(id, 'News')}
+                                                    onRestore={(id) => handleRestore(id, 'News')}
+                                                    onEdit={(id) => handleEdit('News', id)}
+                                                    onView={() => {}}
+                                                    currentTab={currentTab}
+                                                    subTab={subTab}
+                                                    setShowMenuId={setShowMenuId}
+                                                    showMenuId={showMenuId}
+                                                />
+                                            </div>
+                                        ))}
                                     </>
                                 )}
                                 {currentTab === 'Events' && (
                                     <>
-                                        {/* Раздел "Внутренние события" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Внутренние события
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedEventsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Внутреннее событие'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? eventsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              item.elementType === 'Внутреннее событие'
-                                                      )
-                                                    : eventsData.filter(
-                                                          (item) =>
-                                                              item.elementType ===
-                                                                  'Внутреннее событие' &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
-                                        {/* Раздел "Внешние события" */}
-                                        <h2
-                                            style={{
-                                                color: '#525252',
-                                                fontFamily: 'Montserrat',
-                                                fontSize: '18px',
-                                                fontWeight: '600',
-                                            }}
-                                        >
-                                            Внешние события
-                                        </h2>
-                                        <TableComponent
-                                            items={
-                                                subTab === 'Trash'
-                                                    ? deletedEventsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Внешнее событие'
-                                                      )
-                                                    : subTab === 'Archive'
-                                                    ? eventsData.filter(
-                                                          (item) =>
-                                                              item.status === 'Архив' &&
-                                                              item.elementType === 'Внешнее событие'
-                                                      )
-                                                    : eventsData.filter(
-                                                          (item) =>
-                                                              item.elementType === 'Внешнее событие' &&
-                                                              item.status !== 'Архив'
-                                                      )
-                                            }
-                                            onStatusChange={handleStatusChange}
-                                            onDelete={handleDelete}
-                                            onRestore={handleRestore}
-                                            onEdit={handleEdit}
-                                            onView={handleView}
-                                            currentTab={currentTab}
-                                            subTab={subTab}
-                                            setShowMenuId={setShowMenuId}
-                                            showMenuId={showMenuId}
-                                        />
+                                        {/* Разделы событий по типу */}
+                                        {['Внутреннее событие', 'Внешнее событие'].map((elementType) => (
+                                            <div key={elementType}>
+                                                <h2
+                                                    style={{
+                                                        color: '#525252',
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: '18px',
+                                                        fontWeight: '600',
+                                                    }}
+                                                >
+                                                    {elementType}
+                                                </h2>
+                                                <TableComponent
+                                                    items={
+                                                        eventsData.filter(
+                                                            (item) =>
+                                                                item.elementtype === elementType &&
+                                                                ((subTab === 'Trash' && item.status === 'Удалено') ||
+                                                                    (subTab === 'Archive' && item.status === 'Архив') ||
+                                                                    (subTab === 'Draft' && item.status !== 'Архив' && item.status !== 'Удалено'))
+                                                        )
+                                                    }
+                                                    onStatusChange={(id, newStatus) => handleStatusChange(id, newStatus, 'Events')}
+                                                    onDelete={(id) => handleDelete(id, 'Events')}
+                                                    onRestore={(id) => handleRestore(id, 'Events')}
+                                                    onEdit={(id) => handleEdit('Events', id)}
+                                                    onView={() => {}}
+                                                    currentTab={currentTab}
+                                                    subTab={subTab}
+                                                    setShowMenuId={setShowMenuId}
+                                                    showMenuId={showMenuId}
+                                                />
+                                            </div>
+                                        ))}
                                     </>
                                 )}
                             </>

@@ -1,170 +1,96 @@
+// src/components/EditBidPage.js
 import React, { useEffect, useState } from 'react';
 import '../styles/BidForm.css';
 import '../styles/CustomInput.css';
-
-import { database } from '../firebaseConfig';
-import { ref, get } from 'firebase/database';
 import InputMask from 'react-input-mask';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import imgBackIcon from '../images/back.svg';
-import imgCheckIcon from '../images/seal-check.svg';
+import imgCheckmark from '../images/checkmark.png';
 import imgLocationIcon from '../images/location.svg';
 import imgAddIcon from '../images/add.svg';
-import imgCheckmark from '../images/checkmark.png';
-import imgCalendarIcon from '../images/calendar.svg';
 import imgArrowIcon from '../images/go-arrow.svg';
 import imgTrashDelete from '../images/trash-delete.png';
-
+import { getImageUrl } from '../utils/getImageUrl';
 import CustomInput from './CustomInput';
-import CustomPhotoBox from './CustomPhotoBox2';
+import CustomPhotoBox from './CustomPhotoBox';
 import CKEditorRedaktor from './CKEditor';
 import CustomFileSelect from './CustomFileSelect';
 import Loader from './Loader';
-
-import { newsContentStore } from '../stores/NewsContentStore';
 import { navigationStore } from '../stores/NavigationStore';
-import { eventsStore } from '../stores/EventsStore';
-
-import { ref as storageRef, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
+import { fetchNewsById, editNews } from '../Controller/NewsController';
+import { fetchEventById, editEvent } from '../Controller/EventsController';
 import { v4 as uuidv4 } from 'uuid';
+import Cookies from 'js-cookie';
+import { fetchUserById } from '../Controller/UsersController'; // Импортируем fetchUserById
 
-const storage = getStorage();
+const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 
 function EditBidForm({ typeForm, id, setIsEditPage = null }) {
     const [bidData, setBidData] = useState({});
-    const [componentsCarousel, setComponentsCarousel] = useState([]);
     const [filesList, setFilesList] = useState([]);
     const [linksList, setLinksList] = useState([]);
-    const [isAdsChecked, setIsAdsChecked] = useState(false);
     const [isImportant, setIsImportant] = useState(false);
     const [CarouselPosition, setCarouselPosition] = useState(0);
-    const [coverImageURL, setCoverImageURL] = useState('');
+    const [coverImageFile, setCoverImageFile] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [organizerName, setOrganizerName] = useState('');
-    const [error, setError] = useState(null);
-    const [selectedFormat, setSelectedFormat] = useState(null);
-    const [email, setEmail] = useState(bidData?.organizer_email || '');
+    const [email, setEmail] = useState('');
     const [isEmailValid, setIsEmailValid] = useState(true);
-    const [imageURLs, setImageURLs] = useState([]);
-
+    const [imageFiles, setImageFiles] = useState([]);
+    const [selectedFormat, setSelectedFormat] = useState(null);
     const maxPhotoCnt = 6;
 
     useEffect(() => {
         const fetchBidData = async () => {
             setLoading(true);
-            setError(null);
-            let bid;
-
             try {
-                // Загрузка данных в зависимости от типа формы
+                let bid;
                 if (typeForm === 'News' || typeForm === 'TechNews') {
-                    await newsContentStore.fetchData();
-                    bid = newsContentStore.getNewsById(id);
-
-                    if (typeForm === 'TechNews' && bid) {
-                        setBidData({
-                            ...bid,
-                            display_up_to: bid.display_up_to || ''
-                        });
-                    }
+                    bid = await fetchNewsById(id);
                 } else if (typeForm === 'Events') {
-                    await eventsStore.fetchData();
-                    bid = eventsStore.getEventById(id);
+                    bid = await fetchEventById(id);
                 }
-
                 if (!bid) {
                     throw new Error('Заявка не найдена');
                 }
-
                 navigationStore.setCurrentBidText(bid.text || '');
-
                 if (bid.display_up_to) {
-                    const formattedDisplayUpTo = new Date(bid.display_up_to).toISOString().slice(0, 16);
-                    setBidData({
-                        ...bid,
-                        display_up_to: formattedDisplayUpTo
-                    });
-                } else {
-                    setBidData({
-                        ...bid,
-                        display_up_to: ''
-                    });
+                    bid.display_up_to = new Date(bid.display_up_to).toISOString().slice(0, 16);
                 }
-
                 if (bid.start_date) {
                     bid.start_date = new Date(bid.start_date).toISOString().slice(0, 16);
                 }
-
                 if (bid.end_date) {
                     bid.end_date = new Date(bid.end_date).toISOString().slice(0, 16);
                 }
-
-                // Проверка наличия поля images
-                if (bid.images && Array.isArray(bid.images)) {
-                    // Установка обложки и других изображений
-                    setCoverImageURL(bid.images[0]);
-                    setImageURLs(bid.images.slice(1));
-
-                    // Установка изображений карусели
-                    const carouselImages = (bid.images.slice(1) || []).map((image, index) => (
-                        <CustomPhotoBox key={index} width="380px" name="bid-image" defaultValue={image} onImageUpload={(url) => handlePhotoChange(url, index)} />
-                    ));
-                    setComponentsCarousel(carouselImages);
-                } else {
-                    // Если изображений нет, устанавливаем пустые значения
-                    setCoverImageURL('');
-                    setImageURLs([]);
-                    setComponentsCarousel([]);
-                }
-
-                // Установка списка файлов
+                const images = bid.images || [];
+                setCoverImageFile(images[0] || null);
+                setImageFiles(images.slice(1));
                 setFilesList(
-                    Array.isArray(bid?.files) ?
-                        bid?.files?.map((file, index) => (
-                            <CustomFileSelect key={index} name="bid-file" defaultValue={file} />
-                        )) : []
+                    Array.isArray(bid.files) ?
+                        bid.files.map((fileUrl, index) => ({})) : []
                 );
-
-                // Установка списка ссылок
                 setLinksList(
-                    Array.isArray(bid?.links) ?
-                        bid?.links?.map((link, index) => (
-                            <CustomInput key={index} width="308px" placeholder="Ссылка" name="bid-link" defaultValue={link} />
-                        )) : []
+                    Array.isArray(bid.links) ?
+                        bid.links.map((link, index) => ({})) : []
                 );
 
-                // Установка состояния для чекбокса и важности
-                setIsAdsChecked(bid?.elementType?.includes('Объявления'));
-                setIsImportant(bid?.fixed);
-
-                // Устанавливаем значение email
-                setEmail(bid?.organizer_email || '');
-
-                // Установка состояния для выбранного формата
-                setSelectedFormat(bid?.elementType || null); // Убедитесь, что устанавливается корректно
-
-                // Получение имени организатора
-                if (bid.organizer) {
-                    try {
-                        const userRef = ref(database, `Users/${bid.organizer}`);
-                        const snapshot = await get(userRef);
-
-                        if (snapshot.exists()) {
-                            const userData = snapshot.val();
-                            const organizerName = `${userData.surname} ${userData.Name}`;
-                            // Устанавливаем организатора в bidData
-                            setBidData(prevData => ({ ...prevData, organizer: organizerName }));
-                        } else {
-                            setBidData(prevData => ({ ...prevData, organizer: bid.organizer }));
-                        }
-                    } catch (error) {
-                        console.error('Ошибка при получении данных пользователя:', error);
-                        setBidData(prevData => ({ ...prevData, organizer: bid.organizer }));
-                    }
+                // Обработка поля organizer
+                let organizerName = bid.organizer;
+                if (isUUID(bid.organizer)) {
+                    organizerName = await fetchUserNameByUUID(bid.organizer);
                 }
 
-            } catch (err) {
-                setError(err.message);
+                setBidData({
+                    ...bid,
+                    organizer: organizerName
+                });
+                setEmail(bid.organizer_email || '');
+                setIsImportant(bid.fixed || false);
+                setSelectedFormat(bid.elementtype || '');
+            } catch (error) {
+                console.error('Ошибка при загрузке данных заявки:', error);
+                toast.error('Ошибка при загрузке данных заявки.');
             } finally {
                 setLoading(false);
             }
@@ -173,21 +99,36 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         fetchBidData();
     }, [id, typeForm]);
 
-    const fetchOrganizerName = async (organizerId) => {
-        try {
-            const userRef = ref(database, `Users/${organizerId}`);
-            const snapshot = await get(userRef);
+    const isUUID = (str) => {
+        const regexExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        return regexExp.test(str);
+    };
 
-            if (snapshot.exists()) {
-                const userData = snapshot.val();
-                return `${userData.surname} ${userData.Name}`;
-            } else {
-                console.error('Пользователь не найден');
-                return '';
+    const fetchUserNameByUUID = async (uuid) => {
+        try {
+            const response = await fetch(`${serverUrl}/api/users/${uuid}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Cookies.get('token')}`,
+                },
+            });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.warn('Пользователь не найден:', uuid);
+                    return null;
+                }
+                const errorText = await response.text();
+                console.error('Ошибка при получении данных пользователя:', errorText);
+                toast.error('Ошибка при получении имени и фамилии пользователя.');
+                return null;
             }
+            const user = await response.json();
+            return `${user.name} ${user.surname}`;
         } catch (error) {
-            console.error('Ошибка при получении данных пользователя:', error);
-            return '';
+            console.error('Ошибка при получении имени и фамилии пользователя:', error);
+            toast.error('Ошибка при получении имени и фамилии пользователя.');
+            return null;
         }
     };
 
@@ -195,263 +136,154 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         if (typeof setIsEditPage === 'function') {
             setIsEditPage(false);
         } else {
-            console.warn('setIsEditPage не является функцией, перенаправление на /content');
             window.location.href = '/content';
         }
     };
 
     const handleEmailChange = (e) => {
         let { value } = e.target;
-        // Удаляем недопустимые символы
-        value = value.replace(/[^a-zA-Z0-9@._-]/g, '');
+        value = value.replace(/[^\w@._-]/g, '');
         setEmail(value);
         setBidData({ ...bidData, organizer_email: value });
-
-        // Проверяем валидность email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         setIsEmailValid(emailRegex.test(value) || value === '');
-    };
-
-    const handleAdsCheckboxChange = (e) => {
-        setIsAdsChecked(e.target.checked);
     };
 
     const carouselMoveHandler = (direction) => {
         let position = CarouselPosition - ((195 + 2 + 30) * direction);
         if (position <= 0 && position >= (195 + 2 + 30) * -(maxPhotoCnt - 3)) {
             setCarouselPosition(position);
-            if (direction > 0 && componentsCarousel.length < (maxPhotoCnt - 4)) {
-                setComponentsCarousel((prevComponents) => [
-                    ...prevComponents,
-                    <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onImageUpload={(url) => addImageURL(url)} />
-                ]);
-            }
         }
     };
 
     const addFileFieldHandler = () => {
-        setFilesList([
-            ...filesList,
-            <CustomFileSelect key={filesList.length} name="bid-file" />
-        ]);
+        setFilesList([...filesList, uuidv4()]);
     };
 
     const addLinkFieldHandler = () => {
-        setLinksList([
-            ...linksList,
-            <CustomInput key={linksList.length} width="308px" placeholder="Ссылка" name="bid-link" />
-        ]);
+        setLinksList([...linksList, uuidv4()]);
+    };
+
+    const handleCoverImageSelect = (file) => {
+        setCoverImageFile(file);
+    };
+
+    const handleImageFileSelect = (file, index) => {
+        setImageFiles((prevFiles) => {
+            const updatedFiles = [...prevFiles];
+            updatedFiles[index] = file;
+            return updatedFiles;
+        });
+    };
+
+    const handleImageDelete = (index) => {
+        setImageFiles((prevFiles) => {
+            const updatedFiles = [...prevFiles];
+            updatedFiles.splice(index, 1);
+            return updatedFiles;
+        });
     };
 
     const addPhotoFieldHandler = () => {
-        setComponentsCarousel([
-            ...componentsCarousel,
-            <CustomPhotoBox key={componentsCarousel.length} width="380px" name="bid-image" onImageUpload={(url) => addImageURL(url)} />
-        ]);
-    };
-
-    const handlePhotoDelete = (index) => {
-        setComponentsCarousel(prevState => {
-            const newState = [...prevState];
-            newState[index] = null; // Помечаем фото как удаленное
-            return newState;
-        });
-    };
-
-
-    const handleCoverPhotoUpload = async (coverImage, newBidKey) => {
-        const fileRef = storageRef(storage, `images/${newBidKey}/${coverImage.name}`);
-        await uploadBytes(fileRef, coverImage);
-        const url = await getDownloadURL(fileRef);
-        setCoverImageURL(url);
-        return url;
-    };
-
-    const addNewPhotoFields = async (files, folder, currentImages, newBidKey) => {
-        const uploadedUrls = [];
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (file) {
-                const url = await handleSinglePhotoUpload(file, folder, newBidKey);
-                uploadedUrls.push(url);
-            } else {
-                uploadedUrls.push(currentImages[i]);
-            }
+        if (imageFiles.length < maxPhotoCnt - 1) {
+            setImageFiles((prevFiles) => [...prevFiles, null]);
+        } else {
+            toast.error(`Максимальное количество фотографий: ${maxPhotoCnt}`);
         }
-
-        return uploadedUrls;
     };
 
-    const handleSinglePhotoUpload = async (file, folder, newBidKey) => {
-        const fileRef = storageRef(storage, `${folder}/${new Date().getTime()}.jpg`);
-        await uploadBytes(fileRef, file);
-        return await getDownloadURL(fileRef);
+    const handleFormatChange = (format) => {
+        setSelectedFormat(format);
+        setBidData({ ...bidData, elementtype: format });
     };
-
-    const handlePhotoUpload = async (files, folder, newBidKey) => {
-        const urls = [];
-        for (const file of files) {
-            if (file) {
-                const fileRef = storageRef(storage, `${folder}/${newBidKey}/${new Date().getTime()}.jpg`);
-                await uploadBytes(fileRef, file);
-                const url = await getDownloadURL(fileRef);
-                urls.push(url);
-            }
-        }
-        return urls;
-    };
-
-    const handlePhotoChange = (url, index) => {
-        setImageURLs((prevURLs) => {
-            const newURLs = [...prevURLs];
-            newURLs[index] = url;
-            return newURLs;
-        });
-    };
-
-    const addImageURL = (url) => {
-        setImageURLs((prevURLs) => [...prevURLs, url]);
-    };
-
-    function getCookie(name) {
-        let matches = document.cookie.match(new RegExp(
-            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-        ));
-        return matches ? decodeURIComponent(matches[1]) : undefined;
-    }
 
     const updateBidHandler = async () => {
         setLoading(true);
-
-        const userId = getCookie('userId');
-        let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0]);
-        let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value);
-
-        const currentImages = bidData.images || [];
-        const otherImages = Array.from(document?.getElementsByName('bid-image')).map((e) => e?.files[0]);
-
-        let format = selectedFormat ? [selectedFormat] : [];
-        if (typeForm === 'TechNews' && format.length === 0) {
-            format = ['Тех. новости'];
-        }
-        if (format.length === 0 || (typeForm === 'Events' && !format[0])) {
-            alert("Пожалуйста, выберите корректный формат.");
+        console.log('Перед обновлением заявки, состояние bidData:', bidData);
+        console.log('Текущее значение selectedFormat:', selectedFormat);
+        console.log('Текущее значение isImportant:', isImportant);
+        console.log('Текущее значение navigationStore.currentBidText:', navigationStore.currentBidText);
+        const title = bidData.title;
+        if (!title) {
+            toast.error("Укажите название новости.");
             setLoading(false);
             return;
         }
-
-        // Проверка валидности email перед сохранением
         if (!isEmailValid) {
-            alert('Пожалуйста, введите корректный адрес электронной почты.');
+            toast.error('Пожалуйста, введите корректный адрес электронной почты.');
             setLoading(false);
             return;
         }
-
-
-
-        try {
-            // **Добавленная проверка дат**
-
-            const currentDate = new Date();
-            const oneYearLater = new Date();
-            oneYearLater.setFullYear(currentDate.getFullYear() + 1);
-
-            const startDateInput = document.getElementById('bid-start-date')?.value;
-            const endDateInput = document.getElementById('bid-end-date')?.value;
-            const displayUpToInput = document.getElementById('display_up_to')?.value;
-
-            const validateDate = (dateStr, fieldName) => {
-                if (dateStr) {
-                    const date = new Date(dateStr);
-                    if (date < currentDate || date > oneYearLater) {
-                        alert(`Дата в поле "${fieldName}" должна быть в пределах от текущей даты до одного года вперёд.`);
-                        setLoading(false);
-                        return false;
-                    }
-                }
-                return true;
-            };
-
-            // Проверяем даты
-            if (!validateDate(startDateInput, 'Дата начала') ||
-                !validateDate(endDateInput, 'Дата окончания') ||
-                !validateDate(displayUpToInput, 'Отображать до')) {
+        const tagsArray = bidData.tags || [];
+        let selectedFormats = [];
+        if (typeForm === 'TechNews') {
+            selectedFormats = ['Тех. новости'];
+        } else {
+            selectedFormats = [bidData.elementtype];
+            if (!selectedFormats.length) {
+                toast.error("Выберите тип Новости.");
+                setLoading(false);
                 return;
             }
-
-
-            const newBidKey = bidData?.id || uuidv4();
-            const newCoverImage = document.getElementById('bid-cover')?.files[0];
-
+        }
+        let n_files = Array.from(document?.getElementsByName('bid-file')).map((e) => e?.files[0] || null);
+        let n_links = Array.from(document?.getElementsByName('bid-link')).map((e) => e?.value).filter((value) => value !== "");
+        try {
+            const formData = new FormData();
+            formData.append('title', bidData.title);
+            formData.append('text', navigationStore.currentBidText || '');
+            formData.append('tags', JSON.stringify(tagsArray));
+            formData.append('elementtype', selectedFormats[0]);
+            formData.append('status', bidData.status || 'На модерации');
+            formData.append('fixed', isImportant ? 'true' : 'false');
             // Обработка изображений
-            let imagesUrls = bidData.images ? [...bidData.images] : [];
-
-            // Обложка
-            if (newCoverImage) {
-                const coverImageURL = await handleCoverPhotoUpload(newCoverImage, newBidKey);
-                imagesUrls[0] = coverImageURL;
+            const existingImageUrls = [];
+            if (coverImageFile instanceof File) {
+                formData.append('images', coverImageFile);
+            } else if (typeof coverImageFile === 'string') {
+                existingImageUrls.push(coverImageFile);
             }
-
-            // Остальные изображения
-            for (let i = 0; i < otherImages.length; i++) {
-                const file = otherImages[i];
-                if (file) {
-                    const url = await handleSinglePhotoUpload(file, 'images', newBidKey);
-                    imagesUrls[i + 1] = url;
-                } else if (imageURLs[i]) {
-                    // Сохраняем существующее изображение
-                    imagesUrls[i + 1] = imageURLs[i];
+            imageFiles.forEach((file) => {
+                if (file instanceof File) {
+                    formData.append('images', file);
+                } else if (typeof file === 'string') {
+                    existingImageUrls.push(file);
                 }
+            });
+            formData.append('existingImages', JSON.stringify(existingImageUrls));
+            n_files.forEach(file => {
+                if (file) {
+                    formData.append('files', file);
+                }
+            });
+            if (n_links.length > 0) {
+                formData.append('links', JSON.stringify(n_links));
             }
-
-            // Обработка файлов
-            let filesUrls = bidData.files ? [...bidData.files] : [];
-            if (n_files.some(file => file)) {
-                filesUrls = await handlePhotoUpload(n_files.filter(Boolean), 'files', newBidKey);
+            if (selectedFormats[0] === 'Объявления') {
+                formData.append('display_up_to', bidData.display_up_to || '');
             }
-
-            // Обработка ссылок
-            let links = bidData.links ? [...bidData.links] : [];
-            if (n_links.some(link => link !== "")) {
-                links = n_links.filter(link => link !== "");
+            if (typeForm === 'Events') {
+                formData.append('start_date', bidData.start_date || '');
+                formData.append('end_date', bidData.end_date || '');
+                formData.append('organizer', bidData.organizer || '');
+                formData.append('organizer_phone', bidData.organizer_phone || '');
+                formData.append('organizer_email', bidData.organizer_email || '');
+                formData.append('place', bidData.place || '');
             }
-
-            // Обработка поля organizer
-            const organizerInput = bidData.organizer || '';
-            const organizerValue = organizerInput.trim() === '' ? userId : organizerInput.trim();
-
-            // Формируем объект обновленных данных
-            const updatedBidData = {
-                title: bidData.title || '',
-                tags: bidData.tags || [],
-                elementType: format[0] || '',
-                text: navigationStore.currentBidText || bidData.text || '',
-                place: bidData.place || '',
-                start_date: bidData.start_date || '',
-                end_date: bidData.end_date || '',
-                organizer: organizerValue,
-                organizer_phone: bidData.organizer_phone || '',
-                organizer_email: bidData.organizer_email || '',
-                status: bidData.status || 'На модерации',
-                display_up_to: selectedFormat === 'Объявления' ? (bidData.display_up_to || '') : '',
-                fixed: isImportant,
-                postData: new Date().toLocaleString('ru-RU'),
-                images: imagesUrls,
-                files: filesUrls,
-                links: links,
-                editor: userId, 
-            };
-
-            // Сохранение данных в базе данных
+            formData.append('postdata', new Date().toISOString());
+            // Логируем данные перед отправкой
+            console.log('Данные, отправляемые на сервер:');
+            for (let pair of formData.entries()) {
+                console.log(`${pair[0]}:`, pair[1]);
+            }
+            // Отправка данных на сервер
             if (typeForm === 'News' || typeForm === 'TechNews') {
-                await newsContentStore.updateNews(bidData.id, updatedBidData);
+                await editNews(bidData.id, formData);
             } else if (typeForm === 'Events') {
-                await eventsStore.updateEvent(bidData.id, updatedBidData);
+                await editEvent(bidData.id, formData);
             }
-
             setLoading(false);
-            alert('Заявка успешно обновлена!');
+            toast.success('Заявка успешно обновлена!');
             if (typeof setIsEditPage === 'function') {
                 setIsEditPage(false);
             } else {
@@ -460,12 +292,11 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
         } catch (error) {
             console.error('Ошибка при редактировании заявки:', error);
             setLoading(false);
+            toast.error('Ошибка при обновлении заявки.');
         }
     };
 
     if (loading) return <Loader />;
-
-    if (error) return <div className="error-message">{error}</div>;
 
     return (
         <div className="bid-form-container noselect">
@@ -474,125 +305,63 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                     <img src={imgBackIcon} alt="Назад" className="bid-form-btn-back" />
                 </div>
                 <p className="bid-form-datetime">
-                    {bidData?.postData}
+                    {bidData?.postdata}
                 </p>
             </div>
             <div className="bid-form-body">
-
-                <input
-                    type="text"
-                    id="bid-title"
-                    className="custom-input"
-                    placeholder="Название"
+                <CustomInput
+                    width='100%'
+                    placeholder='Название'
+                    id='bid-title'
                     value={bidData?.title || ''}
-                    onChange={(e) => {
-                        console.log("On change bidData.title:", e.target.value);
-                        setBidData({ ...bidData, title: e.target.value });
-                    }}
-                    style={{ width: '308px' }}
+                    onChange={(e) => setBidData({ ...bidData, title: e.target.value })}
                 />
+
                 <div className="bid-form-body-oneline">
-
-                    <input
-                        type="text"
-                        id="bid-tags"
-                        className="custom-input"
-                        placeholder="Теги"
+                    <CustomInput
+                        width='50%'
+                        placeholder='Теги'
+                        id='bid-tags'
                         value={bidData?.tags ? bidData.tags.join(', ') : ''}
-                        onChange={(e) => setBidData({ ...bidData, tags: e.target.value.split(', ') })}
-                        style={{ width: '308px' }}
+                        onChange={(e) => setBidData({ ...bidData, tags: e.target.value.split(', ').map(tag => tag.trim()) })}
                     />
-                    <div className="bid-form-format-container">
-                        {typeForm !== 'TechNews' && typeForm !== 'Events' && (
-                            <div className="bid-form-format-container">
-                                <>
-                                    <label className="bid-form-format-element">
-                                        <input
-                                            type="radio"
-                                            name="bid-format"
-                                            value="Объявления"
-                                            checked={selectedFormat === 'Объявления'}
-                                            onChange={() => setSelectedFormat('Объявления')}
-                                        />
-                                        <p>
-                                            <img src={imgCheckmark} alt="" />
-                                            Объявления
-                                        </p>
-                                    </label>
-                                    <label className="bid-form-format-element">
-                                        <input
-                                            type="radio"
-                                            name="bid-format"
-                                            value="Устройства и ПО"
-                                            checked={selectedFormat === 'Устройства и ПО'}
-                                            onChange={() => setSelectedFormat('Устройства и ПО')}
-                                        />
-                                        <p>
-                                            <img src={imgCheckmark} alt="" />
-                                            Устройства и ПО
-                                        </p>
-                                    </label>
-                                    <label className="bid-form-format-element">
-                                        <input
-                                            type="radio"
-                                            name="bid-format"
-                                            value="Мероприятия"
-                                            checked={selectedFormat === 'Мероприятия'}
-                                            onChange={() => setSelectedFormat('Мероприятия')}
-                                        />
-                                        <p>
-                                            <img src={imgCheckmark} alt="" />
-                                            Мероприятия
-                                        </p>
-                                    </label>
-
-
-                                </>
-                            </div>
-                        )}
-                        {typeForm === 'TechNews' && (
-                            <>
-                                <label className="bid-form-format-element">
-                                    <input
-                                        type="radio"
-                                        name="bid-format"
-                                        value="Тех. новости"
-                                        defaultChecked={true}
-                                    />
-                                    <p hidden={true}>Тех. новости</p>
-                                </label>
-                            </>
-                        )}
-                        {typeForm === 'Events' && (
-                            <>
-                                <label className="bid-form-format-element">
-                                    <input
-                                        type="radio"
-                                        name="bid-format"
-                                        value="Внешнее событие"
-                                        defaultChecked={bidData?.elementType?.includes('Внешнее событие')}
-                                    />
-                                    <p>
-                                        <img src={imgCheckmark} alt="" />
-                                        Внешнее событие
-                                    </p>
-                                </label>
-                                <label className="bid-form-format-element">
-                                    <input
-                                        type="radio"
-                                        name="bid-format"
-                                        value="Внутреннее событие"
-                                        defaultChecked={bidData?.elementType?.includes('Внутреннее событие')}
-                                    />
-                                    <p>
-                                        <img src={imgCheckmark} alt="" />
-                                        Внутреннее событие
-                                    </p>
-                                </label>
-                            </>
-                        )}
-                    </div>
                 </div>
+
+                {typeForm !== 'TechNews' && typeForm !== 'Events' && (
+                    <div className="bid-form-format-container">
+                        <label className='bid-form-format-element'>
+                            <input
+                                type="radio"
+                                name="bid-format"
+                                value="Объявления"
+                                checked={selectedFormat === 'Объявления'}
+                                onChange={() => handleFormatChange('Объявления')}
+                            />
+                            <p><img src={imgCheckmark} alt="" />Объявления</p>
+                        </label>
+                        <label className='bid-form-format-element'>
+                            <input
+                                type="radio"
+                                name="bid-format"
+                                value="Устройства и ПО"
+                                checked={selectedFormat === 'Устройства и ПО'}
+                                onChange={() => handleFormatChange('Устройства и ПО')}
+                            />
+                            <p><img src={imgCheckmark} alt="" />Устройства и ПО</p>
+                        </label>
+                        <label className='bid-form-format-element'>
+                            <input
+                                type="radio"
+                                name="bid-format"
+                                value="Мероприятия"
+                                checked={selectedFormat === 'Мероприятия'}
+                                onChange={() => handleFormatChange('Мероприятия')}
+                            />
+                            <p><img src={imgCheckmark} alt="" />Мероприятия</p>
+                        </label>
+                    </div>
+                )}
+
                 {selectedFormat === 'Объявления' && (
                     <div className='bid-form-body-oneline'>
                         <input
@@ -610,55 +379,51 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                                 checked={isImportant}
                                 onChange={(e) => setIsImportant(e.target.checked)}
                             />
-                            <p style={{ display: 'inline-block' }}>
-                                <img src={imgCheckmark} alt="" />
-                                Закрепить объявление
+                            <p style={{ marginLeft: '30px' }}>
+                                <img src={imgCheckmark} alt="" />Закрепить объявление
                             </p>
                         </label>
                     </div>
                 )}
+
                 {typeForm === 'Events' && (
                     <>
                         <div className="bid-form-body-oneline bid-form-body-oneline-2">
-                            <input
-                                type='text'
-                                id='bid-place'
-                                className="custom-input"
+                            <CustomInput
+                                width='calc(25% - 15px)'
                                 placeholder='Место'
+                                img={imgLocationIcon}
+                                id='bid-place'
                                 value={bidData?.place || ''}
                                 onChange={(e) => setBidData({ ...bidData, place: e.target.value })}
-                                style={{ width: '308px' }}
                             />
                             <p className='bid-form-text-date'>Дата</p>
                             <input
                                 type='datetime-local'
                                 id='bid-start-date'
                                 className="custom-input"
-                                placeholder='Дата начала'
                                 value={bidData?.start_date || ''}
                                 onChange={(e) => setBidData({ ...bidData, start_date: e.target.value })}
-                                style={{ width: '220px' }}
+                                style={{ width: '217px' }}
                             />
-                            <p style={{ marginLeft: '0px' }}>до</p>
+                            <p className='bid-form-text-date'>до</p>
                             <input
                                 type='datetime-local'
                                 id='bid-end-date'
                                 className="custom-input"
-                                placeholder='Дата окончания'
                                 value={bidData?.end_date || ''}
                                 onChange={(e) => setBidData({ ...bidData, end_date: e.target.value })}
-                                style={{ width: '220px' }}
+                                style={{ width: '217px' }}
                             />
                         </div>
                         <div className="bid-form-body-oneline">
-                            <input
+                            <CustomInput
+                                width='420px'
+                                placeholder='Организатор мероприятия'
                                 type='text'
                                 id='bid-organizer'
-                                className="custom-input"
-                                placeholder='Организатор мероприятия'
-                                value={bidData.organizer || ''}
+                                value={bidData?.organizer || ''}
                                 onChange={(e) => setBidData({ ...bidData, organizer: e.target.value })}
-                                style={{ width: '308px' }}
                             />
                             <InputMask
                                 mask="+7(999)999-99-99"
@@ -681,13 +446,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         </div>
                     </>
                 )}
+
                 <div className="bid-form-body-oneline bid-form-body-oneline-photo">
                     <div className="bid-form-cover">
                         <p>Обложка</p>
                         <CustomPhotoBox
+                            name='bid-image-cover'
                             id='bid-cover'
-                            defaultValue={bidData?.images?.[0]} F
-                            onImageUpload={(url) => setCoverImageURL(url)}
+                            onFileSelect={handleCoverImageSelect}
+                            defaultValue={coverImageFile instanceof File ? null : getImageUrl(coverImageFile)}
                         />
                     </div>
                     <div className={`icon-container ${CarouselPosition >= 0 ? 'non-active-img-container' : ''}`} onClick={() => carouselMoveHandler(-1)}>
@@ -698,15 +465,17 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         <div className="wrapper-bid-form">
                             <div className="bid-form-photoes-carousel">
                                 <div id="bid-carousel" className="bid-form-photoes-carousel-wrapper" style={{ transform: `translateX(${CarouselPosition}px)` }}>
-                                    {componentsCarousel.map((component, index) => (
-                                        component && (
-                                            <div key={index} className="photo-wrapper" style={{ position: 'relative' }}>
-                                                {component}
-                                                <div className="cover-photo-delete-container" onClick={() => handlePhotoDelete(index)}>
-                                                    <img src={imgTrashDelete} className="cover-photo-delete" alt="Удалить" />
-                                                </div>
+                                    {imageFiles.map((file, index) => (
+                                        <div key={index} style={{ position: 'relative' }}>
+                                            <CustomPhotoBox
+                                                name={`bid-image-${index}`}
+                                                onFileSelect={(file) => handleImageFileSelect(file, index)}
+                                                defaultValue={file instanceof File ? null : getImageUrl(file)}
+                                            />
+                                            <div className="cover-photo-delete-container" onClick={() => handleImageDelete(index)}>
+                                                <img src={imgTrashDelete} className="cover-photo-delete" alt="Удалить" />
                                             </div>
-                                        )
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -717,10 +486,16 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         </div>
                     </div>
                 </div>
+
+                {/* Текстовое содержание */}
                 <CKEditorRedaktor className='ckeditor' data={bidData?.text} />
-                <p className='title-бид-form'>Файлы</p>
+
+                {/* Файлы */}
+                <p className='title-bid-form'>Файлы</p>
                 <div className="files-row">
-                    {filesList}
+                    {filesList.map((item, index) => (
+                        <CustomFileSelect key={index} name='bid-file' defaultValue={item} />
+                    ))}
                     <img
                         src={imgAddIcon}
                         alt=""
@@ -728,9 +503,13 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         onClick={addFileFieldHandler}
                     />
                 </div>
-                <p className='title-бид-form'>Ссылки</p>
+
+                {/* Ссылки */}
+                <p className='title-bid-form'>Ссылки</p>
                 <div className="links-row">
-                    {linksList}
+                    {linksList.map((item, index) => (
+                        <CustomInput key={index} width='308px' placeholder='Ссылка' name='bid-link' defaultValue={item} />
+                    ))}
                     <img
                         src={imgAddIcon}
                         alt=""
@@ -738,11 +517,15 @@ function EditBidForm({ typeForm, id, setIsEditPage = null }) {
                         onClick={addLinkFieldHandler}
                     />
                 </div>
+
+                {/* Кнопка обновления */}
                 <div className='bid-form-send-btn' onClick={updateBidHandler}>
                     {loading ? <p>Загрузка...</p> : <p>Обновить заявку</p>}
                 </div>
+
             </div>
-        </div >
+            <ToastContainer />
+        </div>
     );
 }
 

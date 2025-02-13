@@ -15,9 +15,10 @@ const TableComponent = ({
   subTab,
   setShowMenuId,
   showMenuId,
-  handleEdit,
+  onEdit,
   onDelete,
   onRestore,
+  onView,
 }) => {
   const location = useLocation();
   const [isEditPage, setIsEditPage] = useState(false);
@@ -45,6 +46,9 @@ const TableComponent = ({
   }, [showMenuId, setShowMenuId]);
 
   const parseDate = (dateString) => {
+    if (!dateString) {
+      return new Date(); // или верните null, или любую другую дату по умолчанию
+    }
     const [date, time] = dateString.split(', ');
     const [day, month, year] = date.split('.');
 
@@ -141,7 +145,7 @@ const TableComponent = ({
                           style={{
                             visibility:
                               item.elementType === 'Технические новости' ||
-                              item.elementType === 'Тех. новости'
+                                item.elementType === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -170,7 +174,7 @@ const TableComponent = ({
                           style={{
                             visibility:
                               item.elementType === 'Технические новости' ||
-                              item.elementType === 'Тех. новости'
+                                item.elementType === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -186,7 +190,7 @@ const TableComponent = ({
                           style={{
                             visibility:
                               item.elementType === 'Технические новости' ||
-                              item.elementType === 'Тех. новости'
+                                item.elementType === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -217,8 +221,8 @@ const TableComponent = ({
                       >
                         {/* Пункт "Посмотреть" */}
                         {currentTab === 'News' ||
-                        item.elementType === 'Технические новости' ||
-                        item.elementType === 'Тех. новости' ? (
+                          item.elementType === 'Технические новости' ||
+                          item.elementType === 'Тех. новости' ? (
                           <div
                             className="comments-menu-item"
                             onClick={() => {
@@ -260,13 +264,7 @@ const TableComponent = ({
                               <div
                                 className="comments-menu-item"
                                 onClick={() => {
-                                  setIsEditPage(true);
-                                  setEditBidId(item.id);
-                                  handleEdit(
-                                    currentTab,
-                                    item.id,
-                                    location.pathname + location.search
-                                  );
+                                  onEdit(item.id);
                                   setShowMenuId(null);
                                 }}
                               >

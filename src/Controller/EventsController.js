@@ -58,26 +58,12 @@ export const addEvent = async (formData) => {
 };
 
 // Функция для редактирования события
-export const editEvent = async (id, eventItem) => {
-    const token = Cookies.get('token');
-    const formData = new FormData();
-
-    for (const key in eventItem) {
-        if (key === 'images' && Array.isArray(eventItem.images)) {
-            eventItem.images.forEach((image) => {
-                formData.append('images', image);
-            });
-        } else if (key === 'existingImages') {
-            formData.append('existingImages', JSON.stringify(eventItem.existingImages));
-        } else {
-            formData.append(key, eventItem[key]);
-        }
-    }
-
+export const editEvent = async (id, formData) => {
     const response = await fetch(`${serverUrl}/api/events/${id}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
+            // 'Content-Type' не устанавливаем для FormData
         },
         body: formData,
     });

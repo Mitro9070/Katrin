@@ -8,6 +8,14 @@
     position: relative;
 }
 
+.bid-form-container {
+    width: 1048px; /* Установите желаемую ширину */
+    background: #FFFFFF;
+    border-radius: 30px;
+    margin: 30px auto; /* Центрирование контейнера */
+    padding: 30px 30px 70px 30px;
+}
+
 /* Заголовок формы */
 .form-head {
     display: flex;

@@ -1,6 +1,6 @@
 // src/components/CustomPhotoBox.js
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import CustomCropper from './CustomCropper';
 import '../styles/CustomPhotoBox.css';
@@ -12,9 +12,14 @@ function CustomPhotoBox({ name = '', id = '', defaultValue = '', onFileSelect, i
     const [imagePreview, setImagePreview] = useState(defaultValue ? defaultValue : '');
     const [showCropper, setShowCropper] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
+    // Удаляем selectedFile, если он не используется
+    // const [selectedFile, setSelectedFile] = useState(null);
 
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        setImagePreview(defaultValue || '');
+    }, [defaultValue]);
 
     const onChangeHandler = (e) => {
         if (e.target.files[0]) {
@@ -31,7 +36,7 @@ function CustomPhotoBox({ name = '', id = '', defaultValue = '', onFileSelect, i
     const onDeleteHandler = (e) => {
         e.stopPropagation();
         fileInputRef.current.value = '';
-        setSelectedFile(null);
+        // setSelectedFile(null); // Если selectedFile не используется, можно удалить
         setImagePreview('');
         onFileSelect && onFileSelect(null, index); // Удаляем файл в родительском компоненте
     };
@@ -53,7 +58,7 @@ function CustomPhotoBox({ name = '', id = '', defaultValue = '', onFileSelect, i
         // Создаём объект URL для предварительного просмотра
         const croppedImageUrl = URL.createObjectURL(croppedBlob);
         setImagePreview(croppedImageUrl);
-        setSelectedFile(croppedBlob);
+        // setSelectedFile(croppedBlob); // Можно удалить, если не используется
 
         // Передаём файл (Blob) в родительский компонент
         if (onFileSelect) {

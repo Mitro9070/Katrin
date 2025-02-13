@@ -1,3 +1,12 @@
+.bid-form-container {
+    width: 800px; /* Установите желаемую ширину */
+    margin-left: 200px;
+    background: #FFFFFF;
+    border-radius: 30px;
+    margin: 30px auto; /* Центрирование контейнера */
+    padding: 30px 30px 70px 30px;
+}
+
 .bid-form-head{
     display: flex;
     align-items: center;

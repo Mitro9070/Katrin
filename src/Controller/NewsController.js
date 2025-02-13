@@ -66,31 +66,19 @@ export const addNews = async (formData) => {
 };
 
 // Функция для редактирования новости
-export const editNews = async (id, newsItem) => {
-    const token = Cookies.get('token');
-    const formData = new FormData();
-
-    for (const key in newsItem) {
-        if (key === 'images' && Array.isArray(newsItem.images)) {
-            newsItem.images.forEach((image) => {
-                formData.append('images', image);
-            });
-        } else if (key === 'existingImages') {
-            formData.append('existingImages', JSON.stringify(newsItem.existingImages));
-        } else {
-            formData.append(key, newsItem[key]);
-        }
-    }
-
+export const editNews = async (id, formData) => {
     const response = await fetch(`${serverUrl}/api/news/${id}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
+            // Не устанавливаем 'Content-Type', браузер сам выставит корректный заголовок для FormData
         },
         body: formData,
     });
 
     if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Ошибка при редактировании новости:', errorText);
         throw new Error('Ошибка при редактировании новости');
     }
 
