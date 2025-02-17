@@ -1,8 +1,9 @@
+// src/components/TechPage.js
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, get, set, remove } from 'firebase/database';
-import { database } from '../firebaseConfig';
 import Cookies from 'js-cookie';
+
 import { getPermissions } from '../utils/Permissions';
 import Loader from './Loader';
 import Footer from './Footer';
@@ -13,11 +14,18 @@ import EditBidForm from './EditBidPage';
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
+import { fetchNews, deleteNews, editNews } from '../Controller/NewsController';
+import { fetchUsers } from '../Controller/UsersController';
+import {
+    fetchTrashItems,
+    restoreTrashItem,
+    deleteTrashItem,
+} from '../Controller/TrashController';
+
 const TechPage = () => {
     const [isAddPage, setIsAddPage] = useState(false);
     const [currentTab, setCurrentTab] = useState('TechNews');
     const [newsData, setNewsData] = useState([]);
-    const [deletedNewsData, setDeletedNewsData] = useState([]);
     const [subTab, setSubTab] = useState('Draft');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -38,71 +46,69 @@ const TechPage = () => {
                 navigate('/');
                 return;
             }
-    
+
+            setLoading(true);
+
             // Проверяем права доступа на основе роли пользователя
-            switch (roleId) {
-                case '1': // Администратор
-                    if (!permissions.processingEvents && !permissions.processingNews && !permissions.publishingNews && !permissions.submissionNews && !permissions.submissionEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
-                    break;
-                case '6': // Техник
-                    if (!permissions.submissionNews && !permissions.submissionEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
-                    break;
-                default:
-                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
+            if (roleId !== '1' && roleId !== '6') {
+                throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
             }
-    
-            const newsRef = ref(database, 'News');
-            const deletedNewsRef = ref(database, 'DeletedTech');
-            const usersRef = ref(database, 'Users');
-    
-            // Получаем данные из Firebase
-            const [newsSnapshot, deletedNewsSnapshot, usersSnapshot] = await Promise.all([get(newsRef), get(deletedNewsRef), get(usersRef)]);
-            const users = usersSnapshot.val();
-    
-            const filteredNewsData = [];
-            const filteredDeletedNewsData = [];
-    
-            if (newsSnapshot.exists()) {
-                newsSnapshot.forEach((childSnapshot) => {
-                    const item = childSnapshot.val();
-                    const organizer = users[item.owner];
-                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-    
-                    // Фильтруем новости: техники видят только свои новости, остальные роли видят все
-                    if (roleId !== '6' || item.owner === userId) {
-                        filteredNewsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    }
+
+            const users = await fetchUsers();
+
+            let processedNewsData = [];
+
+            if (subTab === 'Trash') {
+                // Если выбрана вкладка "Корзина", загружаем данные из корзины
+                const trashNewsItems = await fetchTrashItems('news');
+                processedNewsData = Array.isArray(trashNewsItems)
+                    ? trashNewsItems
+                          .filter((item) => item.elementtype === 'Тех. новости')
+                          .map((item) => {
+                              const organizer = users.find((user) => user.id === item.owner);
+                              const organizerName = organizer
+                                  ? `${organizer.surname || ''} ${
+                                        organizer.name ? organizer.name.charAt(0) + '.' : ''
+                                    }`.trim()
+                                  : 'Неизвестно';
+
+                              return {
+                                  ...item,
+                                  organizerName,
+                              };
+                          })
+                    : [];
+            } else {
+                // Если выбрана не "Корзина", загружаем обычные данные
+                const newsResponse = await fetchNews();
+                let newsItems = newsResponse.news || [];
+
+                // Фильтруем только технические новости
+                newsItems = newsItems.filter((item) => item.elementtype === 'Тех. новости');
+
+                // Фильтрация данных по роли пользователя
+                if (roleId === '6') {
+                    // Техники видят только свои новости
+                    newsItems = newsItems.filter((item) => item.owner === userId);
+                }
+
+                // Обработка данных новостей
+                processedNewsData = newsItems.map((item) => {
+                    const organizer = users.find((user) => user.id === item.owner);
+                    const organizerName = organizer
+                        ? `${organizer.surname || ''} ${
+                              organizer.name ? organizer.name.charAt(0) + '.' : ''
+                          }`.trim()
+                        : 'Неизвестно';
+
+                    return {
+                        ...item,
+                        organizerName,
+                    };
                 });
             }
-    
-            if (deletedNewsSnapshot.exists()) {
-                deletedNewsSnapshot.forEach((childSnapshot) => {
-                    const item = childSnapshot.val();
-                    const organizer = users[item.owner];
-                    const organizerName = `${organizer?.surname || ''} ${organizer?.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim();
-    
-                    // Аналогично фильтруем удаленные новости
-                    if (roleId !== '6' || item.owner === userId) {
-                        filteredDeletedNewsData.push({
-                            ...item,
-                            organizerName: organizerName !== '' ? organizerName : 'Неизвестно',
-                            id: childSnapshot.key
-                        });
-                    }
-                });
-            }
-    
-            // Устанавливаем отфильтрованные данные в состояние
-            setNewsData(filteredNewsData);
-            setDeletedNewsData(filteredDeletedNewsData);
+
+            setNewsData(processedNewsData);
         } catch (err) {
             console.error('Ошибка при загрузке данных:', err);
             setError('Не удалось загрузить данные');
@@ -114,7 +120,7 @@ const TechPage = () => {
     useEffect(() => {
         fetchData();
         Cookies.set('currentPage', 'tech-news');
-    }, [navigate, roleId, permissions, userId]);
+    }, [navigate, roleId, permissions, userId, subTab]);
 
     const changeCurrentTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
@@ -128,36 +134,65 @@ const TechPage = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            const newsRef = ref(database, `News/${id}`);
-            const newsSnapshot = await get(newsRef);
-            if (newsSnapshot.exists()) {
-                const newsItem = newsSnapshot.val();
-                newsItem.status = newStatus;
-                await set(newsRef, newsItem);
-                await fetchData();
+            // Находим элемент в данных
+            const item = newsData.find((newsItem) => newsItem.id === id);
+
+            if (!item) {
+                console.error('Элемент не найден');
+                return;
             }
+
+            // Создаём новый объект FormData
+            const formData = new FormData();
+
+            // Заполняем FormData всеми полями существующей записи, кроме вычисляемых или лишних полей
+            for (const key in item) {
+                if (
+                    item.hasOwnProperty(key) &&
+                    key !== 'id' &&
+                    key !== 'organizerName' &&
+                    item[key] !== null &&
+                    item[key] !== undefined
+                ) {
+                    if (key === 'images' || key === 'existingImages') {
+                        // Пропускаем обработку изображений здесь, если они не меняются
+                        continue;
+                    } else if (Array.isArray(item[key])) {
+                        formData.append(key, JSON.stringify(item[key]));
+                    } else {
+                        formData.append(key, item[key]);
+                    }
+                }
+            }
+
+            // Обрабатываем изображения, если нужно
+            if (item.image) {
+                const existingImages = [];
+                existingImages.push(item.image);
+                formData.append('existingImages', JSON.stringify(existingImages));
+            }
+
+            // Обновляем статус
+            formData.set('status', newStatus);
+
+            // Отправляем данные на сервер
+            await editNews(id, formData);
+
+            await fetchData();
         } catch (error) {
-            console.error("Ошибка при изменении статуса:", error);
+            console.error('Ошибка при изменении статуса:', error);
         }
     };
 
     const handleDelete = async (id) => {
         try {
-            const currentDate = new Date().toISOString();
-            const deleteInitiator = userId;
-
-            const newsRef = ref(database, `News/${id}`);
-            const newsSnapshot = await get(newsRef);
-            if (newsSnapshot.exists()) {
-                const newsItem = newsSnapshot.val();
-                newsItem.deletedDate = currentDate;
-                newsItem.deleteInitiator = deleteInitiator;
-
-                const deletedNewsRef = ref(database, `DeletedTech/${id}`);
-                await set(deletedNewsRef, newsItem);
-                await remove(newsRef);
+            if (subTab === 'Trash') {
+                // Если мы в корзине, удаляем элемент навсегда
+                await deleteTrashItem(id, 'news');
+            } else {
+                // Если мы не в корзине, перемещаем элемент в корзину
+                await deleteNews(id);
             }
-
             await fetchData();
         } catch (error) {
             console.error('Ошибка при удалении:', error);
@@ -166,21 +201,7 @@ const TechPage = () => {
 
     const handleRestore = async (id) => {
         try {
-            const restoreInitiator = userId;
-
-            const deletedNewsRef = ref(database, `DeletedTech/${id}`);
-            const deletedNewsSnapshot = await get(deletedNewsRef);
-            if (deletedNewsSnapshot.exists()) {
-                const newsItem = deletedNewsSnapshot.val();
-                newsItem.restoredInitiator = restoreInitiator;
-                delete newsItem.deletedDate;
-                delete newsItem.deleteInitiator;
-
-                const newsRef = ref(database, `News/${id}`);
-                await set(newsRef, newsItem);
-                await remove(deletedNewsRef);
-            }
-
+            await restoreTrashItem(id, 'news');
             await fetchData();
             // Переключаем на вкладку "Черновик"
             setSubTab('Draft');
@@ -189,16 +210,15 @@ const TechPage = () => {
         }
     };
 
-    const handleEdit = (currentTab, id, referrer) => {
+    const handleEdit = (currentTab, id) => {
         setIsEditPage(true);
         setEditBidId(id);
     };
 
-    const sortedNewsData = newsData.sort((a, b) => new Date(b.postData) - new Date(a.postData)); // Сортировка новостей по postData
+    const sortedNewsData = newsData.sort((a, b) => new Date(b.postdata) - new Date(a.postdata)); // Сортировка новостей по postdata
 
     const handleView = (typeForm, id) => {
         // Реализует логику перехода на страницу просмотра
-
         navigate(`/news/${id}`);
     };
 
@@ -211,13 +231,41 @@ const TechPage = () => {
             ) : (
                 <>
                     <div className="content-page-head noselect">
-                        <p className={`content-page-head-tab ${currentTab === 'TechNews' ? 'content-page-head-tab-selected' : ''}`} data-tab="TechNews" onClick={changeCurrentTabHandler}>Тех. новости</p>
+                        <p
+                            className={`content-page-head-tab ${
+                                currentTab === 'TechNews' ? 'content-page-head-tab-selected' : ''
+                            }`}
+                            data-tab="TechNews"
+                            onClick={changeCurrentTabHandler}
+                        >
+                            Тех. новости
+                        </p>
                     </div>
                     <div className="content-page-head-2 noselect">
                         <div className="subtabs">
-                            <p className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`} data-subtab="Draft" onClick={changeSubTabHandler}>Черновик</p>
-                            <p className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`} data-subtab="Archive" style={{ marginRight: '20px' }} onClick={() => setSubTab('Archive')}>Архив</p>
-                            <p className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`} data-subtab="Trash" onClick={changeSubTabHandler} style={{ marginRight: '20px' }}>Корзина</p>
+                            <p
+                                className={`subtab ${subTab === 'Draft' ? 'subtab-selected' : ''}`}
+                                data-subtab="Draft"
+                                onClick={changeSubTabHandler}
+                            >
+                                Черновик
+                            </p>
+                            <p
+                                className={`subtab ${subTab === 'Archive' ? 'subtab-selected' : ''}`}
+                                data-subtab="Archive"
+                                onClick={changeSubTabHandler}
+                                style={{ marginRight: '20px' }}
+                            >
+                                Архив
+                            </p>
+                            <p
+                                className={`subtab ${subTab === 'Trash' ? 'subtab-selected' : ''}`}
+                                data-subtab="Trash"
+                                onClick={changeSubTabHandler}
+                                style={{ marginRight: '20px' }}
+                            >
+                                Корзина
+                            </p>
                             <div className="filter" style={{ marginRight: '20px' }}>
                                 <img src={imgFilterIcon} alt="filter" />
                                 <p className="filter-text">Фильтр</p>
@@ -230,32 +278,45 @@ const TechPage = () => {
                         )}
                     </div>
                     <div className="content-page-content">
-                        <h2 style={{ color: '#525252', fontFamily: 'Montserrat', fontSize: '18px', fontWeight: '600' }}>Технические новости</h2>
-                        {subTab === 'Trash' ? (
-                            <TableComponent
-                                items={deletedNewsData}
-                                onRestore={handleRestore}
-                                onView={handleView}
-                                currentTab={currentTab}
-                                subTab={subTab}
-                                setShowMenuId={setShowMenuId}
-                                showMenuId={showMenuId}
-                            />
+                        {loading ? (
+                            <Loader />
+                        ) : error ? (
+                            <p>{error}</p>
                         ) : (
-                            <TableComponent
-                                items={sortedNewsData.filter(
-                                    item => (subTab === 'Archive' ? item.status === 'Архив' : item.status !== 'Архив') &&
-                                        (item.elementType === 'Тех. новости' || item.elementType === 'Технические новости')
-                                )}
-                                onStatusChange={handleStatusChange}
-                                onDelete={handleDelete}
-                                onEdit={handleEdit}
-                                onView={handleView}
-                                currentTab={currentTab}
-                                subTab={subTab}
-                                setShowMenuId={setShowMenuId}
-                                showMenuId={showMenuId}
-                            />
+                            <>
+                                <h2
+                                    style={{
+                                        color: '#525252',
+                                        fontFamily: 'Montserrat',
+                                        fontSize: '18px',
+                                        fontWeight: '600',
+                                    }}
+                                >
+                                    Технические новости
+                                </h2>
+                                <TableComponent
+                                    items={
+                                        subTab === 'Trash'
+                                            ? newsData
+                                            : sortedNewsData.filter((item) => {
+                                                  if (subTab === 'Archive') {
+                                                      return item.status === 'Архив';
+                                                  } else {
+                                                      return item.status !== 'Архив';
+                                                  }
+                                              })
+                                    }
+                                    onStatusChange={handleStatusChange}
+                                    onDelete={handleDelete}
+                                    onEdit={handleEdit}
+                                    onRestore={handleRestore}
+                                    onView={handleView}
+                                    currentTab={currentTab}
+                                    subTab={subTab}
+                                    setShowMenuId={setShowMenuId}
+                                    showMenuId={showMenuId}
+                                />
+                            </>
                         )}
                     </div>
                 </>

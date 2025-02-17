@@ -45,7 +45,7 @@ const TableComponent = ({
     };
   }, [showMenuId, setShowMenuId]);
 
-  const parseDate = (dateString) => {
+  /* const parseDate = (dateString) => {
     if (!dateString) {
       return new Date(); // или верните null, или любую другую дату по умолчанию
     }
@@ -55,16 +55,23 @@ const TableComponent = ({
     const formattedDateString = `${year}-${month}-${day}T${time}`;
     const parsedDate = new Date(formattedDateString);
     return parsedDate;
-  };
+  }; */
 
   const renderItemsAsTable = (items) => {
     return (
       <table>
         <tbody>
           {items
-            .filter((item) =>
-              subTab === 'Archive' ? item.status === 'Архив' : item.status !== 'Архив'
-            )
+             .filter((item) => {
+              if (subTab === 'Archive') {
+                return item.status === 'Архив';
+              } else if (subTab === 'Trash') {
+                // В корзине не фильтруем по статусу
+                return true;
+              } else {
+                return item.status !== 'Архив';
+              }
+            })
             .map((item) => (
               <React.Fragment key={item.id}>
                 <tr>
@@ -104,7 +111,7 @@ const TableComponent = ({
                       padding: '10px',
                     }}
                   >
-                    {parseDate(item.postData).toLocaleString()}
+                    {item.postdata ? new Date(item.postdata).toLocaleString() : 'Неизвестно'}
                   </td>
                   <td
                     style={{
@@ -144,8 +151,8 @@ const TableComponent = ({
                           className="custom-approve-reject-buttons"
                           style={{
                             visibility:
-                              item.elementType === 'Технические новости' ||
-                                item.elementType === 'Тех. новости'
+                              item.elementtype === 'Технические новости' ||
+                                item.elementtype === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -173,8 +180,8 @@ const TableComponent = ({
                           onClick={() => onStatusChange(item.id, 'Опубликовано')}
                           style={{
                             visibility:
-                              item.elementType === 'Технические новости' ||
-                                item.elementType === 'Тех. новости'
+                              item.elementtype === 'Технические новости' ||
+                                item.elementtype === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -189,8 +196,8 @@ const TableComponent = ({
                           onClick={() => onStatusChange(item.id, 'Одобрено')}
                           style={{
                             visibility:
-                              item.elementType === 'Технические новости' ||
-                                item.elementType === 'Тех. новости'
+                              item.elementtype === 'Технические новости' ||
+                                item.elementype === 'Тех. новости'
                                 ? 'hidden'
                                 : 'visible',
                           }}
@@ -220,46 +227,18 @@ const TableComponent = ({
                         ref={(el) => (menuRefs.current[item.id] = el)}
                       >
                         {/* Пункт "Посмотреть" */}
-                        {currentTab === 'News' ||
-                          item.elementType === 'Технические новости' ||
-                          item.elementType === 'Тех. новости' ? (
-                          <div
-                            className="comments-menu-item"
-                            onClick={() => {
-                              setShowMenuId(null);
-                            }}
-                          >
-                            <Link
-                              to={`/news/${item.id}?referrer=${encodeURIComponent(
-                                window.location.pathname + window.location.search
-                              )}`}
-                            >
-                              Посмотреть
-                            </Link>
-                          </div>
-                        ) : (
-                          <div
-                            className="comments-menu-item"
-                            onClick={() => {
-                              setShowMenuId(null);
-                            }}
-                          >
-                            <Link
-                              to={`/events/${item.id}?referrer=${encodeURIComponent(
-                                window.location.pathname + window.location.search
-                              )}`}
-                            >
-                              Посмотреть
-                            </Link>
-                          </div>
-                        )}
+                        <div
+                          className="comments-menu-item"
+                          onClick={() => {
+                            onView(currentTab, item.id);
+                            setShowMenuId(null);
+                          }}
+                        >
+                          Посмотреть
+                        </div>
                         {/* Если мы не в архиве и не в корзине, показываем "Редактировать" и "Удалить" */}
                         {subTab !== 'Archive' &&
-                          subTab !== 'Trash' &&
-                          !(
-                            item.elementType === 'Технические новости' ||
-                            item.elementType === 'Тех. новости'
-                          ) && (
+                          subTab !== 'Trash' && (
                             <>
                               <div
                                 className="comments-menu-item"
@@ -273,7 +252,7 @@ const TableComponent = ({
                               <div
                                 className="comments-menu-item"
                                 onClick={() => {
-                                  onDelete(item.id);
+                                  onDelete(item.id, currentTab);
                                   setShowMenuId(null);
                                 }}
                               >
@@ -281,46 +260,40 @@ const TableComponent = ({
                               </div>
                             </>
                           )}
-                        {/* Если мы в архиве */}
-                        {subTab === 'Archive' ? (
+                        {/* Если мы в "Архиве" */}
+                        {subTab === 'Archive' && (
                           <div
                             className="comments-menu-item"
                             onClick={() => {
-                              onStatusChange(item.id, 'Одобрено');
+                              onStatusChange(item.id, 'Одобрено', currentTab);
                               setShowMenuId(null);
                             }}
                           >
                             Из архива
                           </div>
-                        ) : (
-                          /* Если мы не в корзине, можем добавить в архив */
-                          subTab !== 'Trash' &&
-                          !(
-                            item.elementType === 'Технические новости' ||
-                            item.elementType === 'Тех. новости'
-                          ) && (
+                        )}
+                        {/* Если мы в "Корзине" */}
+                        {subTab === 'Trash' && (
+                          <>
                             <div
                               className="comments-menu-item"
                               onClick={() => {
-                                onStatusChange(item.id, 'Архив');
+                                onRestore(item.id, currentTab);
                                 setShowMenuId(null);
                               }}
                             >
-                              В архив
+                              Восстановить
                             </div>
-                          )
-                        )}
-                        {/* Если мы в корзине, показываем "Восстановить" */}
-                        {subTab === 'Trash' && (
-                          <div
-                            className="comments-menu-item"
-                            onClick={() => {
-                              onRestore(item.id);
-                              setShowMenuId(null);
-                            }}
-                          >
-                            Восстановить
-                          </div>
+                            <div
+                              className="comments-menu-item"
+                              onClick={() => {
+                                onDelete(item.id, currentTab);
+                                setShowMenuId(null);
+                              }}
+                            >
+                              Удалить навсегда
+                            </div>
+                          </>
                         )}
                       </div>
                     )}

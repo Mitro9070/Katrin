@@ -1,8 +1,10 @@
 // UsersController.js
 
 import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 const serverUrl = process.env.REACT_APP_SERVER_URL || '';
+const authUrl = process.env.REACT_APP_SERVER_AUTH || '';
 const token = Cookies.get('token');
 
 export const fetchUsers = async (page = 1) => {
@@ -99,4 +101,65 @@ export const uploadUserImage = async (userId, imageFile) => {
 
     const updatedUser = await response.json();
     return updatedUser.image;
+};
+
+// Добавляем функцию для добавления нового пользователя
+export const addUser = async (userData) => {
+    const response = await fetch(`${authUrl}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Авторизация не требуется
+        },
+        body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+        throw new Error('Ошибка при добавлении пользователя');
+    }
+
+    const data = await response.json();
+    console.log('Ответ от сервера при регистрации пользователя:', data);
+
+    // Предположим, что сервер возвращает объект с токеном: { token: '...' }
+    const token = data.token;
+
+    // Декодируем токен, чтобы получить userId
+    const decodedToken = jwtDecode(token);
+    console.log('Декодированный токен:', decodedToken);
+
+    // Вернем объект с userId и токеном
+    return { userId: decodedToken.userId, token };
+};
+
+export const deleteUserById = async (userId) => {
+    const response = await fetch(`${serverUrl}/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Ошибка при удалении пользователя');
+    }
+
+    return true;
+};
+
+export const deleteUserByEmail = async (email) => {
+    const response = await fetch(`${authUrl}/api/auth/delete-user/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Ошибка при удалении пользователя');
+    }
+
+    return true;
 };

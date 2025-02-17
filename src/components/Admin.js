@@ -1,99 +1,62 @@
-// Импорт основных библиотек React и необходимых компонентов
-import React, { useState, useEffect } from 'react';
-// Импорт хука для навигации между страницами
-import { useNavigate } from 'react-router-dom';
-// Импорт функций для работы с базой данных Firebase
-import { ref, get, remove } from 'firebase/database';
-// Импорт конфигурации базы данных Firebase
-import { database } from '../firebaseConfig';
-// Импорт библиотеки для работы с куки
-import Cookies from 'js-cookie';
-// Импорт компонентов приложения
-import Loader from './Loader'; // Компонент индикатора загрузки
-import Footer from './Footer'; // Компонент нижнего колонтитула
-import UserTableComponent from './UserTableComponent'; // Компонент таблицы пользователей
-import AddEmployee from './AddEmployee'; // Импорт компонента для добавления сотрудника
+// src/components/Admin.js
 
-// Импорт изображений для использования в интерфейсе
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchUsers, deleteUserByEmail } from '../Controller/UsersController';
+import { fetchRoles } from '../Controller/RolesController';
+import { fetchOffices } from '../Controller/OfficesController';
+import Cookies from 'js-cookie';
+import Loader from './Loader';
+import Footer from './Footer';
+import UserTableComponent from './UserTableComponent';
+import AddEmployee from './AddEmployee';
+
+// Импорт изображений для интерфейса
 import imgFilterIcon from '../images/filter.svg';
 import imgAddPersonIcon from '../images/add-person.png';
 import imgFilterSortIcon from '../images/filter-sort.png';
 
-// Импорт стилей для компонента Admin и общих стилей страницы контента
+// Импорт стилей
 import '../styles/Admin.css';
 import '../styles/ContentPage.css';
 
-// Объявление функционального компонента Admin
 const Admin = () => {
-    // Состояния для хранения списка пользователей, ролей, офисов и статуса загрузки
     const [users, setUsers] = useState([]);
-    const [roles, setRoles] = useState({});
-    const [offices, setOffices] = useState({});
+    const [roles, setRoles] = useState([]);
+    const [offices, setOffices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // Состояние для управления текущей вкладкой ("Сотрудники" или "Добавить сотрудника")
     const [currentTab, setCurrentTab] = useState('Employees');
-    // Получение идентификатора пользователя и роли из куки
+
     const userId = Cookies.get('userId');
     const roleId = Cookies.get('roleId');
-    // Инициализация навигации
+
     const navigate = useNavigate();
 
-    // Функция для обновления списка пользователей после добавления или удаления
     const refreshUsers = async () => {
         try {
-            // Ссылка на раздел "Users" в базе данных Firebase
-            const usersRef = ref(database, 'Users');
-            // Получение снимка данных пользователей
-            const usersSnapshot = await get(usersRef);
-            const usersArr = [];
-            // Проверка наличия данных и формирование массива пользователей
-            if (usersSnapshot.exists()) {
-                usersSnapshot.forEach(childSnapshot => {
-                    const user = childSnapshot.val();
-                    usersArr.push({ ...user, id: childSnapshot.key });
-                });
-            }
-            // Обновление состояния пользователей
-            setUsers(usersArr);
+            const usersData = await fetchUsers();
+            setUsers(usersData);
         } catch (err) {
             console.error('Ошибка при обновлении данных пользователей:', err);
         }
     };
 
-    // Хук useEffect для первоначальной загрузки данных при монтировании компонента
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Проверка авторизации пользователя и его роли (только администратор имеет доступ)
                 if (!userId || roleId !== '1') {
                     navigate('/');
                     return;
                 }
 
-                // Ссылки на разделы базы данных Firebase
-                const usersRef = ref(database, 'Users');
-                const rolesRef = ref(database, 'Roles');
-                const officesRef = ref(database, 'Offices');
+                const [usersData, rolesData, officesData] = await Promise.all([
+                    fetchUsers(),
+                    fetchRoles(),
+                    fetchOffices(),
+                ]);
 
-                // Параллельное получение данных из нескольких разделов базы данных
-                const [usersSnapshot, rolesSnapshot, officesSnapshot] = await Promise.all([get(usersRef), get(rolesRef), get(officesRef)]);
-                
-                const usersArr = [];
-                // Формирование массива пользователей
-                if (usersSnapshot.exists()) {
-                    usersSnapshot.forEach(childSnapshot => {
-                        const user = childSnapshot.val();
-                        usersArr.push({ ...user, id: childSnapshot.key });
-                    });
-                }
-
-                // Получение данных ролей и офисов
-                const rolesData = rolesSnapshot.exists() ? rolesSnapshot.val() : {};
-                const officesData = officesSnapshot.exists() ? officesSnapshot.val() : {};
-
-                // Установка полученных данных в соответствующие состояния
-                setUsers(usersArr);
+                setUsers(usersData);
                 setRoles(rolesData);
                 setOffices(officesData);
 
@@ -101,38 +64,32 @@ const Admin = () => {
                 console.error('Ошибка при загрузке данных:', err);
                 setError('Не удалось загрузить данные');
             } finally {
-                // Отключение индикатора загрузки после завершения запроса
                 setLoading(false);
             }
         };
 
-        // Вызов функции загрузки данных
         fetchData();
     }, [userId, roleId, navigate]);
 
-    // Обработчик изменения текущей вкладки при клике на таб
     const changeCurrentTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
         setCurrentTab(selectedTab);
     };
 
     // Обработчик удаления пользователя
-    const handleDeleteUser = async (id) => {
+    const handleDeleteUser = async (email) => {
         if (window.confirm("Вы уверены, что хотите удалить этого пользователя?")) {
             try {
-                // Ссылка на конкретного пользователя в базе данных
-                const userRef = ref(database, `Users/${id}`);
-                // Удаление пользователя из базы данных
-                await remove(userRef);
+                // Удаление пользователя через бэкенд по email
+                await deleteUserByEmail(email);
                 // Обновление состояния пользователей после удаления
-                setUsers(users.filter(user => user.id !== id));
+                setUsers(users.filter(user => user.email !== email));
             } catch (error) {
                 console.error("Ошибка при удалении пользователя:", error);
             }
         }
     };
 
-    // Отображение индикатора загрузки или сообщения об ошибке при необходимости
     if (loading) return <Loader />;
     if (error) return <p>{error}</p>;
 
@@ -178,21 +135,21 @@ const Admin = () => {
                 {currentTab === 'Employees' && (
                     <>
                         {/* Проверка наличия офисов */}
-                        {Object.keys(offices).length === 0 && <p>Офисы не найдены</p>}
+                        {offices.length === 0 && <p>Офисы не найдены</p>}
                         {/* Отображение пользователей по офисам */}
-                        {Object.keys(offices).map((officeId) => {
-                            const officeUsers = users.filter(user => String(user.office) === officeId);
+                        {offices.map((office) => {
+                            const officeUsers = users.filter(user => String(user.office) === String(office.id));
                             return (
-                                <div key={officeId} className="office-section">
+                                <div key={office.id} className="office-section">
                                     {/* Название офиса */}
-                                    <h2>Офис {offices[officeId]}</h2>
+                                    <h2>{office.name_office}</h2>
                                     {/* Проверка наличия пользователей в офисе */}
                                     {officeUsers.length > 0 ? (
                                         // Компонент таблицы пользователей
-                                        <UserTableComponent 
-                                            users={officeUsers} 
-                                            roles={roles} 
-                                            onDeleteUser={handleDeleteUser} 
+                                        <UserTableComponent
+                                            users={officeUsers}
+                                            roles={roles}
+                                            onDeleteUser={handleDeleteUser}
                                             refreshUsers={refreshUsers}
                                         />
                                     ) : (
@@ -209,10 +166,9 @@ const Admin = () => {
                 )}
             </div>
             {/* Компонент нижнего колонтитула */}
-          
+            <Footer />
         </div>
     );
 };
 
-// Экспорт компонента Admin для использования в других местах приложения
 export default Admin;

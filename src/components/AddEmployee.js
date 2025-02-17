@@ -1,12 +1,16 @@
+// src/components/AddEmployee.js
+
 import React, { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import { storage, database } from '../firebaseConfig';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+// Импортируем необходимые методы из контроллера пользователей
+import { addUser, updateUserById, uploadUserImage } from '../Controller/UsersController';
 import Loader from './Loader';
 import '../styles/AddEmployee.css';
+import { sendEmail } from '../Controller/emailService';
+import Cookies from 'js-cookie';
+import jwt_decode from 'jwt-decode';
 
 const AddEmployee = ({ offices, roles, refreshUsers }) => {
+  // Состояния для хранения данных формы
   const [surname, setSurname] = useState('');
   const [name, setName] = useState('');
   const [lastname, setLastname] = useState('');
@@ -17,45 +21,38 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
   const [office, setOffice] = useState('');
   const [position, setPosition] = useState('');
   const [role, setRole] = useState('');
-  const [imageUrl, setImageUrl] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  // Обработчик изменения файла изображения
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setLoading(true);
-      try {
-        const imgRef = storageRef(storage, `employee-photos/${file.name}`);
-        await uploadBytes(imgRef, file);
-        const url = await getDownloadURL(imgRef);
-        setImageUrl(url);
-        setImageFile(file);
-      } catch (error) {
-        console.error('Ошибка при загрузке изображения:', error);
-      } finally {
-        setLoading(false);
-      }
+      setImageFile(file);
     }
   };
 
+  // Функция для валидации email
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     return re.test(String(email).toLowerCase());
   };
 
+  // Функция для валидации телефона
   const validatePhone = (phone) => {
     const re = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
     return re.test(String(phone));
   };
 
+  // Форматирование номера телефона
   const formatPhoneNumber = (value) => {
     if (!value) return value;
     const phoneNumber = value.replace(/[^\d]/g, '');
     const phoneNumberLength = phoneNumber.length;
-    if (phoneNumberLength < 2) return `+7`;
+
+    if (phoneNumberLength < 2) return '+7';
     if (phoneNumberLength <= 4) return `+7 (${phoneNumber.slice(1)}`;
     if (phoneNumberLength <= 7) return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4)}`;
     if (phoneNumberLength <= 9) return `+7 (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7)}`;
@@ -67,21 +64,29 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
     setPhone(formattedPhoneNumber);
   };
 
-  const sendEmail = (recipientEmail, tempPassword) => {
-    const emailContent = `
-      Приветствуем тебя на портале Катюша. Данные для входа на портал:
-      Логин: ${recipientEmail}
-      Пароль: ${tempPassword}
-      Пароль можно будет сменить в личном кабинете (кнопка Профиль).
-      С уважением. Администратор портала Катюша.
-    `;
+  // Функция отправки имитационного письма (заглушка)
+  const sendWelcomeEmail = async (recipientEmail, tempPassword) => {
+    try {
+      await sendEmail({
+        to: recipientEmail,
+        subject: 'Данные для входа на портал',
+        text: `
+          Приветствуем вас на портале Катюша! Данные для входа на портал:
+          Логин: ${recipientEmail}
+          Пароль: ${tempPassword}
+          Пароль можно будет сменить в личном кабинете.
+          С уважением, Администратор портала.
+        `,
+      });
 
-    console.log("Отправка письма на email:");
-    console.log(emailContent);
-
-    setMessage(`Письмо для пользователя ${recipientEmail} успешно сымитировано:\n${emailContent}`);
+      setMessage(`Письмо для пользователя ${recipientEmail} успешно отправлено.`);
+    } catch (error) {
+      console.error('Ошибка при отправке письма:', error);
+      setError('Не удалось отправить письмо пользователю.');
+    }
   };
 
+  // Функция очистки полей после успешного добавления пользователя
   const clearFields = () => {
     setSurname('');
     setName('');
@@ -93,14 +98,15 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
     setOffice('');
     setPosition('');
     setRole('');
-    setImageUrl(null);
     setImageFile(null);
   };
 
+  // Обработчик нажатия на кнопку "Сохранить"
   const handleSave = async () => {
     setLoading(true);
-    const auth = getAuth();
-    const tempPassword = Math.random().toString(36).slice(-8);
+    setError('');
+    setMessage('');
+
     const emailIsValid = validateEmail(email);
 
     if (!surname || !name || !emailIsValid || !office || !position) {
@@ -110,30 +116,52 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, tempPassword);
-      const userId = userCredential.user.uid;
+      // Генерируем временный пароль
+      const tempPassword = Math.random().toString(36).slice(-8);
 
-      sendEmail(email, tempPassword);
-
-      const userRef = ref(database, `Users/${userId}`);
-      const newUser = {
+      // Создаем пользователя методом addUser
+      const { userId } = await addUser({
+        email,
+        password: tempPassword,
+        name,
         surname,
-        Name: name,
+        lastname,
+        role,
+      });
+
+      if (!userId) {
+        throw new Error('Не удалось получить идентификатор пользователя.');
+      }
+
+      // Отправляем письмо с данными для входа
+      await sendWelcomeEmail(email, tempPassword);
+
+      // Подготавливаем данные для обновления профиля пользователя
+      const additionalData = {
+        email,
+        name,
+        surname,
         lastname,
         birthday,
         sex,
-        email,
         phone,
         office,
         position,
         role,
-        image: imageUrl,
-        createdAt: new Date().toISOString(),
       };
-      await set(userRef, newUser);
 
+      // Если есть изображение, добавляем его
+      if (imageFile) {
+        additionalData.image = imageFile;
+      }
+
+      // Обновляем данные пользователя
+      await updateUserById(userId, additionalData);
+
+      // Обновляем список пользователей
       refreshUsers();
       clearFields();
+      setMessage('Пользователь успешно добавлен.');
     } catch (error) {
       console.error('Ошибка при добавлении пользователя:', error);
       setError('Ошибка при добавлении пользователя.');
@@ -147,7 +175,11 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
       <h2>Добавление нового сотрудника</h2>
       <div className="add-employee-form">
         <div className="photo-container" onClick={() => document.getElementById('file-input').click()}>
-          {imageUrl ? <img src={imageUrl} alt="Фото сотрудника" /> : 'Загрузить фото'}
+          {imageFile ? (
+            <img src={URL.createObjectURL(imageFile)} alt="Фото сотрудника" />
+          ) : (
+            'Загрузить фото'
+          )}
           {loading && <Loader />}
         </div>
         <input
@@ -211,7 +243,7 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
               type="text"
               value={phone}
               onChange={handlePhoneChange}
-              className={`custom-input ${(!phone || !validatePhone(phone)) && 'input-error'}`}
+              className={`custom-input ${phone && !validatePhone(phone) && 'input-error'}`}
               placeholder="+7 (***) ***-**-**"
             />
             <label>Выберите офис*</label>
@@ -221,9 +253,9 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
               className={`custom-input ${!office && 'input-error'}`}
             >
               <option value="" disabled>Выбрать офис</option>
-              {Object.keys(offices).map((officeId) => (
-                <option key={officeId} value={officeId}>
-                  {offices[officeId]}
+              {offices.map((officeItem) => (
+                <option key={officeItem.id} value={officeItem.id}>
+                  {officeItem.name_office}
                 </option>
               ))}
             </select>
@@ -242,9 +274,9 @@ const AddEmployee = ({ offices, roles, refreshUsers }) => {
               className="custom-input custom-select"
             >
               <option value="" disabled>Выбрать роль</option>
-              {Object.keys(roles).map((roleId) => (
-                <option key={roleId} value={roleId}>
-                  {roles[roleId].rusname}
+              {roles.map((roleItem) => (
+                <option key={roleItem.id} value={roleItem.id}>
+                  {roleItem.rusname}
                 </option>
               ))}
             </select>

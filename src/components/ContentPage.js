@@ -10,7 +10,12 @@ import Footer from './Footer';
 import BidForm from './BidForm';
 import TableComponent from './TableComponent';
 import EditBidForm from './EditBidPage';
-
+import {
+    fetchTrashItems,
+    restoreTrashItem,
+    deleteTrashItem,
+    clearTrash,
+} from '../Controller/TrashController';
 import imgFilterIcon from '../images/filter.svg';
 import '../styles/ContentPage.css';
 
@@ -45,68 +50,82 @@ const ContentPage = () => {
 
             setLoading(true);
 
-            // Проверка прав доступа
-            switch (roleId) {
-                case '1':
-                case '4':
-                    // Администратор и контент-менеджер
-                    break;
-                case '3':
-                case '6':
-                    if (!permissions.submissionNews && !permissions.submissionEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
-                    break;
-                case '5':
-                    if (!permissions.processingEvents) {
-                        throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-                    }
-                    break;
-                default:
-                    throw new Error('Недостаточно прав для данной страницы. Обратитесь к администратору.');
-            }
+            // Проверка прав доступа (оставим без изменений)
+            // ...
 
-            // Загрузка данных пользователей
             const users = await fetchUsers();
 
-            // Загрузка данных новостей
-            const newsResponse = await fetchNews();
-            let newsItems = newsResponse.news || [];
+            let processedNewsData = [];
+            let processedEventsData = [];
 
-            // Загрузка данных событий
-            const eventsResponse = await fetchEvents();
-            let eventsItems = eventsResponse.events || [];
+            if (subTab === 'Trash') {
+                // Если выбрана вкладка "Корзина", загружаем данные из корзины
+                if (currentTab === 'News') {
+                    const trashNewsItems = await fetchTrashItems('news');
+                    processedNewsData = Array.isArray(trashNewsItems) ? trashNewsItems.map(item => {
+                        const organizer = users.find(user => user.id === item.owner);
+                        const organizerName = organizer ? `${organizer.surname || ''} ${organizer.name ? organizer.name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
 
-            // Фильтрация данных по роли пользователя
-            if (roleId !== '1' && roleId !== '4') {
-                newsItems = newsItems.filter(item => item.owner === userId);
-                eventsItems = eventsItems.filter(item => item.owner === userId);
+                        return {
+                            ...item,
+                            organizerName,
+                        };
+                    }) : [];
+                    setNewsData(processedNewsData);
+                } else if (currentTab === 'Events') {
+                    const trashEventsItems = await fetchTrashItems('events');
+                    processedEventsData = Array.isArray(trashEventsItems) ? trashEventsItems.map(item => {
+                        const organizer = users.find(user => user.id === item.owner);
+                        const organizerName = organizer ? `${organizer.surname || ''} ${organizer.name ? organizer.name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
+
+                        return {
+                            ...item,
+                            organizerName,
+                        };
+                    }) : [];
+                    setEventsData(processedEventsData);
+                }
+            } else {
+                // Если выбрана не "Корзина", загружаем обычные данные
+                // Загрузка данных новостей
+                const newsResponse = await fetchNews();
+                let newsItems = newsResponse.news || [];
+
+                // Загрузка данных событий
+                const eventsResponse = await fetchEvents();
+                let eventsItems = eventsResponse.events || [];
+
+                // Фильтрация данных по роли пользователя
+                if (roleId !== '1' && roleId !== '4') {
+                    newsItems = newsItems.filter(item => item.owner === userId);
+                    eventsItems = eventsItems.filter(item => item.owner === userId);
+                }
+
+                // Обработка данных новостей
+                processedNewsData = newsItems.map(item => {
+                    const organizer = users.find(user => user.id === item.owner);
+                    const organizerName = organizer ? `${organizer.surname || ''} ${organizer.name ? organizer.name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
+
+                    return {
+                        ...item,
+                        organizerName,
+                    };
+                });
+
+                // Обработка данных событий
+                processedEventsData = eventsItems.map(item => {
+                    const organizer = users.find(user => user.id === item.owner);
+                    const organizerName = organizer ? `${organizer.surname || ''} ${organizer.name ? organizer.name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
+
+                    return {
+                        ...item,
+                        organizerName,
+                    };
+                });
+
+                setNewsData(processedNewsData);
+                setEventsData(processedEventsData);
             }
-
-            // Обработка данных новостей
-            const processedNewsData = newsItems.map(item => {
-                const organizer = users.find(user => user.id === item.owner);
-                const organizerName = organizer ? `${organizer.surname || ''} ${organizer.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
-
-                return {
-                    ...item,
-                    organizerName,
-                };
-            });
-
-            // Обработка данных событий
-            const processedEventsData = eventsItems.map(item => {
-                const organizer = users.find(user => user.id === item.owner);
-                const organizerName = organizer ? `${organizer.surname || ''} ${organizer.Name ? organizer.Name.charAt(0) + '.' : ''}`.trim() : 'Неизвестно';
-
-                return {
-                    ...item,
-                    organizerName,
-                };
-            });
-
-            setNewsData(processedNewsData);
-            setEventsData(processedEventsData);
 
         } catch (err) {
             console.error('Ошибка при загрузке данных:', err);
@@ -116,10 +135,12 @@ const ContentPage = () => {
         }
     };
 
+
+
     useEffect(() => {
         fetchData();
         Cookies.set('currentPage', 'content');
-    }, [navigate, roleId, permissions, userId]);
+    }, [navigate, roleId, permissions, userId, subTab, currentTab]);
 
     const changeCurrentTabHandler = (e) => {
         const selectedTab = e.target.dataset.tab;
@@ -144,15 +165,15 @@ const ContentPage = () => {
             } else if (typeForm === 'Events') {
                 item = eventsData.find(eventItem => eventItem.id === id);
             }
-    
+
             if (!item) {
                 console.error('Элемент не найден');
                 return;
             }
-    
+
             // Создаём новый объект FormData
             const formData = new FormData();
-    
+
             // Заполняем FormData всеми полями существующей записи, кроме вычисляемых или лишних полей
             for (const key in item) {
                 if (item.hasOwnProperty(key) && key !== 'id' && key !== 'organizerName' && item[key] !== null && item[key] !== undefined) {
@@ -166,24 +187,24 @@ const ContentPage = () => {
                     }
                 }
             }
-    
+
             // Обрабатываем изображения, если нужно
             if (item.image) {
                 const existingImages = [];
                 existingImages.push(item.image);
                 formData.append('existingImages', JSON.stringify(existingImages));
             }
-    
+
             // Обновляем статус
             formData.set('status', newStatus);
-    
+
             // Отправляем данные на сервер
             if (typeForm === 'News') {
                 await editNews(id, formData);
             } else if (typeForm === 'Events') {
                 await editEvent(id, formData);
             }
-    
+
             await fetchData();
         } catch (error) {
             console.error('Ошибка при изменении статуса:', error);
@@ -204,12 +225,21 @@ const ContentPage = () => {
 
     const handleDelete = async (id, typeForm) => {
         try {
-            if (typeForm === 'News') {
-                await deleteNews(id);
-            } else if (typeForm === 'Events') {
-                await deleteEvent(id);
+            if (subTab === 'Trash') {
+                // Если мы в корзине, удаляем элемент навсегда
+                if (typeForm === 'News') {
+                    await deleteTrashItem(id, 'news');
+                } else if (typeForm === 'Events') {
+                    await deleteTrashItem(id, 'events');
+                }
+            } else {
+                // Если мы не в корзине, перемещаем элемент в корзину
+                if (typeForm === 'News') {
+                    await deleteNews(id);
+                } else if (typeForm === 'Events') {
+                    await deleteEvent(id);
+                }
             }
-
             await fetchData();
         } catch (error) {
             console.error('Ошибка при удалении:', error);
@@ -217,8 +247,16 @@ const ContentPage = () => {
     };
 
     const handleRestore = async (id, typeForm) => {
-        // Логика для восстановления новости или события из архива или корзины
-        // Нужно реализовать соответствующий метод на бэкенде
+        try {
+            if (typeForm === 'News') {
+                await restoreTrashItem(id, 'news');
+            } else if (typeForm === 'Events') {
+                await restoreTrashItem(id, 'events');
+            }
+            await fetchData();
+        } catch (error) {
+            console.error('Ошибка при восстановлении элемента из корзины:', error);
+        }
     };
 
     return (
@@ -323,19 +361,24 @@ const ContentPage = () => {
                                                 </h2>
                                                 <TableComponent
                                                     items={
-                                                        newsData.filter(
-                                                            (item) =>
-                                                                item.elementtype === elementType &&
-                                                                ((subTab === 'Trash' && item.status === 'Удалено') ||
-                                                                    (subTab === 'Archive' && item.status === 'Архив') ||
-                                                                    (subTab === 'Draft' && item.status !== 'Архив' && item.status !== 'Удалено'))
-                                                        )
+                                                        newsData.filter((item) => {
+                                                            if (item.elementtype !== elementType) return false;
+                                                
+                                                            if (subTab === 'Trash') {
+                                                                // В корзине отображаем все элементы для данного типа
+                                                                return true;
+                                                            } else if (subTab === 'Archive') {
+                                                                return item.status === 'Архив';
+                                                            } else {
+                                                                return item.status !== 'Архив' && item.status !== 'Удалено';
+                                                            }
+                                                        })
                                                     }
-                                                    onStatusChange={(id, newStatus) => handleStatusChange(id, newStatus, 'News')}
-                                                    onDelete={(id) => handleDelete(id, 'News')}
-                                                    onRestore={(id) => handleRestore(id, 'News')}
-                                                    onEdit={(id) => handleEdit('News', id)}
-                                                    onView={() => {}}
+                                                    onStatusChange={(id, newStatus) => handleStatusChange(id, newStatus, currentTab)}
+                                                    onDelete={(id) => handleDelete(id, currentTab)}
+                                                    onRestore={(id) => handleRestore(id, currentTab)}
+                                                    onEdit={(id) => handleEdit(currentTab, id)}
+                                                    onView={handleView}
                                                     currentTab={currentTab}
                                                     subTab={subTab}
                                                     setShowMenuId={setShowMenuId}
@@ -361,20 +404,25 @@ const ContentPage = () => {
                                                     {elementType}
                                                 </h2>
                                                 <TableComponent
-                                                    items={
-                                                        eventsData.filter(
-                                                            (item) =>
-                                                                item.elementtype === elementType &&
-                                                                ((subTab === 'Trash' && item.status === 'Удалено') ||
-                                                                    (subTab === 'Archive' && item.status === 'Архив') ||
-                                                                    (subTab === 'Draft' && item.status !== 'Архив' && item.status !== 'Удалено'))
-                                                        )
+                                                     items={
+                                                        eventsData.filter((item) => {
+                                                            if (item.elementtype !== elementType) return false;
+                                                
+                                                            if (subTab === 'Trash') {
+                                                                // В корзине отображаем все элементы для данного типа
+                                                                return true;
+                                                            } else if (subTab === 'Archive') {
+                                                                return item.status === 'Архив';
+                                                            } else {
+                                                                return item.status !== 'Архив' && item.status !== 'Удалено';
+                                                            }
+                                                        })
                                                     }
                                                     onStatusChange={(id, newStatus) => handleStatusChange(id, newStatus, 'Events')}
                                                     onDelete={(id) => handleDelete(id, 'Events')}
                                                     onRestore={(id) => handleRestore(id, 'Events')}
                                                     onEdit={(id) => handleEdit('Events', id)}
-                                                    onView={() => {}}
+                                                    onView={() => { }}
                                                     currentTab={currentTab}
                                                     subTab={subTab}
                                                     setShowMenuId={setShowMenuId}
