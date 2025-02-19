@@ -9,6 +9,7 @@ import Cookies from 'js-cookie';
 import SearchBar from './SearchBar';
 import NotificationsListener from '../utils/NotificationsListener';
 import Modal from '../modal/Modal';
+import { jwtDecode } from 'jwt-decode';
 
 const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 
@@ -36,66 +37,85 @@ function Header({ setShowAuthPush }) {
 
     useEffect(() => {
         if (userId && token) {
-            const fetchUserData = async () => {
-                try {
-                    const response = await fetch(`${serverUrl}/api/users/${userId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Ошибка при получении данных пользователя');
-                    }
-
-                    const userData = await response.json();
-                    setUser(userData);
-
-                    // Случайный цвет для аватара без изображения
-                    setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
-
-                    // Если у пользователя есть изображение, загружаем его
-                    if (userData.image) {
-                        const imageResponse = await fetch(`${serverUrl}/api/webdav/image?url=${encodeURIComponent(userData.image)}`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            },
-                        });
-
-                        if (imageResponse.ok) {
-                            const blob = await imageResponse.blob();
-                            const imageObjectUrl = URL.createObjectURL(blob);
-                            setUserImageSrc(imageObjectUrl);
-                        } else {
-                            console.error('Ошибка при загрузке изображения пользователя');
+            try {
+                const decodedToken = jwtDecode(token);
+                const currentTime = Date.now() / 1000; // Текущее время в секундах
+    
+                if (decodedToken.exp && decodedToken.exp < currentTime) {
+                    // Токен истек, выполняем выход из аккаунта
+                    handleSignOut();
+                } else {
+                    // Токен действителен, выполняем запрос данных пользователя
+                    const fetchUserData = async () => {
+                        try {
+                            const response = await fetch(`${serverUrl}/api/users/${userId}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                },
+                            });
+        
+                            if (!response.ok) {
+                                throw new Error('Ошибка при получении данных пользователя');
+                            }
+        
+                            const userData = await response.json();
+                            setUser(userData);
+        
+                            // Случайный цвет для аватара без изображения
+                            setUserColor('#' + Math.floor(Math.random() * 16777215).toString(16));
+        
+                            // Если у пользователя есть изображение, загружаем его
+                            if (userData.image) {
+                                const imageResponse = await fetch(`${serverUrl}/api/webdav/image?url=${encodeURIComponent(userData.image)}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                    },
+                                });
+        
+                                if (imageResponse.ok) {
+                                    const blob = await imageResponse.blob();
+                                    const imageObjectUrl = URL.createObjectURL(blob);
+                                    setUserImageSrc(imageObjectUrl);
+                                } else {
+                                    console.error('Ошибка при загрузке изображения пользователя');
+                                }
+                            }
+        
+                            // Получаем название роли на русском языке
+                            const roleResponse = await fetch(`${serverUrl}/api/roles/${userData.role}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                },
+                            });
+        
+                            if (roleResponse.ok) {
+                                const roleData = await roleResponse.json();
+                                setRoleName(roleData.rusname);
+                                Cookies.set('roleName', roleData.rusname);
+                            } else {
+                                console.error('Ошибка при получении данных роли');
+                            }
+                        } catch (error) {
+                            console.error('Ошибка при загрузке данных пользователя:', error);
                         }
-                    }
-
-                    // Получаем название роли на русском языке
-                    const roleResponse = await fetch(`${serverUrl}/api/roles/${userData.role}`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    });
-
-                    if (roleResponse.ok) {
-                        const roleData = await roleResponse.json();
-                        setRoleName(roleData.rusname);
-                        Cookies.set('roleName', roleData.rusname);
-                    } else {
-                        console.error('Ошибка при получении данных роли');
-                    }
-                } catch (error) {
-                    console.error('Ошибка при загрузке данных пользователя:', error);
+                    };
+        
+                    fetchUserData();
                 }
-            };
-
-            fetchUserData();
+            } catch (error) {
+                console.error('Ошибка при декодировании токена:', error);
+                // В случае ошибки при декодировании токена, выходим из аккаунта
+                handleSignOut();
+            }
+        } else {
+            // Токен отсутствует, перенаправляем на главную страницу как гость
+            navigate('/', { replace: true });
         }
     }, [userId, token]);
+    
 
     useEffect(() => {
         // Обновляем количество непрочитанных уведомлений
@@ -105,14 +125,24 @@ function Header({ setShowAuthPush }) {
     }, [selectedNotifications, notifications]);
 
     const handleSignOut = () => {
-        // Удаляем данные пользователя из состояния и куков
+        // Удаляем данные пользователя из состояния
         setUser(null);
+        setRoleName('');
+        setUserImageSrc(null);
+    
+        // Удаляем все куки, связанные с пользователем
         Cookies.remove('userId');
         Cookies.remove('token');
         Cookies.remove('email');
-        Cookies.remove('role');
+        Cookies.remove('roleId');
         Cookies.remove('roleName');
-        navigate('/'); // Перенаправляем на главную страницу
+        
+        // Устанавливаем роль гостя
+        Cookies.set('roleId', '2'); // Предполагая, что роль "2" соответствует гостю
+        setShowAuthPush(true); // Если необходимо показать окно авторизации для гостя
+    
+        // Перенаправляем на главную страницу
+        navigate('/', { replace: true });
     };
 
     const getInitials = (name, surname) => {

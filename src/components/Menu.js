@@ -18,7 +18,7 @@ import logo from '../images/logo.png';
 
 function Menu() {
     const currentPath = useLocation().pathname;
-    const roleId = Cookies.get('roleId');
+    const roleId = Cookies.get('roleId') || '2';
     const userId = Cookies.get('userId');
     const permissions = getPermissions(roleId);
 
@@ -43,7 +43,7 @@ function Menu() {
                 
                 {/* Обновленное условие для отображения вкладки "Заявки" */}
                 {permissions.homepage && permissions.newspage && permissions.devicepage && permissions.calendarevents && permissions.map && permissions.software && 
-                !(roleId === '4' || roleId === '5' || roleId === '6') && ( // Проверяем, что роль не 4, 5 или 6
+                !(roleId === '4' || roleId === '5' || roleId === '6'|| roleId === '2') && ( // Проверяем, что роль не 4, 5 или 6
                     <Link to="/bid"><div onClick={(e) => onClickTabHandler(e, '/bid')} className={`menu-tab ${currentPath === '/bid' ? 'menu-selected-tab' : ''}`}><img src={iconContentImg} alt="" /><p>Заявки</p></div> </Link>
                 )}
 

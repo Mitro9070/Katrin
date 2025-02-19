@@ -37,8 +37,8 @@ function App() {
     return (
         <div className="App">
             <Router>
-                <Menu setShowAuthPush={setShowAuthPush} />
                 <Header setShowAuthPush={setShowAuthPush} />
+                <Menu setShowAuthPush={setShowAuthPush} />
                 <Routes>
                     <Route exact path='/' element={<MainPage />} />
                     <Route exact path='/news' element={<NewsPage />} />

@@ -6,6 +6,7 @@ const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 const token = Cookies.get('token');
 
 export const fetchNews = async (page = 1, elementType = '') => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     let url = `${serverUrl}/api/news?page=${page}`;
     if (elementType && elementType !== 'all') {
         url += `&elementtype=${elementType}`;
@@ -29,6 +30,7 @@ export const fetchNews = async (page = 1, elementType = '') => {
 
 // Получение новости по ID
 export const fetchNewsById = async (id) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/news/${id}`, {
         method: 'GET',
         headers: {
@@ -67,6 +69,7 @@ export const addNews = async (formData) => {
 
 // Функция для редактирования новости
 export const editNews = async (id, formData) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/news/${id}`, {
         method: 'PUT',
         headers: {

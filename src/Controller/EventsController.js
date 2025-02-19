@@ -6,6 +6,7 @@ const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 const token = Cookies.get('token');
 
 export const fetchEvents = async (page = 1) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/events?page=${page}`, {
         method: 'GET',
         headers: {
@@ -22,6 +23,7 @@ export const fetchEvents = async (page = 1) => {
 
 // Функция для получения события по ID
 export const fetchEventById = async (id) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/events/${id}`, {
         method: 'GET',
         headers: {
@@ -38,6 +40,7 @@ export const fetchEventById = async (id) => {
 
 // Функция для добавления нового события
 export const addEvent = async (formData) => {
+    
     const token = Cookies.get('token');
 
     const response = await fetch(`${serverUrl}/api/events`, {
@@ -59,6 +62,7 @@ export const addEvent = async (formData) => {
 
 // Функция для редактирования события
 export const editEvent = async (id, formData) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/events/${id}`, {
         method: 'PUT',
         headers: {

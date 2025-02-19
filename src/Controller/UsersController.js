@@ -5,9 +5,10 @@ import { jwtDecode } from 'jwt-decode';
 
 const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 const authUrl = process.env.REACT_APP_SERVER_AUTH || '';
-const token = Cookies.get('token');
+
 
 export const fetchUsers = async (page = 1) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/users?page=${page}`, {
         method: 'GET',
         headers: {
@@ -23,6 +24,7 @@ export const fetchUsers = async (page = 1) => {
 };
 
 export const fetchUserById = async (userId) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/users/${userId}`, {
         method: 'GET',
         headers: {
@@ -44,6 +46,7 @@ export const fetchUserById = async (userId) => {
 
 // Добавляем функцию updateUserById
 export const updateUserById = async (userId, userData) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const formData = new FormData();
 
     for (const key in userData) {
@@ -83,6 +86,7 @@ export const updateUserById = async (userId, userData) => {
 
 // Добавляем функцию uploadUserImage
 export const uploadUserImage = async (userId, imageFile) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const formData = new FormData();
     formData.append('image', imageFile, imageFile.name);
 
@@ -105,6 +109,7 @@ export const uploadUserImage = async (userId, imageFile) => {
 
 // Добавляем функцию для добавления нового пользователя
 export const addUser = async (userData) => {
+   
     const response = await fetch(`${authUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
@@ -133,6 +138,7 @@ export const addUser = async (userData) => {
 };
 
 export const deleteUserById = async (userId) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${serverUrl}/api/users/${userId}`, {
         method: 'DELETE',
         headers: {
@@ -148,6 +154,7 @@ export const deleteUserById = async (userId) => {
 };
 
 export const deleteUserByEmail = async (email) => {
+    const token = Cookies.get('token'); // Получаем токен внутри функции
     const response = await fetch(`${authUrl}/api/auth/delete-user/`, {
         method: 'DELETE',
         headers: {
@@ -162,4 +169,60 @@ export const deleteUserByEmail = async (email) => {
     }
 
     return true;
+};
+
+// Добавляем функцию для получения гостевого токена
+export const getGuestToken = async () => {
+    try {
+        const response = await fetch(`${authUrl}/api/auth/guest-token`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при получении гостевого токена');
+        }
+
+        const data = await response.json();
+
+        const guestToken = data.token;
+
+        // Сохраняем токен в куки
+        Cookies.set('token', guestToken);
+
+        // Декодируем токен, чтобы получить userId и роль
+        const decodedToken = parseJwt(guestToken);
+
+        const userId = decodedToken.userId || decodedToken.id;
+        const roleId = decodedToken.role;
+
+        // Сохраняем userId и roleId в куки
+        Cookies.set('userId', userId);
+        Cookies.set('roleId', roleId);
+
+        return { userId, roleId, token: guestToken };
+    } catch (error) {
+        console.error('Ошибка при получении гостевого токена:', error);
+        throw error;
+    }
+};
+
+// Функция для декодирования JWT токена (если не используете библиотеку jwt-decode)
+const parseJwt = (token) => {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error('Ошибка при декодировании токена:', e);
+        return null;
+    }
 };
