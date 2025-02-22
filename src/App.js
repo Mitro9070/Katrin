@@ -26,6 +26,7 @@ import ContentPage from './components/ContentPage'; // Импорт компон
 import TechPage from './components/TechPage'; // Импорт компонента TechPage
 import Profile from './components/Profile'; // Импорт компонента Profile
 import Admin from './components/Admin'; // Импорт компонента Admin
+import PersonalCalendarPage from './components/Calendar/PersonalCalendarPage'; // Импорт компонента Admin
 
 function App() {
     const [ShowAuth, setShowAuth] = useState(false);
@@ -57,6 +58,7 @@ function App() {
                     <Route exact path='/tech-news' element={<TechPage />} /> {/* Добавляем маршрут для TechPage */}
                     <Route path="/profile/:userId" element={<Profile />} /> {/* Добавляем маршрут для Profile */}
                     <Route exact path='/admin' element={<Admin />} /> {/* Добавляем маршрут для Admin */}
+                    <Route path="/personal-calendar" element={<PersonalCalendarPage />} />
                     <Route exact path='/*' element={<NotFoundPage />} />
                 </Routes>
                 {ShowAuth && (

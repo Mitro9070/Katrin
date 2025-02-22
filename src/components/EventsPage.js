@@ -179,6 +179,13 @@ const EventsPage = () => {
                         <p>Внутреннее событие</p>
                     </div>
                 </div>
+                {/* Добавляем кнопку "Личный календарь" */}
+                <button
+                    className="personal-calendar-button noselect"
+                    onClick={() => navigate('/personal-calendar')}
+                >
+                    Личный календарь
+                </button>
             </div>
 
             <div className="events-content-cards-container">

@@ -1,3 +1,5 @@
+// src/components/MainContentSinglePage.js
+
 import React, { useState } from 'react';
 import formatDate from '../utils/formatDate';
 
@@ -16,28 +18,26 @@ function MainContentSinglePage({
     isDevice = false,
     getImageUrl,
     organizerName,
-    onBack = () => {},
+    onBack = () => { },
 }) {
     const [currentImage, setCurrentImage] = useState(0);
 
     const imageUrls = data.images && data.images.length > 0
         ? data.images.map((imageUrl) => getImageUrl(imageUrl))
         : [defaultImage];
+    console.log('Images in data:', data.images);
+    console.log('Image URLs for slider:', imageUrls);
 
     const fileUrls = data.files && data.files.length > 0
         ? data.files.map((fileUrl) => getImageUrl(fileUrl))
         : [];
 
     const prevImage = () => {
-        if (currentImage > 0) {
-            setCurrentImage(currentImage - 1);
-        }
+        setCurrentImage((prev) => (prev > 0 ? prev - 1 : imageUrls.length - 1));
     };
 
     const nextImage = () => {
-        if (currentImage < imageUrls.length - 1) {
-            setCurrentImage(currentImage + 1);
-        }
+        setCurrentImage((prev) => (prev < imageUrls.length - 1 ? prev + 1 : 0));
     };
 
     const formatEventPeriod = (startDate, endDate) => {
@@ -88,7 +88,7 @@ function MainContentSinglePage({
                                         <div className="icon-container icon-rotate" onClick={prevImage}>
                                             <img src={imgIconArrowIcon} alt="Предыдущая" className='icon-rotate' />
                                         </div>
-                                        <p className="single-bid-current-img">{currentImage + 1}</p>
+                                        <p className="single-bid-current-img">{currentImage + 1}/{imageUrls.length}</p>
                                         <div className="icon-container" onClick={nextImage}>
                                             <img src={imgGoArrowIcon} alt="Следующая" />
                                         </div>

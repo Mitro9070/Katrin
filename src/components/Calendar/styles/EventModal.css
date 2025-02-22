@@ -1,0 +1,183 @@
+/* src/components/Calendar/styles/EventModal.css */
+
+/* Задний полупрозрачный фон модального окна */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Контейнер для контента модального окна */
+  .modal-content {
+    background-color: #fff;
+    width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+  }
+  
+  /* Заголовок модального окна */
+  .modal-content h2 {
+    margin-top: 0;
+  }
+  
+  /* Стили для полей формы */
+  .modal-content label {
+    display: block;
+    margin-bottom: 15px;
+  }
+  
+  .modal-content label input,
+  .modal-content label select,
+  .modal-content label textarea {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Кнопки модального окна */
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  
+  .modal-buttons button {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-left: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .modal-buttons button:first-child {
+    background-color: #f0f0f0;
+  }
+  
+  .modal-buttons button:last-child {
+    background-color: #0078D4;
+    color: #fff;
+  }
+  
+  .modal-buttons button:last-child:hover {
+    background-color: #005A9E;
+  }
+  
+  /* Стили для кнопки "Добавить ссылку" */
+  .modal-content label button {
+    margin-top: 5px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #0078D4;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .modal-content label button:hover {
+    background-color: #005A9E;
+  }
+  
+  /* Превью изображений */
+  .image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  
+  .image-preview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Список выбранных файлов */
+  .file-list {
+    margin-top: 10px;
+  }
+  
+  .file-list li {
+    list-style-type: none;
+    margin-bottom: 5px;
+  }
+  
+  /* Стили для ошибки валидации */
+  .error {
+    color: red;
+    font-size: 12px;
+  }
+
+  .required {
+    color: red;
+  }
+
+  .image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .image-preview {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+  }
+
+  .file-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .file-list li {
+    font-size: 14px;
+  }
+
+  /* Модальное окно просмотра события */
+.event-view-modal {
+  background-color: #fff;
+  width: 80%; /* Увеличиваем ширину до 80% */
+  max-width: 1200px; /* Увеличиваем максимальную ширину до 1200px */
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Кнопка закрытия модального окна */
+.single-events-page .close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.single-events-page .close-button:hover {
+  color: #000;
+}

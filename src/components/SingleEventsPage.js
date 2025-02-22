@@ -1,58 +1,42 @@
+// src/components/SingleEventsPage.js
+
 import '../styles/SingleEventsPage.css';
-import { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import MainContentSinglePage from './MainContentSinglePage';
 import NotFoundPage from './NotFoundPage';
-import Loader from "./Loader";
+import Loader from './Loader';
 import Cookies from 'js-cookie';
 import { fetchEventById } from '../Controller/EventsController';
 import { fetchUserById } from '../Controller/UsersController';
-//import { navigationStore } from '../stores/NavigationStore';
 
 const serverUrl = process.env.REACT_APP_SERVER_URL || '';
 
-const SingleEventsPage = () => {
-  const { id } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
- // const { resetEventsFilters } = navigationStore; // Импорт стора
-  const [eventData, setEventData] = useState({});
-  const [organizerName, setOrganizerName] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const SingleEventsPage = ({ id: propId, eventData: propEventData, onClose }) => {
+  const { id: routeId } = useParams();
+  const id = propId || routeId; // Приоритет пропсу, если он есть
 
-  const referrer = new URLSearchParams(location.search).get('referrer') || '/';
+  const [eventData, setEventData] = useState(propEventData || null);
+  const [organizerName, setOrganizerName] = useState('');
+  const [loading, setLoading] = useState(!propEventData); // Если данные переданы, то загрузка не нужна
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchEvent() {
+      if (eventData) {
+        // Если данные уже переданы через пропсы, используем их
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
       try {
         const token = Cookies.get('token');
         const fetchedEvent = await fetchEventById(id);
 
         if (fetchedEvent) {
-          const transformedEvent = {
-            ...fetchedEvent,
-            startDate: fetchedEvent.start_date,
-            endDate: fetchedEvent.end_date,
-            postData: fetchedEvent.postdata || '',
-            elementType: fetchedEvent.elementtype || '',
-            images: fetchedEvent.images || [],
-          };
-          setEventData(transformedEvent);
-
-          // Получение данных организатора события
-          const organizerId = fetchedEvent.owner;
-          if (organizerId) {
-            const userData = await fetchUserById(organizerId);
-            if (userData) {
-              const fullName = `${userData.name || ''} ${userData.surname || ''}`.trim();
-              setOrganizerName(fullName || 'Неизвестный организатор');
-            } else {
-              setOrganizerName('Неизвестный организатор');
-            }
-          } else {
-            setOrganizerName(fetchedEvent.organizer || 'Неизвестный организатор');
-          }
+          setEventData(fetchedEvent);
         } else {
           setError('Событие не найдено');
         }
@@ -65,15 +49,40 @@ const SingleEventsPage = () => {
     }
 
     fetchEvent();
-  }, [id]);
+  }, [id, eventData]);
 
-  const handleBack = () => {
-    navigate(-1);
-};
+  useEffect(() => {
+    async function fetchOrganizer() {
+      if (eventData) {
+        // Получение данных организатора события
+        const organizerId = eventData.owner;
+        if (organizerId) {
+          try {
+            const userData = await fetchUserById(organizerId);
+            if (userData) {
+              const fullName = `${userData.name || ''} ${userData.surname || ''}`.trim();
+              setOrganizerName(fullName || 'Неизвестный организатор');
+            } else {
+              setOrganizerName('Неизвестный организатор');
+            }
+          } catch (err) {
+            console.error('Ошибка при загрузке организатора:', err);
+            setOrganizerName('Неизвестный организатор');
+          }
+        } else {
+          setOrganizerName(eventData.organizer || 'Неизвестный организатор');
+        }
+      }
+    }
+
+    if (eventData) {
+      fetchOrganizer();
+    }
+  }, [eventData]);
 
   if (loading) {
     return (
-      <div className="page-content single-events-page block-slide-loader">
+      <div className="single-events-page block-slide-loader">
         <Loader />
       </div>
     );
@@ -87,14 +96,17 @@ const SingleEventsPage = () => {
   };
 
   return (
-    <div className="page-content single-events-page">
-      {/* <button onClick={handleBack} className="back-button">Назад</button> */}
+    <div className="single-events-page">
+      {onClose && (
+        <button onClick={onClose} className="close-button">
+          &times;
+        </button>
+      )}
       <MainContentSinglePage
         data={eventData}
         isEvent={true}
         getImageUrl={getImageUrl}
         organizerName={organizerName}
-        onBack={handleBack} // Передаем обработчик назад
       />
     </div>
   );

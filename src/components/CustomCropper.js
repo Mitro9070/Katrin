@@ -1,3 +1,4 @@
+//src\components\CustomCropper.js
 import React, { useRef } from 'react';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
